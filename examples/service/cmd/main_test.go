@@ -52,25 +52,3 @@ func getMainOutput(t *testing.T) string {
 
 	return out
 }
-
-//func TestMainCliError(t *testing.T) {
-//	defer func() { log.StandardLogger().ExitFunc = nil }()
-//	fatal := false
-//	log.StandardLogger().ExitFunc = func(int) { fatal = true }
-//	os.Args = []string{Name, "--INVALID"}
-//	main()
-//	if !fatal {
-//		t.Errorf("An error was not expected")
-//	}
-//}
-//
-//func TestMainCliExecuteError(t *testing.T) {
-//	defer func() { log.StandardLogger().ExitFunc = nil }()
-//	fatal := false
-//	log.StandardLogger().ExitFunc = func(int) { fatal = true }
-//	os.Args = []string{Name, "--logLevel=INVALID"}
-//	main()
-//	if !fatal {
-//		t.Errorf("An error was not expected")
-//	}
-//}
