@@ -1,8 +1,6 @@
 # srvxmplname
 
-*Example usage for gosrvlib*
-
-[![Build Status](https://travis-ci.com/nexmoinc/srvxmplname.svg?token=YHpDM41jM29w1XFFg2HR&branch=main)](https://travis-ci.com/nexmoinc/srvxmplname?token=YHpDM41jM29w1XFFg2HR&branch=main)
+*srvxmplshortdesc*
 
 * **category**    Application
 * **copyright**   2020 Vonage
@@ -32,7 +30,7 @@
 <a name="description"></a>
 ## Description
 
-Project description.
+srvxmpllongdesc
 
 -----------------------------------------------------------------
 
@@ -53,7 +51,8 @@ sudo pip install jsonschema
 This project includes a Makefile that allows you to test and build the project in a Linux-compatible system with simple commands.  
 All the artifacts and reports produced using this Makefile are stored in the *target* folder.  
 
-All the packages listed in the *resources/DockerDev/Dockerfile* file are required in order to build and test all the library options in the current environment. Alternatively, everything can be built inside a [Docker](https://www.docker.com) container using the command "make dbuild".
+All the packages listed in the *resources/DockerDev/Dockerfile* file are required in order to build and test all the library options in the current environment.
+Alternatively, everything can be built inside a [Docker](https://www.docker.com) container using the command "make dbuild".
 
 To see all available options:
 ```
@@ -79,7 +78,6 @@ To build the executable file:
 ```
 make build
 ```
-
 
 -----------------------------------------------------------------
 
@@ -177,22 +175,6 @@ Example:
 ```
 pprof -seconds 10 -http=localhost:8182 http://INSTANCE_URL:PORT/pprof/profile
 ```
-
------------------------------------------------------------------
-
-<a name="openapi"></a>
-## OpenAPI
-
-The srvxmplname API is specified via the [OpenAPI 3](https://www.openapis.org/) file: `openapi.yaml`.
-
-The openapi file can be edited using the Swagger Editor:
-
-```
-docker pull swaggerapi/swagger-editor
-docker run -p 8056:8080 swaggerapi/swagger-editor
-```
-
-and pointing the Web browser to http://localhost:8056
 
 -----------------------------------------------------------------
 
