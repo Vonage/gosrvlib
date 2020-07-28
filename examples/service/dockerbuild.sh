@@ -25,7 +25,7 @@
 DOCKERDEV=${VENDOR}/dev_${PROJECT}
 
 # Build the base environment and keep it cached locally
-docker build --pull --tag ${DOCKERDEV} --file ./resources/Docker/Dockerfile.dev ./resources/Docker/
+docker build --pull --tag ${DOCKERDEV} --file ./resources/docker/Dockerfile.dev ./resources/docker/
 
 # Define the project root path
 PRJPATH=/root/src/${CVSPATH}/${PROJECT}

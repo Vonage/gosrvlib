@@ -307,7 +307,7 @@ dockerdir:
 	rm -rf $(PATHDOCKERPKG)
 	$(MAKE) install DESTDIR=$(PATHDOCKERPKG)
 	$(MAKE) installssl DESTDIR=$(PATHDOCKERPKG)
-	cp resources/Docker/Dockerfile.run $(PATHDOCKERPKG)/Dockerfile
+	cp resources/docker/Dockerfile.run $(PATHDOCKERPKG)/Dockerfile
 
 # Build the docker container in the target/DOCKER directory
 .PHONY: dockerbuild
