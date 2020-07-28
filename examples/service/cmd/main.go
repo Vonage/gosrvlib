@@ -1,7 +1,6 @@
 package main
 
 import (
-	_ "github.com/go-sql-driver/mysql"
 	"github.com/nexmoinc/gosrvlib/pkg/logging"
 	"go.uber.org/zap"
 )
