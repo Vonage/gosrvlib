@@ -1,0 +1,17 @@
+{
+  "remoteConfigProvider": "",
+  "remoteConfigEndpoint": "rp1",
+  "remoteConfigPath": "rp2",
+  "remoteConfigSecretKeyring": "rp3",
+  "log": {
+    "level": "DEBUG",
+    "network": "",
+    "address": ""
+  },
+  "enabled": false,
+  "serverAddress": ":3499",
+  "mysql": {
+    "sourceDSN": "user:pass@tcp(:3306)/source",
+    "targetDSN": "user:pass@tcp(:3307)/target"
+  }
+}
