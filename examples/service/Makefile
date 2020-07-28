@@ -57,7 +57,7 @@ CONFIGPATH=etc/$(PROJECT)/
 SSLCONFIGPATH=
 
 # Path for init script
-INITPATH=etc/init.d/
+INITPATH=
 
 # Path path for documentation
 DOCPATH=usr/share/doc/$(PKGNAME)/
@@ -142,7 +142,6 @@ help:
 	@echo "    make format      : Format the source code"
 	@echo "    make generate    : Generate go code automatically"
 	@echo "    make linter      : Check code against multiple linters"
-	@echo "    make docs        : Generate source code documentation"
 	@echo ""                    
 	@echo "    make deps        : Get dependencies"
 	@echo "    make mod         : Download and vendor dependencies"
@@ -163,8 +162,6 @@ all: help
 .PHONY: confcheck
 confcheck:
 	jsonschema -i resources/test/etc/${PROJECT}/config.json resources/etc/${PROJECT}/config.schema.json
-#	jsonschema -i resources/test/etc/${PROJECT}/consul.config.json resources/etc/${PROJECT}/config.schema.json
-#	jsonschema -i resources/test/etc/mysql/config.json resources/etc/${PROJECT}/config.schema.json
 	jsonschema -i resources/etc/${PROJECT}/config.json resources/etc/${PROJECT}/config.schema.json
 
 # Create the trget directories if missing
@@ -210,15 +207,6 @@ linter:
 	@echo -e "\n\n>>> START: Static code analysis <<<\n\n"
 	$(BINUTIL)/golangci-lint run --exclude-use-default=false $(SRCDIR)/...
 	@echo -e "\n\n>>> END: Static code analysis <<<\n\n"
-
-# Generate source docs
-.PHONY: docs
-docs: ensuretarget
-	$(GODOC) -url "http://localhost:6060/pkg/${CVSPATH}/${PROJECT}/src/" > $(TARGETDIR)/docs/index.html
-	sed -i 's|="/lib/godoc/|="|g' $(TARGETDIR)/docs/index.html
-	cp $(GOPATH)/src/golang.org/x/tools/godoc/static/*.js $(TARGETDIR)/docs/
-	cp $(GOPATH)/src/golang.org/x/tools/godoc/static/*.css $(TARGETDIR)/docs/
-	sed -i "s|\"/src/${CVSPATH}/${PROJECT}/|https://${CVSPATH}/${PROJECT}/blob/master/|g" $(TARGETDIR)/docs/index.html
 
 # Run all tests and static analysis tools
 .PHONY: qa
@@ -311,7 +299,7 @@ build:
 	-tags ${STATIC_TAG} \
 	-ldflags '-w -s -X main.ProgramVersion=${VERSION} -X main.ProgramRelease=${RELEASE} -extldflags "-fno-PIC ${STATIC_FLAG}"' \
 	-mod=vendor \
-	-o ./target/${BINPATH}$(PROJECT) $(SRCDIR)
+	-o ./target/${BINPATH}$(PROJECT) $(CMDDIR)
 
 # Create the directory with docker files to be packaged
 .PHONY: dockerdir
