@@ -144,7 +144,6 @@ func bind(cfg *appConfig, appInfo *jsendx.AppInfo) bootstrap.BindFunc {
 			}
 		}
 
-		fmt.Println(cfg.ServerAddress)
 		httpServiceOpts := []httpserver.Option{
 			httpserver.WithServerAddr(cfg.ServerAddress),
 		}
