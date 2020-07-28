@@ -8,12 +8,13 @@ import (
 
 	"github.com/nexmoinc/gosrvlib/pkg/httpserver/route"
 	"github.com/nexmoinc/gosrvlib/pkg/httputil"
+	"github.com/nexmoinc/gosrvlib/pkg/uid"
 )
 
-// NOTE: Service is the interface defining the service functions required by the handler
+// NOTE: This is a sample Service interface. It is meant to demonstrate where the business logic of a service should
+// reside. Also, it adds the capability of mocking the HTTP Handler independently from the rest of the code
 type Service interface {
-	SayHello(ctx context.Context, name string) (string, error)
-	SayHelloAgain(ctx context.Context, name string) (string, error)
+	// NOTE: Add service functions here
 }
 
 // New creates a new instance of the HTTP handler
@@ -32,19 +33,13 @@ func (h *HTTPHandler) BindHTTP(_ context.Context) []route.Route {
 	return []route.Route{
 		{
 			Method:      http.MethodGet,
-			Path:        "/hello",
-			Handler:     h.handleSayHello,
-			Description: "Say hello.",
+			Path:        "/uid",
+			Handler:     h.handleGenUID,
+			Description: "Generates a random UID.",
 		},
 	}
 }
 
-func (h *HTTPHandler) handleSayHello(w http.ResponseWriter, r *http.Request) {
-	// msg, err := h.service.SayHello(r.Context(), "client")
-	// if err != nil {
-	// 	// NOTE: Not the right thing
-	// 	httputil.SendError(w, http.StatusInternalServerError, err)
-	// }
-
-	httputil.SendJSON(r.Context(), w, http.StatusOK, "Hello!")
+func (h *HTTPHandler) handleGenUID(w http.ResponseWriter, r *http.Request) {
+	httputil.SendJSON(r.Context(), w, http.StatusOK, uid.NewID64())
 }
