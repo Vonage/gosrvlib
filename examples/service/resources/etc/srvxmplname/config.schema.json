@@ -21,12 +21,12 @@
       "default": ""
     },
     "remoteConfigPath": {
-      "description": "Remote configuration path in which to search for the configuration file (e.g. '/config/samplecli')",
+      "description": "Remote configuration path in which to search for the configuration file (e.g. '/config/srvxmplname')",
       "type": "string",
       "default": ""
     },
     "remoteConfigSecretKeyring": {
-      "description": "Path to the openpgp secret keyring used to decrypt the remote configuration data (e.g. '/etc/samplecli/configkey.gpg'); if empty a non secure connection will be used instead",
+      "description": "Path to the openpgp secret keyring used to decrypt the remote configuration data (e.g. '/etc/srvxmplname/configkey.gpg'); if empty a non secure connection will be used instead",
       "type": "string",
       "default": ""
     },
