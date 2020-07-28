@@ -51,7 +51,7 @@ sudo pip install jsonschema
 This project includes a Makefile that allows you to test and build the project in a Linux-compatible system with simple commands.  
 All the artifacts and reports produced using this Makefile are stored in the *target* folder.  
 
-All the packages listed in the *resources/DockerDev/Dockerfile* file are required in order to build and test all the library options in the current environment.
+All the packages listed in the *resources/docker/Dockerfile* file are required in order to build and test all the library options in the current environment.
 Alternatively, everything can be built inside a [Docker](https://www.docker.com) container using the command "make dbuild".
 
 To see all available options:
@@ -59,9 +59,14 @@ To see all available options:
 make help
 ```
 
-To download the dependencies
+To download all dependencies:
 ```
-make deps mod
+make deps
+```
+
+To update the mod file:
+```
+make mod
 ```
 
 To format the code (please use this command before submitting any pull request):
@@ -88,9 +93,6 @@ Before committing the code, please check if it passes all tests using
 ```bash
 make qa
 ```
-
-Other make options are available install this library globally and build RPM and DEB packages.
-Please check all the available options using `make help`.
 
 -----------------------------------------------------------------
 
@@ -124,6 +126,8 @@ Once the application has being compiled with `make build`, it can be quickly tes
 ```bash
 target/usr/bin/srvxmplname -c resources/test/etc/srvxmplname
 ```
+
+-----------------------------------------------------------------
 
 <a name="logs"></a>
 ## Logs
@@ -193,17 +197,6 @@ To build a Docker scratch container for the srvxmplname executable binary execut
 ```
 make docker
 ```
-
-To push the Docker container in our ECR repo execute:
-```
-make dockerpush
-```
-Note that this command will require to set the follwoing environmental variables or having an AWS profile installed:
-
-* `AWS_ACCESS_KEY_ID`
-* `AWS_SECRET_ACCESS_KEY`
-* `AWS_DEFAULT_REGION`
-
 
 ### Useful Docker commands
 
