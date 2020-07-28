@@ -25,11 +25,11 @@ type appConfig struct {
 }
 
 func (c *appConfig) SetDefaults(v config.Viper) {
-	v.SetDefault("enabled", true)
-
-	// NOTE: Set the default monitoring_address port to the same as service_port to start a single HTTP server
-	v.SetDefault("monitoring_address", ":8082")
-	v.SetDefault("server_address", ":8081")
+	// v.SetDefault("enabled", true)
+	//
+	// // NOTE: Set the default monitoring_address port to the same as service_port to start a single HTTP server
+	// v.SetDefault("monitoring_address", ":8082")
+	// v.SetDefault("server_address", ":8081")
 
 	// NOTE: Set other configuration defaults here
 	// v.SetDefault("db.dsn", "<DSN>")
@@ -143,13 +143,15 @@ func bind(cfg *appConfig, appInfo *jsendx.AppInfo) bootstrap.BindFunc {
 			}
 		}
 
+		fmt.Println(cfg.ServerAddress)
 		httpServiceOpts := []httpserver.Option{
 			httpserver.WithServerAddr(cfg.ServerAddress),
 		}
 
 		// Disable default routes if we are starting the monitoring routes on a separate server instance
 		if cfg.MonitoringAddress != cfg.ServerAddress {
-			httpServiceOpts = append(defaultServerOpts, []httpserver.Option{
+			httpServiceOpts = append(defaultServerOpts, httpServiceOpts...)
+			httpServiceOpts = append(httpServiceOpts, []httpserver.Option{
 				httpserver.WithDisableDefaultRoutes(),
 			}...)
 		}

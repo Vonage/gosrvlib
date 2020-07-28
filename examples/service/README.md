@@ -132,17 +132,25 @@ This program logs the log messages in JSON format:
 
 ```
 {
-    "URI":"/",
-    "code":200,
-    "datetime":"2020-10-06T14:56:48Z",
+	"level": "info",
+	"datetime": "2020-07-28T13:24:58Z",
+	"timestamp": 1595942715776382171,
+	"msg": "Request",
+	"program": "srvxmplname",
+	"version": "0.0.0",
+	"release": "0",
     "hostname":"myserver",
-    "level":"info",
-    "msg":"request",
-    "program":"srvxmplname",
-    "release":"1",
-    "timestamp":1475765808084372773,
-    "type":"GET",
-    "version":"1.0.0"
+	"request_id": "c4iah65ldoyw3hqec1rluoj93",
+	"request_method": "GET",
+	"request_path": "/uid",
+	"request_query": "",
+	"request_uri": "/uid",
+	"request_useragent": "curl/7.69.1",
+	"remote_ip": "[::1]:36790",
+	"response_code": 200,
+	"response_message": "OK",
+	"response_status": "success",
+	"response_data": "avxkjeyk43av"
 }
 ```
 
