@@ -126,6 +126,7 @@ func bind(cfg *appConfig, appInfo *jsendx.AppInfo) bootstrap.BindFunc {
 			// NOTE: Uncomment to use the JSendX router for 404, 405 and panic handlers
 			// httpserver.WithRouter(jsendx.NewRouter(appInfo)),
 
+			httpserver.WithRoutesIndexHandlerFunc(jsendx.DefaultRoutesIndexHandler(appInfo)),
 			httpserver.WithPingHandlerFunc(jsendx.DefaultPingHandler(appInfo)),
 
 			// NOTE: Uncomment this line to enable custom health check reporting
