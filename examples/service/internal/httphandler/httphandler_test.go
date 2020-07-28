@@ -1,12 +1,12 @@
 package httphandler
 
 import (
-	"context"
+	"io/ioutil"
 	"net/http"
-	"reflect"
+	"net/http/httptest"
 	"testing"
 
-	"github.com/nexmoinc/gosrvlib/pkg/httpserver/route"
+	"github.com/nexmoinc/gosrvlib/pkg/testutil"
 	"github.com/stretchr/testify/require"
 )
 
@@ -16,52 +16,21 @@ func TestNew(t *testing.T) {
 }
 
 func TestHTTPHandler_BindHTTP(t *testing.T) {
-	type fields struct {
-		service Service
-	}
-	type args struct {
-		in0 context.Context
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		args   args
-		want   []route.Route
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			h := &HTTPHandler{
-				service: tt.fields.service,
-			}
-			if got := h.BindHTTP(tt.args.in0); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("BindHTTP() = %v, want %v", got, tt.want)
-			}
-		})
-	}
+	h := &HTTPHandler{}
+	got := h.BindHTTP(testutil.Context())
+	require.Equal(t, 1, len(got))
 }
 
 func TestHTTPHandler_handleGenUID(t *testing.T) {
-	type fields struct {
-		service Service
-	}
-	type args struct {
-		w http.ResponseWriter
-		r *http.Request
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		args   args
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			h := &HTTPHandler{
-				service: tt.fields.service,
-			}
-		})
-	}
+	rr := httptest.NewRecorder()
+	req, _ := http.NewRequestWithContext(testutil.Context(), http.MethodGet, "/", nil)
+
+	(&HTTPHandler{}).handleGenUID(rr, req)
+
+	resp := rr.Result()
+	body, _ := ioutil.ReadAll(resp.Body)
+
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	require.Equal(t, "application/json; charset=utf-8", resp.Header.Get("Content-Type"))
+	require.NotEmpty(t, string(body))
 }
