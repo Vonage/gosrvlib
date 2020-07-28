@@ -143,7 +143,7 @@ linter:
 
 # Run all tests and static analysis tools
 .PHONY: qa
-qa: linter test coverage example
+qa: linter test coverage
 
 .PHONY: mod
 mod:
@@ -182,4 +182,4 @@ tag:
 # Build and test the example
 .PHONY: example
 example:
-	cd examples/service && make deps mod qa build
+	cd examples/service && make clean deps mod qa build

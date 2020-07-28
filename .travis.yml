@@ -41,7 +41,7 @@ install:
 
 script:
   - echo "$TRAVIS_BUILD_NUMBER" > RELEASE
-  - make deps mod qa
+  - make deps mod qa example
 
 after_failure:
   - cat ./target/test/report.xml
