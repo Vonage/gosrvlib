@@ -163,8 +163,8 @@ all: help
 .PHONY: confcheck
 confcheck:
 	jsonschema -i resources/test/etc/${PROJECT}/config.json resources/etc/${PROJECT}/config.schema.json
-	jsonschema -i resources/test/etc/${PROJECT}/consul.config.json resources/etc/${PROJECT}/config.schema.json
-	jsonschema -i resources/test/etc/mysql/config.json resources/etc/${PROJECT}/config.schema.json
+#	jsonschema -i resources/test/etc/${PROJECT}/consul.config.json resources/etc/${PROJECT}/config.schema.json
+#	jsonschema -i resources/test/etc/mysql/config.json resources/etc/${PROJECT}/config.schema.json
 	jsonschema -i resources/etc/${PROJECT}/config.json resources/etc/${PROJECT}/config.schema.json
 
 # Create the trget directories if missing

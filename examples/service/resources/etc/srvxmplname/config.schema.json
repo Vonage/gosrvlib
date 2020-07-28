@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "samplecli config",
-  "description": "JSON schema for samplecli configuration",
+  "title": "srvxmplname config",
+  "description": "JSON schema for srvxmplname configuration",
   "type": "object",
   "properties": {
     "remoteConfigProvider": {
@@ -30,20 +30,19 @@
       "type": "string",
       "default": ""
     },
-    "enabled": {
-      "description": "Enable or disable the database synchronization",
-      "type": "boolean",
-      "default": true
-    },
-    "serverAddress": {
-      "description": "Internal HTTP address (ip:port) or just (:port)",
-      "type": "string",
-      "default": ":3499"
-    },
     "log": {
       "description": "Logging settings",
       "type": "object",
       "properties": {
+        "format": {
+          "description": "Defines the default log format",
+          "type": "string",
+          "default": "JSON",
+          "enum": [
+            "CONSOLE",
+            "JSON"
+          ]
+        },
         "level": {
           "description": "Defines the default log level",
           "type": "string",
@@ -82,33 +81,27 @@
         "address"
       ]
     },
-    "mysql": {
-      "description": "Mysql database settings",
-      "type": "object",
-      "properties": {
-        "sourceDSN": {
-          "description": "source database DSN in the format: username:password@protocol(address)/dbname?param=value",
-          "type": "string",
-          "default": ""
-        },
-        "targetDSN": {
-          "description": "target database DSN in the format: username:password@protocol(address)/dbname?param=value",
-          "type": "string",
-          "default": ""
-        }
-      },
-      "additionalProperties": false,
-      "required": [
-        "sourceDSN",
-        "targetDSN"
-      ]
+    "enabled": {
+      "description": "Enable or disable the service",
+      "type": "boolean",
+      "default": true
+    },
+    "monitoring_address": {
+      "description": "Monitoring HTTP address (ip:port) or just (:port)",
+      "type": "string",
+      "default": ":8082"
+    },
+    "server_address": {
+      "description": "Service HTTP address (ip:port) or just (:port)",
+      "type": "string",
+      "default": ":8081"
     }
   },
   "additionalProperties": false,
   "required": [
-    "enabled",
-    "serverAddress",
     "log",
-    "mysql"
+    "enabled",
+    "monitoring_address",
+    "server_address"
   ]
 }
