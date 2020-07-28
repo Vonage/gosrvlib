@@ -11,9 +11,11 @@ import (
 	"github.com/nexmoinc/gosrvlib/pkg/uid"
 )
 
-// NOTE: This is a sample Service interface. It is meant to demonstrate where the business logic of a service should
-// reside. Also, it adds the capability of mocking the HTTP Handler independently from the rest of the code
+// Service is the interface representing the business logic of the service
 type Service interface {
+	// NOTE: This is a sample Service interface. It is meant to demonstrate where the business logic of a service should
+	// reside. Also, it adds the capability of mocking the HTTP Handler independently from the rest of the code
+
 	// NOTE: Add service functions here
 }
 
@@ -29,6 +31,7 @@ type HTTPHandler struct {
 	service Service
 }
 
+// BindHTTP implements the function to bind the handler to a server
 func (h *HTTPHandler) BindHTTP(_ context.Context) []route.Route {
 	return []route.Route{
 		{
