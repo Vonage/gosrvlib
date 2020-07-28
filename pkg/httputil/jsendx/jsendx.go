@@ -78,18 +78,21 @@ func NewRouter(info *AppInfo) *httprouter.Router {
 	return r
 }
 
+// DefaultStatusHandler returns the server status in JSendX format
 func DefaultStatusHandler(info *AppInfo) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		Send(r.Context(), w, http.StatusOK, info, "OK")
 	}
 }
 
+// DefaultPingHandler returns a ping request in JSendX format
 func DefaultPingHandler(info *AppInfo) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		Send(r.Context(), w, http.StatusOK, info, "OK")
 	}
 }
 
+// DefaultRoutesIndexHandler returns the route index in JSendX format
 func DefaultRoutesIndexHandler(info *AppInfo) httpserver.RouteIndexHandlerFunc {
 	return func(routes []route.Route) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {

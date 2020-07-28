@@ -27,6 +27,7 @@ var (
 	defaultEnabledRoutes  = []defaultRoute{IndexRoute, MetricsRoute, PingRoute, PprofRoute, StatusRoute}
 )
 
+// RouteIndexHandlerFunc is a type alias for the route index function
 type RouteIndexHandlerFunc func(routes []route.Route) http.HandlerFunc
 
 func defaultConfig() *config {
