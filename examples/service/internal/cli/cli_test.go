@@ -41,7 +41,7 @@ func TestNew(t *testing.T) {
 			wantOutput: matchErrorOutput,
 		},
 		{
-			name:       "fails with invalid flag",
+			name:    "fails with invalid flag",
 			osArgs:  []string{AppName, "--logLevel", "INVALID"},
 			wantErr: true,
 		},
@@ -50,19 +50,19 @@ func TestNew(t *testing.T) {
 			osArgs:     []string{AppName, "-c"},
 			wantErr:    true,
 			wantOutput: matchErrorOutput,
-		},		{
+		}, {
 			name:       "fails with incomplete config dir (long)",
 			osArgs:     []string{AppName, "--configDir"},
 			wantErr:    true,
 			wantOutput: matchErrorOutput,
 		},
 		{
-			name:       "fails with incomplete valid config and invalid override of log format",
+			name:    "fails with incomplete valid config and invalid override of log format",
 			osArgs:  []string{AppName, "-c", "../../resources/test/etc/srvxmplname/", "--logFormat", "invalid"},
 			wantErr: true,
 		},
 		{
-			name:       "fails with incomplete valid config and invalid override of log level",
+			name:    "fails with incomplete valid config and invalid override of log level",
 			osArgs:  []string{AppName, "-c", "../../resources/test/etc/srvxmplname/", "--logLevel", "invalid"},
 			wantErr: true,
 		},
