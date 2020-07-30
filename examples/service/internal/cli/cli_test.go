@@ -23,41 +23,46 @@ func TestNew(t *testing.T) {
 			wantOutput: matchTestVersion,
 		},
 		{
-			name:       "",
+			name:       "fails with unknown flag",
 			osArgs:     []string{AppName, "--unknown"},
 			wantErr:    true,
 			wantOutput: matchErrorOutput,
 		},
 		{
-			name:       "",
+			name:       "fails with incomplete log format flag",
 			osArgs:     []string{AppName, "--logFormat"},
 			wantErr:    true,
 			wantOutput: matchErrorOutput,
 		},
 		{
-			name:       "",
+			name:       "fails with incomplete log level flag",
 			osArgs:     []string{AppName, "--logLevel"},
 			wantErr:    true,
 			wantOutput: matchErrorOutput,
 		},
 		{
-			name:    "",
+			name:       "fails with invalid flag",
 			osArgs:  []string{AppName, "--logLevel", "INVALID"},
 			wantErr: true,
 		},
 		{
-			name:       "",
+			name:       "fails with incomplete config dir (short)",
+			osArgs:     []string{AppName, "-c"},
+			wantErr:    true,
+			wantOutput: matchErrorOutput,
+		},		{
+			name:       "fails with incomplete config dir (long)",
 			osArgs:     []string{AppName, "--configDir"},
 			wantErr:    true,
 			wantOutput: matchErrorOutput,
 		},
 		{
-			name:    "",
+			name:       "fails with incomplete valid config and invalid override of log format",
 			osArgs:  []string{AppName, "-c", "../../resources/test/etc/srvxmplname/", "--logFormat", "invalid"},
 			wantErr: true,
 		},
 		{
-			name:    "",
+			name:       "fails with incomplete valid config and invalid override of log level",
 			osArgs:  []string{AppName, "-c", "../../resources/test/etc/srvxmplname/", "--logLevel", "invalid"},
 			wantErr: true,
 		},
@@ -79,7 +84,6 @@ func TestNew(t *testing.T) {
 			})
 
 			if tt.wantOutput != nil {
-				t.Log(out)
 				tt.wantOutput(t, out)
 			}
 
