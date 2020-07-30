@@ -9,51 +9,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// // FIXME: refactor
-//
-// func TestCliBadParamError(t *testing.T) {
-// 	for _, param := range badParamCases {
-// 		os.Args = []string{ProgramName, param}
-// 		cmd, err := cli()
-// 		if err != nil {
-// 			t.Errorf("Unexpected error: %v", err)
-// 			return
-// 		}
-// 		if cmdtype := reflect.TypeOf(cmd).String(); cmdtype != "*cobra.Command" {
-// 			t.Errorf("The expected type is '*cobra.Command', found: '%s'", cmdtype)
-// 			return
-// 		}
-//
-// 		old := os.Stderr // keep backup of the real stdout
-// 		defer func() { os.Stderr = old }()
-// 		os.Stderr = nil
-//
-// 		// execute the main function
-// 		if err := cmd.Execute(); err == nil {
-// 			t.Errorf("An error was expected")
-// 		}
-// 	}
-// }
-//
-// func TestWrongParamError(t *testing.T) {
-// 	os.Args = []string{ProgramName, "--unknown"}
-// 	_, err := cli()
-// 	if err == nil {
-// 		t.Errorf("An error was expected")
-// 		return
-// 	}
-// 	os.Args = []string{ProgramName, ""}
-// }
-
-// var badParamCases = []string{
-// 	"=",
-// 	"",
-// 	"=../resources/test/etc/mysql_err",
-// 	"--configDir=../resources/test/etc/db_err",
-// 	"--configDir=../resources/test/etc/tls_err",
-// }
-//
-
 func TestNew(t *testing.T) {
 	tests := []struct {
 		name       string
