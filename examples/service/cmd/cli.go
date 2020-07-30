@@ -140,24 +140,23 @@ func bind(cfg *appConfig, appInfo *jsendx.AppInfo) bootstrap.BindFunc {
 				httpserver.WithServerAddr(cfg.MonitoringAddress),
 			}...)
 			if err := httpserver.Start(ctx, httpserver.NopBinder(), httpMonitoringOpts...); err != nil {
-				l.Fatal("error starting monitoring HTTP server", zap.Error(err))
+				return fmt.Errorf("error starting monitoring HTTP server: %w", err)
 			}
 		}
 
-		httpServiceOpts := []httpserver.Option{
+		httpServiceOpts := append(defaultServerOpts, []httpserver.Option{
 			httpserver.WithServerAddr(cfg.ServerAddress),
-		}
+		}...)
 
 		// Disable default routes if we are starting the monitoring routes on a separate server instance
 		if cfg.MonitoringAddress != cfg.ServerAddress {
-			httpServiceOpts = append(defaultServerOpts, httpServiceOpts...)
 			httpServiceOpts = append(httpServiceOpts, []httpserver.Option{
 				httpserver.WithDisableDefaultRoutes(),
 			}...)
 		}
 
 		if err := httpserver.Start(ctx, hh, httpServiceOpts...); err != nil {
-			l.Fatal("error starting service HTTP server", zap.Error(err))
+			return fmt.Errorf("error starting service HTTP server: %w", err)
 		}
 
 		return nil
