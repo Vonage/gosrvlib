@@ -7,14 +7,14 @@ import (
 )
 
 var (
-	Version = "0.0.0"
-	Release = "0"
+	ProgramVersion = "0.0.0"
+	ProgramRelease = "0"
 )
 
 func main() {
-	_, _ = logging.NewDefaultLogger(cli.AppName, Version, Release, "json", "debug")
+	_, _ = logging.NewDefaultLogger(cli.AppName, ProgramVersion, ProgramRelease, "json", "debug")
 
-	rootCmd, err := cli.New(Version, Release)
+	rootCmd, err := cli.New(ProgramVersion, ProgramRelease)
 	if err != nil {
 		zap.L().Fatal("UNABLE TO START THE PROGRAM", zap.Error(err))
 		return
