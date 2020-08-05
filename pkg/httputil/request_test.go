@@ -39,11 +39,13 @@ func TestPathParam(t *testing.T) {
 	pathID := "id-12345"
 
 	rr := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/resource/"+pathID, nil)
+	req, err := http.NewRequest("GET", "/resource/"+pathID, nil)
+	require.NoError(t, err)
 
 	r.ServeHTTP(rr, req)
 
-	body, _ := ioutil.ReadAll(rr.Body)
+	body, err := ioutil.ReadAll(rr.Body)
+	require.NoError(t, err)
 
 	require.Equal(t, http.StatusOK, rr.Code)
 	require.Equal(t, "text/plain; charset=utf-8", rr.Header().Get("Content-Type"))

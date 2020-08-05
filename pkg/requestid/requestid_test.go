@@ -46,12 +46,15 @@ func TestFromHTTPRequest(t *testing.T) {
 	t.Parallel()
 
 	// header not set should return default
-	r1, _ := http.NewRequest(http.MethodGet, "/", nil)
+	r1, err := http.NewRequest(http.MethodGet, "/", nil)
+	require.NoError(t, err)
+
 	v1 := FromHTTPRequest(r1, "default-123456")
 	require.Equal(t, "default-123456", v1)
 
 	// header set should return actual value
-	r2, _ := http.NewRequest(http.MethodGet, "/", nil)
+	r2, err := http.NewRequest(http.MethodGet, "/", nil)
+	require.NoError(t, err)
 	r2.Header.Add(headerRequestID, "reqid-1234565789")
 
 	v2 := FromHTTPRequest(r2, "default-123456")
