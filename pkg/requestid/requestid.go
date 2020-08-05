@@ -21,10 +21,10 @@ func FromContext(ctx context.Context, defaultValue string) string {
 	return defaultValue
 }
 
-// WithRequestID builds a new context with the request ID to the given parent context
+// WithRequestID builds a new context with the request ID to the given parent context.
+// If the context already contains a request ID, it will not be overridden
 func WithRequestID(ctx context.Context, id string) context.Context {
 	if _, ok := ctx.Value(ctxKey{}).(string); ok {
-		// Do not override if a value exists
 		return ctx
 	}
 	return context.WithValue(ctx, ctxKey{}, id)
