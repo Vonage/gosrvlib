@@ -9,10 +9,10 @@ import (
 )
 
 // CaptureOutput hijacks and captures all log, stderr, stdout for testing
-func CaptureOutput(fn func()) string {
+func CaptureOutput(fn func()) (string, error) {
 	reader, writer, err := os.Pipe()
 	if err != nil {
-		panic(err)
+		return "", err
 	}
 	stdout := os.Stdout
 	stderr := os.Stderr
@@ -37,5 +37,5 @@ func CaptureOutput(fn func()) string {
 	wg.Wait()
 	fn()
 	_ = writer.Close()
-	return <-out
+	return <-out, nil
 }
