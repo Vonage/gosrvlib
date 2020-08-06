@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-// CaptureOutput hijacks and captures all log, stderr, stdout for testing
+// CaptureOutput hijacks and captures stderr and stdout for testing the given function
 func CaptureOutput(t *testing.T, fn func()) string {
 	reader, writer, err := os.Pipe()
 	if err != nil {
@@ -29,7 +29,6 @@ func CaptureOutput(t *testing.T, fn func()) string {
 	out := make(chan string)
 	wg := new(sync.WaitGroup)
 	wg.Add(1)
-
 	go func() {
 		var buf bytes.Buffer
 		wg.Done()
@@ -41,7 +40,7 @@ func CaptureOutput(t *testing.T, fn func()) string {
 	}()
 	wg.Wait()
 
-	fn()
+	fn() // call the given function
 
 	if err := writer.Close(); err != nil {
 		t.Errorf("Unexpected error (writer.Close): %v", err)
