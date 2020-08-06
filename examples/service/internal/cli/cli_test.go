@@ -79,10 +79,9 @@ func TestNew(t *testing.T) {
 
 			// execute the main function
 			var err error
-			out, captErr := testutil.CaptureOutput(func() {
+			out := testutil.CaptureOutput(t, func() {
 				err = cmd.Execute()
 			})
-			require.NoError(t, captErr)
 
 			if tt.wantOutput != nil {
 				tt.wantOutput(t, out)

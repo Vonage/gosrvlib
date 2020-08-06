@@ -6,13 +6,14 @@ import (
 	"log"
 	"os"
 	"sync"
+	"testing"
 )
 
 // CaptureOutput hijacks and captures all log, stderr, stdout for testing
-func CaptureOutput(fn func()) (string, error) {
+func CaptureOutput(t *testing.T, fn func()) string {
 	reader, writer, err := os.Pipe()
 	if err != nil {
-		return "", err
+		t.Errorf("Unexpected error (os.Pipe): %v", err)
 	}
 	stdout := os.Stdout
 	stderr := os.Stderr
@@ -28,14 +29,22 @@ func CaptureOutput(fn func()) (string, error) {
 	out := make(chan string)
 	wg := new(sync.WaitGroup)
 	wg.Add(1)
+
 	go func() {
 		var buf bytes.Buffer
 		wg.Done()
-		_, _ = io.Copy(&buf, reader)
+		_, err := io.Copy(&buf, reader)
+		if err != nil {
+			t.Errorf("Unexpected error (io.Copy): %v", err)
+		}
 		out <- buf.String()
 	}()
 	wg.Wait()
+
 	fn()
-	_ = writer.Close()
-	return <-out, nil
+
+	if err := writer.Close(); err != nil {
+		t.Errorf("Unexpected error (writer.Close): %v", err)
+	}
+	return <-out
 }
