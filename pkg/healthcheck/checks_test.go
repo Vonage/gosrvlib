@@ -1,7 +1,6 @@
 package healthcheck
 
 import (
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -19,7 +18,6 @@ func TestCheckHttpStatus(t *testing.T) {
 		handlerDelay      time.Duration
 		handlerStatusCode int
 		checkMethod       HTTPCheckMethod
-		checkPath         string
 		checkTimeout      time.Duration
 		checkWantStatus   int
 		wantErr           bool
@@ -93,7 +91,7 @@ func TestCheckHttpStatus(t *testing.T) {
 			ts := httptest.NewServer(mux)
 			defer ts.Close()
 
-			err := CheckHTTPStatus(tt.checkMethod, fmt.Sprintf("%s%s", ts.URL, tt.checkPath), tt.checkWantStatus, tt.checkTimeout)
+			err := CheckHTTPStatus(tt.checkMethod, ts.URL, tt.checkWantStatus, tt.checkTimeout)
 			t.Logf("check error: %v", err)
 			if tt.wantErr {
 				require.Error(t, err, "CheckHTTPStatus() error = %v, wantErr %v", err, tt.wantErr)
