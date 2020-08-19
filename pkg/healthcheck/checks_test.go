@@ -1,12 +1,14 @@
 package healthcheck
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 
 	"github.com/nexmoinc/gosrvlib/pkg/httputil"
+	"github.com/nexmoinc/gosrvlib/pkg/testutil"
 	"github.com/stretchr/testify/require"
 )
 
@@ -17,33 +19,40 @@ func TestCheckHttpStatus(t *testing.T) {
 		handlerMethod     string
 		handlerDelay      time.Duration
 		handlerStatusCode int
-		checkMethod       HTTPCheckMethod
+		checkContext      context.Context
+		checkMethod       string
 		checkTimeout      time.Duration
 		checkWantStatus   int
 		wantErr           bool
 	}{
 		{
-			name:        "fails with unsupported healthcheck method",
-			checkMethod: HTTPCheckMethod("INVALID"),
-			wantErr:     true,
+			name:              "fails with invalid request method",
+			checkContext:      nil,
+			checkMethod:       "INVALID",
+			handlerMethod:     http.MethodGet,
+			handlerStatusCode: http.StatusOK,
+			wantErr:           true,
 		},
 		{
 			name:              "fails with wrong check method HEAD",
-			checkMethod:       MethodHead,
+			checkContext:      testutil.Context(),
+			checkMethod:       http.MethodHead,
 			handlerMethod:     http.MethodGet,
 			handlerStatusCode: http.StatusOK,
 			wantErr:           true,
 		},
 		{
 			name:              "fails with wrong check method GET",
-			checkMethod:       MethodGet,
+			checkContext:      testutil.Context(),
+			checkMethod:       http.MethodGet,
 			handlerMethod:     http.MethodHead,
 			handlerStatusCode: http.StatusOK,
 			wantErr:           true,
 		},
 		{
 			name:              "fails with handler timeout",
-			checkMethod:       MethodGet,
+			checkContext:      testutil.Context(),
+			checkMethod:       http.MethodGet,
 			checkTimeout:      1 * time.Second,
 			handlerMethod:     http.MethodGet,
 			handlerStatusCode: http.StatusOK,
@@ -52,7 +61,8 @@ func TestCheckHttpStatus(t *testing.T) {
 		},
 		{
 			name:              "succeed HEAD with 200 response",
-			checkMethod:       MethodHead,
+			checkContext:      testutil.Context(),
+			checkMethod:       http.MethodHead,
 			checkTimeout:      1 * time.Second,
 			checkWantStatus:   http.StatusOK,
 			handlerMethod:     http.MethodHead,
@@ -61,7 +71,8 @@ func TestCheckHttpStatus(t *testing.T) {
 		},
 		{
 			name:              "succeed GET with 200 response",
-			checkMethod:       MethodGet,
+			checkContext:      testutil.Context(),
+			checkMethod:       http.MethodGet,
 			checkTimeout:      1 * time.Second,
 			checkWantStatus:   http.StatusOK,
 			handlerMethod:     http.MethodGet,
@@ -91,7 +102,7 @@ func TestCheckHttpStatus(t *testing.T) {
 			ts := httptest.NewServer(mux)
 			defer ts.Close()
 
-			err := CheckHTTPStatus(tt.checkMethod, ts.URL, tt.checkWantStatus, tt.checkTimeout)
+			err := CheckHTTPStatus(tt.checkContext, tt.checkMethod, ts.URL, tt.checkWantStatus, tt.checkTimeout)
 			t.Logf("check error: %v", err)
 			if tt.wantErr {
 				require.Error(t, err, "CheckHTTPStatus() error = %v, wantErr %v", err, tt.wantErr)

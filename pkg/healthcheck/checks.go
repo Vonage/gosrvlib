@@ -1,44 +1,31 @@
 package healthcheck
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"time"
 )
 
-// HTTPCheckMethod represents the list of allowed HTTP verbs to perform an healthcheck
-type HTTPCheckMethod string
-
-const (
-	// MethodGet is equivalent to HTTP GET
-	MethodGet HTTPCheckMethod = http.MethodGet
-
-	// MethodHead is equivalent to HTTP HEAD
-	MethodHead = http.MethodHead
-)
-
 // CheckHTTPStatus checks if the given HTTP request responds with the expected status code
-func CheckHTTPStatus(method HTTPCheckMethod, url string, wantStatusCode int, timeout time.Duration) error {
+func CheckHTTPStatus(ctx context.Context, method string, url string, wantStatusCode int, timeout time.Duration) error {
 	httpClient := http.Client{
 		Timeout: timeout,
 	}
 
-	var resp *http.Response
-	var err error
-	switch method {
-	case MethodHead:
-		resp, err = httpClient.Head(url)
-	case MethodGet:
-		resp, err = httpClient.Get(url)
-	default:
-		return fmt.Errorf("unsupported http healthcheck method %v", method)
+	req, err := http.NewRequestWithContext(ctx, method, url, nil)
+	if err != nil {
+		return fmt.Errorf("build request: %v", err)
 	}
 
-	if err == nil {
-		defer func() { _ = resp.Body.Close() }()
-		if resp.StatusCode != wantStatusCode {
-			return fmt.Errorf("unexpected http healthcheck status code: %d", resp.StatusCode)
-		}
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("healthcheck request: %v", err)
 	}
-	return err
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != wantStatusCode {
+		return fmt.Errorf("unexpected healthcheck status code: %d", resp.StatusCode)
+	}
+	return nil
 }
