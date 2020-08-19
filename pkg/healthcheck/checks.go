@@ -10,10 +10,10 @@ import (
 type HTTPCheckMethod string
 
 const (
-	// MethodGet represents is equivalent to HTTP GET
+	// MethodGet is equivalent to HTTP GET
 	MethodGet HTTPCheckMethod = http.MethodGet
 
-	// MethodHead represents is equivalent to HTTP HEAD
+	// MethodHead is equivalent to HTTP HEAD
 	MethodHead = http.MethodHead
 )
 
