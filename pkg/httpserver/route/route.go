@@ -14,5 +14,5 @@ type Route struct {
 
 // Index contains the list of routes attached to the current service
 type Index struct {
-	Routes []Route `json:"routes"` // HTTP method
+	Routes []Route `json:"routes"`
 }
