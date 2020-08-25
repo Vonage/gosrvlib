@@ -28,8 +28,8 @@ func Handler(checks HealthCheckerMap, appInfo *jsendx.AppInfo) http.HandlerFunc 
 		wg.Add(checkCount)
 
 		type resultWrap struct {
-			id     string
-			result Result
+			id  string
+			err error
 		}
 		resCh := make(chan resultWrap, checkCount)
 		defer close(resCh)
@@ -38,43 +38,46 @@ func Handler(checks HealthCheckerMap, appInfo *jsendx.AppInfo) http.HandlerFunc 
 			go func(id string, hc HealthChecker) {
 				defer wg.Done()
 				resCh <- resultWrap{
-					id:     id,
-					result: runCheckWithTimeout(r.Context(), hc, checkTimeout),
+					id:  id,
+					err: runCheckWithTimeout(r.Context(), hc, checkTimeout),
 				}
 			}(id, hc)
 		}
 
 		wg.Wait()
 
-		data := make(map[string]Result, checkCount)
+		status := http.StatusOK
+		data := make(map[string]string, checkCount)
 		for i := 0; i < checkCount; i++ {
 			r := <-resCh
-			data[r.id] = r.result
+			if r.err != nil {
+				status = http.StatusServiceUnavailable
+				data[r.id] = r.err.Error()
+				continue
+			}
+			data[r.id] = "OK"
 		}
 
 		if appInfo != nil {
-			jsendx.Send(r.Context(), w, http.StatusOK, appInfo, data)
+			jsendx.Send(r.Context(), w, status, appInfo, data)
 			return
 		}
-		httputil.SendJSON(r.Context(), w, http.StatusOK, data)
+		httputil.SendJSON(r.Context(), w, status, data)
 	}
 }
 
-func runCheckWithTimeout(ctx context.Context, c HealthChecker, timeout time.Duration) Result {
+func runCheckWithTimeout(ctx context.Context, c HealthChecker, timeout time.Duration) error {
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	resCh := make(chan Result)
+	resCh := make(chan error)
 	go func() {
 		resCh <- c.HealthCheck(ctx)
 	}()
 
 	select {
 	case <-ctx.Done():
-		return Result{
-			Status: Err,
-			Error:  ctx.Err(),
-		}
+		return ctx.Err()
 	case r := <-resCh:
 		return r
 	}
