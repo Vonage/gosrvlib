@@ -61,17 +61,13 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	status := http.StatusOK
 	data := make(map[string]string, h.checksCount)
 
-	for r := range resCh {
+	for len(resCh) > 0 {
+		r := <-resCh
 		data[r.id] = "OK"
 
 		if r.err != nil {
 			status = http.StatusServiceUnavailable
 			data[r.id] = r.err.Error()
-		}
-
-		// break out once all results have been processed
-		if len(resCh) == 0 {
-			break
 		}
 	}
 
