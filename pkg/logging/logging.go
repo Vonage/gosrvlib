@@ -101,7 +101,7 @@ func NewLogger(opts ...Option) (*zap.Logger, error) {
 
 	l, err := zapCfg.Build(zap.Hooks(loggingMetricsHook))
 	if err != nil {
-		return nil, fmt.Errorf("error building root logger")
+		return nil, fmt.Errorf("error building root logger: %w", err)
 	}
 
 	fields := cfg.fields
