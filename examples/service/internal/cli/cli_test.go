@@ -68,7 +68,7 @@ func TestNew(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name:    "attempts bootstrap with valid config",
+			name:    "attempts bootstrap with invalid configuration",
 			osArgs:  []string{AppName, "-c", "../../resources/test/etc/numapi/"},
 			wantErr: true,
 		},
