@@ -90,12 +90,15 @@ type remoteSourceConfig struct {
 }
 
 var (
-	localViper  Viper = viper.New()
-	remoteViper Viper = viper.New()
+	localViper  Viper
+	remoteViper Viper
 )
 
 // Load populates the configuration parameters
 func Load(cmdName, configDir, envPrefix string, cfg Configuration) error {
+	localViper = viper.New()
+	remoteViper = viper.New()
+
 	remoteSourceCfg, err := loadLocalConfig(localViper, cmdName, configDir, envPrefix, cfg)
 	if err != nil {
 		return fmt.Errorf("failed loading local configuration: %w", err)

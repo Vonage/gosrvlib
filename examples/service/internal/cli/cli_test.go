@@ -58,18 +58,18 @@ func TestNew(t *testing.T) {
 			wantOutput: matchErrorOutput,
 		},
 		{
-			name:    "fails with incomplete valid config and invalid override of log format",
+			name:    "fails with valid config and invalid override of log format",
 			osArgs:  []string{AppName, "-c", "../../resources/test/etc/srvxmplname/", "--logFormat", "invalid"},
 			wantErr: true,
 		},
 		{
-			name:    "fails with incomplete valid config and invalid override of log level",
+			name:    "fails with valid config and invalid override of log level",
 			osArgs:  []string{AppName, "-c", "../../resources/test/etc/srvxmplname/", "--logLevel", "invalid"},
 			wantErr: true,
 		},
 		{
 			name:    "attempts bootstrap with invalid configuration",
-			osArgs:  []string{AppName, "-c", "../../resources/test/etc/numapi/"},
+			osArgs:  []string{AppName, "-c", "../../resources/test/etc/invalid/"},
 			wantErr: true,
 		},
 	}
