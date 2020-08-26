@@ -41,13 +41,13 @@ func TestConnect(t *testing.T) {
 		},
 		{
 			name:       "fail to open DB connection",
-			connectDSN: "testsql://user:pass@tcp(127.0.0.1:1234)/testdb",
+			connectDSN: "testsql://user:pass@tcp(db.host.invalid:1234)/testdb",
 			connectErr: fmt.Errorf("db open error"),
 			wantErr:    true,
 		},
 		{
 			name:       "success with close error",
-			connectDSN: "testsql://user:pass@tcp(127.0.0.1:1234)/testdb",
+			connectDSN: "testsql://user:pass@tcp(db.host.invalid:1234)/testdb",
 			configMockFunc: func(mock sqlmock.Sqlmock) {
 				mock.ExpectClose().WillReturnError(fmt.Errorf("close error"))
 			},
@@ -55,7 +55,7 @@ func TestConnect(t *testing.T) {
 		},
 		{
 			name:       "success",
-			connectDSN: "testsql://user:pass@tcp(127.0.0.1:1234)/testdb",
+			connectDSN: "testsql://user:pass@tcp(db.host.invalid:1234)/testdb",
 			configMockFunc: func(mock sqlmock.Sqlmock) {
 				mock.ExpectClose()
 			},
@@ -113,7 +113,7 @@ func TestSQLConn_DB(t *testing.T) {
 	defer cancel()
 
 	mockConnectFunc := newMockConnectFunc(db, nil)
-	conn, err := Connect(ctx, "testsql://user:pass@tcp(127.0.0.1:1234)/testdb", WithConnectFunc(mockConnectFunc))
+	conn, err := Connect(ctx, "testsql://user:pass@tcp(db.host.invalid:1234)/testdb", WithConnectFunc(mockConnectFunc))
 	require.NoError(t, err)
 	require.NotNil(t, conn)
 	require.Equal(t, db, conn.DB())
@@ -172,7 +172,7 @@ func TestSQLConn_HealthCheck(t *testing.T) {
 			}
 			opts = append(opts, tt.configOpts...)
 
-			conn, err := Connect(ctx, "testsql://user:pass@tcp(127.0.0.1:1234)/testdb", opts...)
+			conn, err := Connect(ctx, "testsql://user:pass@tcp(db.host.invalid:1234)/testdb", opts...)
 			require.NoError(t, err)
 			require.NotNil(t, conn)
 			require.Equal(t, db, conn.DB())
