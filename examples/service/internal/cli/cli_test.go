@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// nolint:cogognit
+// nolint:gocognit
 func TestNew(t *testing.T) {
 	tests := []struct {
 		name       string
