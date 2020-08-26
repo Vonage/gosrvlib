@@ -133,6 +133,8 @@ func connectWithBackoff(ctx context.Context, cfg *config) (*sql.DB, error) {
 	return db, nil
 }
 
+// parseConnectionURL attempts to extract the driver/dsn pair from a string in the format <DRIVER>://<DSN>
+// if only the DSN part is set, the driver will need to be specified via a configuration option
 func parseConnectionURL(url string) (string, string, error) {
 	if url == "" {
 		return "", "", nil
