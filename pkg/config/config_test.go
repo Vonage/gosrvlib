@@ -1066,6 +1066,11 @@ func TestLoad(t *testing.T) {
 }
 
 func TestReset(t *testing.T) {
-	// Not a real test, just to maintain high coverage
+	oldLocalViper := localViper
+	oldRemoteViper := remoteViper
+
 	Reset()
+
+	require.NotEqual(t, oldLocalViper, localViper)
+	require.NotEqual(t, oldRemoteViper, remoteViper)
 }
