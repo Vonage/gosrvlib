@@ -90,15 +90,18 @@ type remoteSourceConfig struct {
 }
 
 var (
-	localViper  Viper
-	remoteViper Viper
+	localViper  Viper = viper.New()
+	remoteViper Viper = viper.New()
 )
+
+// Reset resets the package global instances of Viper. Only used for tests calling Load multiple times
+func Reset() {
+	localViper = viper.New()
+	remoteViper = viper.New()
+}
 
 // Load populates the configuration parameters
 func Load(cmdName, configDir, envPrefix string, cfg Configuration) error {
-	localViper = viper.New()
-	remoteViper = viper.New()
-
 	remoteSourceCfg, err := loadLocalConfig(localViper, cmdName, configDir, envPrefix, cfg)
 	if err != nil {
 		return fmt.Errorf("failed loading local configuration: %w", err)
