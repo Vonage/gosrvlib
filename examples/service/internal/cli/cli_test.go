@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// nolint:cogognit
 func TestNew(t *testing.T) {
 	tests := []struct {
 		name       string
@@ -66,25 +67,32 @@ func TestNew(t *testing.T) {
 			osArgs:  []string{AppName, "-c", "../../resources/test/etc/srvxmplname/", "--logLevel", "invalid"},
 			wantErr: true,
 		},
+		{
+			name:    "attempts bootstrap with valid config",
+			osArgs:  []string{AppName, "-c", "../../resources/test/etc/numapi/"},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			cmd, _ := New("0.0.0-test", "0")
-			require.NotNil(t, cmd)
-
 			oldOsArgs := os.Args
 			defer func() { os.Args = oldOsArgs }()
 			os.Args = tt.osArgs
 
 			// execute the main function
-			var err error
-			out := testutil.CaptureOutput(t, func() {
-				err = cmd.Execute()
-			})
+			var out string
+			cmd, err := New("0.0.0-test", "0")
+			if err == nil {
+				require.NotNil(t, cmd)
 
-			if tt.wantOutput != nil {
-				tt.wantOutput(t, out)
+				out = testutil.CaptureOutput(t, func() {
+					err = cmd.Execute()
+				})
+
+				if tt.wantOutput != nil {
+					tt.wantOutput(t, out)
+				}
 			}
 
 			if (err != nil) != tt.wantErr {

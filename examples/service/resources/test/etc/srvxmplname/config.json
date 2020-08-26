@@ -10,6 +10,6 @@
     "address": ""
   },
   "enabled": true,
-  "monitoring_address": ":8082",
+  "monitoring_address": ":-8082",
   "server_address": ":8081"
 }
