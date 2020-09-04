@@ -37,11 +37,11 @@ func TestSend(t *testing.T) {
 	var okResp Response
 	_ = json.Unmarshal(body, &okResp)
 
-	require.Equal(t, "test", okResp.Program, "uncexpected response: %s", body)
-	require.Equal(t, "1.2.3", okResp.Version, "uncexpected response: %s", body)
-	require.Equal(t, "12345", okResp.Release, "uncexpected response: %s", body)
-	require.Equal(t, "OK", okResp.Message, "uncexpected response: %s", body)
-	require.Equal(t, "hello test", okResp.Data, "uncexpected response: %s", body)
+	require.Equal(t, "test", okResp.Program, "unexpected response: %s", body)
+	require.Equal(t, "1.2.3", okResp.Version, "unexpected response: %s", body)
+	require.Equal(t, "12345", okResp.Release, "unexpected response: %s", body)
+	require.Equal(t, "OK", okResp.Message, "unexpected response: %s", body)
+	require.Equal(t, "hello test", okResp.Data, "unexpected response: %s", body)
 
 	// add coverage for error handling
 	mockWriter := mocks.NewMockTestHTTPResponseWriter(gomock.NewController(t))
