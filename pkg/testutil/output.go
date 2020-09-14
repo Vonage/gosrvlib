@@ -8,13 +8,13 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // CaptureOutput hijacks and captures stderr and stdout for testing the given function
 func CaptureOutput(t *testing.T, fn func()) string {
 	reader, writer, err := os.Pipe()
-	assert.Nil(t, err, "Unexpected error (os.Pipe)")
+	require.Nil(t, err, "Unexpected error (os.Pipe)")
 	stdout := os.Stdout
 	stderr := os.Stderr
 	defer func() {
@@ -33,7 +33,7 @@ func CaptureOutput(t *testing.T, fn func()) string {
 		var buf bytes.Buffer
 		wg.Done()
 		_, err := io.Copy(&buf, reader)
-		assert.Nil(t, err, "Unexpected error (io.Copy)")
+		require.Nil(t, err, "Unexpected error (io.Copy)")
 		out <- buf.String()
 	}()
 	wg.Wait()
@@ -41,6 +41,6 @@ func CaptureOutput(t *testing.T, fn func()) string {
 	fn() // call the given function
 
 	err = writer.Close()
-	assert.Nil(t, err, "Unexpected error (writer.Close)")
+	require.Nil(t, err, "Unexpected error (writer.Close)")
 	return <-out
 }

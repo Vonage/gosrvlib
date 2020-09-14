@@ -8,7 +8,7 @@ import (
 	"github.com/nexmoinc/gosrvlib-sample-service/internal/cli"
 	"github.com/nexmoinc/gosrvlib/pkg/logging"
 	"github.com/nexmoinc/gosrvlib/pkg/testutil"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 )
 
@@ -31,7 +31,7 @@ func TestMainCliError(t *testing.T) {
 	defer func() { logging.LogFatal = oldLogFatal }()
 	logging.LogFatal = zap.L().Panic
 	os.Args = []string{cli.AppName, "--INVALID"}
-	assert.Panics(t, main, "Expected to fail because of invalid argument name")
+	require.Panics(t, main, "Expected to fail because of invalid argument name")
 }
 
 func TestMainCliExecuteError(t *testing.T) {
@@ -39,5 +39,5 @@ func TestMainCliExecuteError(t *testing.T) {
 	defer func() { logging.LogFatal = oldLogFatal }()
 	logging.LogFatal = zap.L().Panic
 	os.Args = []string{cli.AppName, "--logLevel=INVALID"}
-	assert.Panics(t, main, "Expected to fail because of invalid argument value")
+	require.Panics(t, main, "Expected to fail because of invalid argument value")
 }
