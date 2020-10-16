@@ -1,4 +1,4 @@
-# gosrvlib
+# gosrvlib golang library
 
 *Go Service Library*
 
