@@ -50,6 +50,16 @@ func WithPingHandlerFunc(handler http.HandlerFunc) Option {
 	}
 }
 
+// WithBasicPingHandler replaces the default ping handler function with a basic one which just returns status 200
+func WithBasicPingHandler() Option {
+	return func(cfg *config) error {
+		cfg.pingHandlerFunc = func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusOK)
+		}
+		return nil
+	}
+}
+
 // WithPProfHandlerFunc replaces the default pprof handler function
 func WithPProfHandlerFunc(handler http.HandlerFunc) Option {
 	return func(cfg *config) error {

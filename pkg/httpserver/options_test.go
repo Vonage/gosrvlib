@@ -4,6 +4,7 @@ package httpserver
 
 import (
 	"net/http"
+	"net/http/httptest"
 	"reflect"
 	"testing"
 	"time"
@@ -74,6 +75,19 @@ func TestWithPingHandlerFunc(t *testing.T) {
 	err := WithPingHandlerFunc(v)(cfg)
 	require.NoError(t, err)
 	require.Equal(t, reflect.ValueOf(v).Pointer(), reflect.ValueOf(cfg.pingHandlerFunc).Pointer())
+}
+
+func TestWithBasicPingHandler(t *testing.T) {
+	t.Parallel()
+
+	cfg := &config{}
+	err := WithBasicPingHandler()(cfg)
+	require.NoError(t, err)
+
+	w := httptest.NewRecorder()
+	cfg.pingHandlerFunc.ServeHTTP(w, nil)
+
+	require.Equal(t, w.Code, http.StatusOK)
 }
 
 func TestWithPProfHandlerFunc(t *testing.T) {
