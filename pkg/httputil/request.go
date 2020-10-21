@@ -25,6 +25,5 @@ func PathParam(r *http.Request, name string) string {
 
 // AddBasicAuth decorates the provided http.Request with Basic Authorization
 func AddBasicAuth(apiKey, apiSecret string, r *http.Request) {
-	auth := apiKey + ":" + apiSecret
-	r.Header.Add("Authorization", "Basic "+base64.StdEncoding.EncodeToString([]byte(auth)))
+	r.Header.Add("Authorization", "Basic "+base64.StdEncoding.EncodeToString([]byte(apiKey+":"+apiSecret)))
 }
