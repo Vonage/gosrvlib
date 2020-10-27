@@ -10,22 +10,26 @@
 //
 // To get the maximum flexibility, the different configuration entry points can be coordinated in the following sequence (1 has the lowest priority and 5 the maximum):
 //
-//  1. In the “myprog” program the configuration parameters are defined as a data structure that can be easily mapped to and from a JSON (or YAML) object, and they are initialized with constant default values;
-//  2. The program attempts to load the local “config.json” configuration file (or what is specified by defaultConfigName and defaultConfigType) and, as soon one is found, overwrites the values previously set. The configuration file is searched in the following ordered directories:
-//        ../resources/test/etc/myprog/
-//        ./
-//        ~/.myprog/
-//        /etc/myprog/
-//  3. The program attempts to load the environmental variables that define the remote configuration system and, if found, overwrites the correspondent configuration parameters:
-//         MYPROG_REMOTECONFIGPROVIDER → remoteConfigProvider
-//         MYPROG_REMOTECONFIGENDPOINT → remoteConfigEndpoint
-//         MYPROG_REMOTECONFIGPATH → remoteConfigPath
-//         MYPROG_REMOTECONFIGSECRETKEYRING → remoteConfigSecretKeyring
-//         MYPROG_REMOTECONFIGDATA → remoteConfigData
-//  4. If the remoteConfigProvider parameter is not empty, the program attempts to load the configuration data from the specified source.
-//     This can be any remote source supported by the Viper library (e.g. Consul, ETCD) or alternatively from the MYPROG_REMOTECONFIGDATA environment variable as base64 encoded JSON if MYPROG_REMOTECONFIGPROVIDER is set to "envar".
-//  5. Any specified command line property overwrites the correspondent configuration parameter.
-//  6. The configuration parameters are validated via the Validate() function.
+// 1. In the “myprog” program the configuration parameters are defined as a data structure that can be easily mapped to and from a JSON (or YAML) object, and they are initialized with constant default values;
+// 
+// 2. The program attempts to load the local “config.json” configuration file (or what is specified by defaultConfigName and defaultConfigType) and, as soon one is found, overwrites the values previously set. The configuration file is searched in the following ordered directories:
+//    ../resources/test/etc/myprog/
+//    ./
+//    ~/.myprog/
+//    /etc/myprog/
+//
+// 3. The program attempts to load the environmental variables that define the remote configuration system and, if found, overwrites the correspondent configuration parameters:
+//    MYPROG_REMOTECONFIGPROVIDER → remoteConfigProvider
+//    MYPROG_REMOTECONFIGENDPOINT → remoteConfigEndpoint
+//    MYPROG_REMOTECONFIGPATH → remoteConfigPath
+//    MYPROG_REMOTECONFIGSECRETKEYRING → remoteConfigSecretKeyring
+//    MYPROG_REMOTECONFIGDATA → remoteConfigData
+//
+// 4. If the remoteConfigProvider parameter is not empty, the program attempts to load the configuration data from the specified source. This can be any remote source supported by the Viper library (e.g. Consul, ETCD) or alternatively from the MYPROG_REMOTECONFIGDATA environment variable as base64 encoded JSON if MYPROG_REMOTECONFIGPROVIDER is set to "envar".
+//
+// 5. Any specified command line property overwrites the correspondent configuration parameter.
+//
+// 6. The configuration parameters are validated via the Validate() function.
 //
 // An example can be found in examples/service/internal/cli/config.go
 package config
