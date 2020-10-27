@@ -1,4 +1,4 @@
-// Package sqlconn provides a simple way to manage a database connection
+// Package sqlconn provides a simple way to manage a SQL-based database connection.
 package sqlconn
 
 import (

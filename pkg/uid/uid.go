@@ -1,3 +1,4 @@
+// Package uid provides fast funtions to generate simple time-and-random-based unique identifiers.
 package uid
 
 import (
@@ -19,6 +20,7 @@ func InitRandSeed() error {
 }
 
 // NewID64 generates and return a new 64 bit unique ID based on time (high 32 bit) and a random number (low 32 bit)
+// NOTE: the time section starts the 1st of january of 10 year ago.
 func NewID64() string {
 	t := time.Now().UTC()
 	offset := time.Date(t.Year()-10, 1, 1, 0, 0, 0, 0, time.UTC).Unix()                      // [s] time starts 1st JAN 10 years ago
