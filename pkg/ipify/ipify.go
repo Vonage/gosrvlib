@@ -1,4 +1,5 @@
 // Package ipify allows to get the public IP address
+// Ref. https://www.ipify.org/
 package ipify
 
 import (
