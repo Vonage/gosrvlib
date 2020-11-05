@@ -19,6 +19,7 @@ const (
 	pingHandlerPath    = "/ping"
 	pprofHandlerPath   = "/pprof/*option"
 	statusHandlerPath  = "/status"
+	ipHandlerPath      = "/ip"
 )
 
 var (
@@ -35,12 +36,13 @@ func defaultConfig() *config {
 		metricsHandlerFunc:    defaultMetricsHandler,
 		pingHandlerFunc:       defaultPingHandler,
 		pprofHandlerFunc:      defaultPprofHandler,
+		statusHandlerFunc:     defaultStatusHandler,
+		ipHandlerFunc:         defaultIPHandler,
 		routeIndexHandlerFunc: defaultRouteIndexHandler,
 		serverAddr:            ":8080",
 		serverReadTimeout:     1 * time.Minute,
 		serverWriteTimeout:    1 * time.Minute,
 		shutdownTimeout:       30 * time.Second,
-		statusHandlerFunc:     defaultStatusHandler,
 		router:                defaultRouter(),
 	}
 }
@@ -50,13 +52,14 @@ type config struct {
 	metricsHandlerFunc    http.HandlerFunc
 	pingHandlerFunc       http.HandlerFunc
 	pprofHandlerFunc      http.HandlerFunc
+	statusHandlerFunc     http.HandlerFunc
+	ipHandlerFunc         http.HandlerFunc
 	routeIndexHandlerFunc RouteIndexHandlerFunc
 	router                Router
 	serverAddr            string
 	serverReadTimeout     time.Duration
 	serverWriteTimeout    time.Duration
 	shutdownTimeout       time.Duration
-	statusHandlerFunc     http.HandlerFunc
 	tlsConfig             *tls.Config
 }
 
@@ -96,6 +99,10 @@ func (c *config) validate() error {
 
 	if c.statusHandlerFunc == nil {
 		return fmt.Errorf("status handler is required")
+	}
+
+	if c.ipHandlerFunc == nil {
+		return fmt.Errorf("ip handler is required")
 	}
 
 	return nil

@@ -66,6 +66,14 @@ func WithStatusHandlerFunc(handler http.HandlerFunc) Option {
 	}
 }
 
+// WithIPHandlerFunc replaces the default ip handler function
+func WithIPHandlerFunc(handler http.HandlerFunc) Option {
+	return func(cfg *config) error {
+		cfg.ipHandlerFunc = handler
+		return nil
+	}
+}
+
 // WithRoutesIndexHandlerFunc replaces the index handler
 func WithRoutesIndexHandlerFunc(handler RouteIndexHandlerFunc) Option {
 	return func(cfg *config) error {

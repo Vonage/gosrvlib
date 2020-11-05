@@ -100,6 +100,18 @@ func TestWithStatusHandlerFunc(t *testing.T) {
 	require.Equal(t, reflect.ValueOf(v).Pointer(), reflect.ValueOf(cfg.statusHandlerFunc).Pointer())
 }
 
+func TestWithIPHandlerFunc(t *testing.T) {
+	t.Parallel()
+
+	v := func(_ http.ResponseWriter, _ *http.Request) {
+		// mock function
+	}
+	cfg := &config{}
+	err := WithIPHandlerFunc(v)(cfg)
+	require.NoError(t, err)
+	require.Equal(t, reflect.ValueOf(v).Pointer(), reflect.ValueOf(cfg.ipHandlerFunc).Pointer())
+}
+
 func TestWithRoutesIndexHandlerFunc(t *testing.T) {
 	t.Parallel()
 

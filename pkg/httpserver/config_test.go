@@ -13,10 +13,12 @@ func Test_defaultConfig(t *testing.T) {
 	require.NotNil(t, cfg)
 	require.NotNil(t, cfg.metricsHandlerFunc)
 	require.NotNil(t, cfg.pingHandlerFunc)
+	require.NotNil(t, cfg.pprofHandlerFunc)
+	require.NotNil(t, cfg.statusHandlerFunc)
+	require.NotNil(t, cfg.ipHandlerFunc)
 	require.NotNil(t, cfg.router)
 	require.NotEmpty(t, cfg.serverAddr)
 	require.NotEqual(t, 0, cfg.shutdownTimeout)
-	require.NotNil(t, cfg.statusHandlerFunc)
 }
 
 func Test_config_validate(t *testing.T) {
@@ -83,6 +85,14 @@ func Test_config_validate(t *testing.T) {
 			cfg: func() *config {
 				cfg := defaultConfig()
 				cfg.statusHandlerFunc = nil
+				return cfg
+			}(),
+			wantErr: true,
+		}, {
+			name: "fail with missing ip handler",
+			cfg: func() *config {
+				cfg := defaultConfig()
+				cfg.ipHandlerFunc = nil
 				return cfg
 			}(),
 			wantErr: true,

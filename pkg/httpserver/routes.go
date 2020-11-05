@@ -23,9 +23,12 @@ const (
 
 	// StatusRoute is the identifier to enable the status handler
 	StatusRoute defaultRoute = "status"
+
+	// IPRoute is the identifier to enable the ip handler
+	IPRoute defaultRoute = "ip"
 )
 
-var allDefaultRoutes = []defaultRoute{IndexRoute, MetricsRoute, PingRoute, PprofRoute, StatusRoute}
+var allDefaultRoutes = []defaultRoute{IndexRoute, MetricsRoute, PingRoute, PprofRoute, StatusRoute, IPRoute}
 
 func newDefaultRoutes(cfg *config) []route.Route {
 	routes := make([]route.Route, 0)
@@ -60,6 +63,13 @@ func newDefaultRoutes(cfg *config) []route.Route {
 				Path:        statusHandlerPath,
 				Handler:     cfg.statusHandlerFunc,
 				Description: "Check this service health status.",
+			})
+		case IPRoute:
+			routes = append(routes, route.Route{
+				Method:      http.MethodGet,
+				Path:        ipHandlerPath,
+				Handler:     cfg.ipHandlerFunc,
+				Description: "Returns the public IP address of this service instance.",
 			})
 		}
 	}

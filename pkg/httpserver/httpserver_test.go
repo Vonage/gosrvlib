@@ -192,7 +192,7 @@ func TestStart(t *testing.T) {
 				b.EXPECT().BindHTTP(gomock.Any()).Times(1)
 			},
 			setupRouter: func(r *mocks.MockRouter) {
-				r.EXPECT().Handler(gomock.Any(), gomock.Any(), gomock.Any()).Times(5)
+				r.EXPECT().Handler(gomock.Any(), gomock.Any(), gomock.Any()).Times(6)
 			},
 			wantErr: false,
 		},
@@ -235,7 +235,7 @@ YlAqGKDZ+A+l
 				b.EXPECT().BindHTTP(gomock.Any()).Times(1)
 			},
 			setupRouter: func(r *mocks.MockRouter) {
-				r.EXPECT().Handler(gomock.Any(), gomock.Any(), gomock.Any()).Times(5)
+				r.EXPECT().Handler(gomock.Any(), gomock.Any(), gomock.Any()).Times(6)
 			},
 			wantErr: false,
 		},

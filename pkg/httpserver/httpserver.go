@@ -12,6 +12,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"github.com/nexmoinc/gosrvlib/pkg/httpserver/route"
 	"github.com/nexmoinc/gosrvlib/pkg/httputil"
+	"github.com/nexmoinc/gosrvlib/pkg/ipify"
 	"github.com/nexmoinc/gosrvlib/pkg/logging"
 	"github.com/nexmoinc/gosrvlib/pkg/metrics"
 	"go.uber.org/zap"
@@ -148,6 +149,15 @@ func defaultStatusHandler(w http.ResponseWriter, r *http.Request) {
 
 func defaultPingHandler(w http.ResponseWriter, r *http.Request) {
 	httputil.SendStatus(r.Context(), w, http.StatusOK)
+}
+
+func defaultIPHandler(w http.ResponseWriter, r *http.Request) {
+	status := http.StatusOK
+	ip, err := ipify.GetPublicIP(r.Context())
+	if err != nil {
+		status = http.StatusFailedDependency
+	}
+	httputil.SendText(r.Context(), w, status, ip)
 }
 
 func defaultRouteIndexHandler(routes []route.Route) http.HandlerFunc {

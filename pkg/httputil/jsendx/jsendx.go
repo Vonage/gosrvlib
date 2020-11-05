@@ -11,6 +11,7 @@ import (
 	"github.com/nexmoinc/gosrvlib/pkg/httpserver"
 	"github.com/nexmoinc/gosrvlib/pkg/httpserver/route"
 	"github.com/nexmoinc/gosrvlib/pkg/httputil"
+	"github.com/nexmoinc/gosrvlib/pkg/ipify"
 	"github.com/nexmoinc/gosrvlib/pkg/metrics"
 )
 
@@ -88,6 +89,18 @@ func DefaultStatusHandler(info *AppInfo) http.HandlerFunc {
 func DefaultPingHandler(info *AppInfo) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		Send(r.Context(), w, http.StatusOK, info, "OK")
+	}
+}
+
+// DefaultIPHandler returns the public IP address of this service instance
+func DefaultIPHandler(info *AppInfo) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		status := http.StatusOK
+		ip, err := ipify.GetPublicIP(r.Context())
+		if err != nil {
+			status = http.StatusFailedDependency
+		}
+		Send(r.Context(), w, status, info, ip)
 	}
 }
 
