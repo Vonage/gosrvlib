@@ -91,6 +91,13 @@ func TestClient_GetPublicIP(t *testing.T) {
 			wantErr: true,
 		},
 		{
+			name: "fails because of bad content",
+			getIPHandler: func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Length", "1")
+			},
+			wantErr: true,
+		},
+		{
 			name: "succeed with valid response",
 			getIPHandler: func(w http.ResponseWriter, r *http.Request) {
 				w.Header().Set("Content-Type", "text/plain; charset=utf-8")
