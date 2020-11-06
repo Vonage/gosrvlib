@@ -1,9 +1,13 @@
 package ipify
 
 import (
+	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 
+	"github.com/nexmoinc/gosrvlib/pkg/httputil"
+	"github.com/nexmoinc/gosrvlib/pkg/testutil"
 	"github.com/stretchr/testify/require"
 )
 
@@ -60,4 +64,73 @@ func TestNewClient(t *testing.T) {
 			require.Equal(t, tt.wantErrorIP, c.errorIP, "NewClient() unexpected errorIP = %d got %d", tt.wantErrorIP, c.errorIP)
 		})
 	}
+}
+
+// nolint:gocognit
+func TestClient_GetPublicIP(t *testing.T) {
+	tests := []struct {
+		name         string
+		getIPHandler http.HandlerFunc
+		wantIP       string
+		wantErr      bool
+	}{
+		{
+			name: "fails because status not OK",
+			getIPHandler: func(w http.ResponseWriter, r *http.Request) {
+				httputil.SendStatus(testutil.Context(), w, http.StatusInternalServerError)
+			},
+			wantIP:  "",
+			wantErr: true,
+		},
+		{
+			name: "fails because of timeout",
+			getIPHandler: func(w http.ResponseWriter, r *http.Request) {
+				time.Sleep(2 * time.Second)
+				httputil.SendStatus(testutil.Context(), w, http.StatusOK)
+			},
+			wantErr: true,
+		},
+		{
+			name: "succeed with valid response",
+			getIPHandler: func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+				w.WriteHeader(http.StatusOK)
+				_, err := w.Write([]byte("0.0.0.0"))
+				require.NoError(t, err, "unexpected error: %v", err)
+			},
+			wantIP:  "0.0.0.0",
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			mux := testutil.RouterWithHandler(http.MethodGet, "/", tt.getIPHandler)
+			ts := httptest.NewServer(mux)
+			defer ts.Close()
+
+			opts := []ClientOption{WithURL(ts.URL)}
+			c, err := NewClient(opts...)
+			require.NoError(t, err, "Client.GetPublicIP() create client unexpected error = %v", err)
+
+			ip, err := c.GetPublicIP(testutil.Context())
+
+			if tt.wantErr {
+				require.Error(t, err, "Client.GetPublicIP() error = %v, wantErr %v", err, tt.wantErr)
+			} else {
+				require.Nil(t, err, "Client.GetPublicIP() unexpected error = %v", err)
+				require.Equal(t, "0.0.0.0", ip)
+			}
+		})
+	}
+}
+
+func TestClient_GetPublicIP_URLError(t *testing.T) {
+	c, err := NewClient()
+	require.NoError(t, err, "Client.GetPublicIP() create client unexpected error = %v", err)
+	c.apiURL = "\x007"
+	_, err = c.GetPublicIP(testutil.Context())
+	require.Error(t, err, "Client.GetPublicIP() error = %v", err)
 }
