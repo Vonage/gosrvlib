@@ -161,7 +161,7 @@ func TestDefaultPingHandler(t *testing.T) {
 	require.Equal(t, "{\"program\":\"Test\",\"version\":\"4.5.6\",\"release\":\"2\",\"datetime\":\"<DT>\",\"timestamp\":<TS>,\"status\":\"success\",\"code\":200,\"message\":\"OK\",\"data\":\"OK\"}\n", body)
 }
 
-func TestDefaultRoutesIndexHandler(t *testing.T) {
+func TestDefaultIndexHandler(t *testing.T) {
 	appInfo := &AppInfo{
 		ProgramName:    "Test",
 		ProgramVersion: "5.6.7",
@@ -184,7 +184,7 @@ func TestDefaultRoutesIndexHandler(t *testing.T) {
 	}
 	rr := httptest.NewRecorder()
 	req, _ := http.NewRequestWithContext(testutil.Context(), http.MethodGet, "/", nil)
-	DefaultRoutesIndexHandler(appInfo)(routes).ServeHTTP(rr, req)
+	DefaultIndexHandler(appInfo)(routes).ServeHTTP(rr, req)
 
 	resp := rr.Result()
 	bodyData, _ := ioutil.ReadAll(resp.Body)

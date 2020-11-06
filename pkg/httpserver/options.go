@@ -74,10 +74,10 @@ func WithIPHandlerFunc(handler http.HandlerFunc) Option {
 	}
 }
 
-// WithRoutesIndexHandlerFunc replaces the index handler
-func WithRoutesIndexHandlerFunc(handler RouteIndexHandlerFunc) Option {
+// WithIndexHandlerFunc replaces the index handler
+func WithIndexHandlerFunc(handler IndexHandlerFunc) Option {
 	return func(cfg *config) error {
-		cfg.routeIndexHandlerFunc = handler
+		cfg.indexHandlerFunc = handler
 		return nil
 	}
 }

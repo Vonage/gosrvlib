@@ -12,6 +12,9 @@ const (
 	// IndexRoute is the identifier to enable the index handler
 	IndexRoute defaultRoute = "index"
 
+	// IPRoute is the identifier to enable the ip handler
+	IPRoute defaultRoute = "ip"
+
 	// MetricsRoute is the identifier to enable the metrics handler
 	MetricsRoute defaultRoute = "metrics"
 
@@ -23,9 +26,6 @@ const (
 
 	// StatusRoute is the identifier to enable the status handler
 	StatusRoute defaultRoute = "status"
-
-	// IPRoute is the identifier to enable the ip handler
-	IPRoute defaultRoute = "ip"
 )
 
 var allDefaultRoutes = []defaultRoute{IndexRoute, MetricsRoute, PingRoute, PprofRoute, StatusRoute, IPRoute}
@@ -36,6 +36,13 @@ func newDefaultRoutes(cfg *config) []route.Route {
 	// The index route is not included here because of the need of accessing all the routes bound to the handler
 	for _, id := range cfg.defaultEnabledRoutes {
 		switch id {
+		case IPRoute:
+			routes = append(routes, route.Route{
+				Method:      http.MethodGet,
+				Path:        ipHandlerPath,
+				Handler:     cfg.ipHandlerFunc,
+				Description: "Returns the public IP address of this service instance.",
+			})
 		case MetricsRoute:
 			routes = append(routes, route.Route{
 				Method:      http.MethodGet,
@@ -63,13 +70,6 @@ func newDefaultRoutes(cfg *config) []route.Route {
 				Path:        statusHandlerPath,
 				Handler:     cfg.statusHandlerFunc,
 				Description: "Check this service health status.",
-			})
-		case IPRoute:
-			routes = append(routes, route.Route{
-				Method:      http.MethodGet,
-				Path:        ipHandlerPath,
-				Handler:     cfg.ipHandlerFunc,
-				Description: "Returns the public IP address of this service instance.",
 			})
 		}
 	}

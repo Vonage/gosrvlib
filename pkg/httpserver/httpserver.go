@@ -73,7 +73,7 @@ func Start(ctx context.Context, binder Binder, opts ...Option) error {
 	// attach route index if enabled
 	if cfg.isIndexRouteEnabled() {
 		l.Debug("enabling route index handler")
-		cfg.router.Handler(http.MethodGet, "/", metrics.Handler("/", cfg.routeIndexHandlerFunc(routes)))
+		cfg.router.Handler(http.MethodGet, "/", metrics.Handler("/", cfg.indexHandlerFunc(routes)))
 	}
 
 	// wrap router with default middlewares
@@ -143,12 +143,11 @@ func defaultRouter() *httprouter.Router {
 	return r
 }
 
-func defaultStatusHandler(w http.ResponseWriter, r *http.Request) {
-	httputil.SendStatus(r.Context(), w, http.StatusOK)
-}
-
-func defaultPingHandler(w http.ResponseWriter, r *http.Request) {
-	httputil.SendStatus(r.Context(), w, http.StatusOK)
+func defaultIndexHandler(routes []route.Route) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		data := &route.Index{Routes: routes}
+		httputil.SendJSON(r.Context(), w, http.StatusOK, data)
+	}
 }
 
 func defaultIPHandler(w http.ResponseWriter, r *http.Request) {
@@ -160,9 +159,10 @@ func defaultIPHandler(w http.ResponseWriter, r *http.Request) {
 	httputil.SendText(r.Context(), w, status, ip)
 }
 
-func defaultRouteIndexHandler(routes []route.Route) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		data := &route.Index{Routes: routes}
-		httputil.SendJSON(r.Context(), w, http.StatusOK, data)
-	}
+func defaultPingHandler(w http.ResponseWriter, r *http.Request) {
+	httputil.SendStatus(r.Context(), w, http.StatusOK)
+}
+
+func defaultStatusHandler(w http.ResponseWriter, r *http.Request) {
+	httputil.SendStatus(r.Context(), w, http.StatusOK)
 }

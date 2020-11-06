@@ -27,40 +27,40 @@ var (
 	defaultPprofHandler   = profiling.PProfHandler
 )
 
-// RouteIndexHandlerFunc is a type alias for the route index function
-type RouteIndexHandlerFunc func(routes []route.Route) http.HandlerFunc
+// IndexHandlerFunc is a type alias for the route index function
+type IndexHandlerFunc func(routes []route.Route) http.HandlerFunc
 
 func defaultConfig() *config {
 	return &config{
-		defaultEnabledRoutes:  nil,
-		metricsHandlerFunc:    defaultMetricsHandler,
-		pingHandlerFunc:       defaultPingHandler,
-		pprofHandlerFunc:      defaultPprofHandler,
-		statusHandlerFunc:     defaultStatusHandler,
-		ipHandlerFunc:         defaultIPHandler,
-		routeIndexHandlerFunc: defaultRouteIndexHandler,
-		serverAddr:            ":8080",
-		serverReadTimeout:     1 * time.Minute,
-		serverWriteTimeout:    1 * time.Minute,
-		shutdownTimeout:       30 * time.Second,
-		router:                defaultRouter(),
+		defaultEnabledRoutes: nil,
+		indexHandlerFunc:     defaultIndexHandler,
+		ipHandlerFunc:        defaultIPHandler,
+		metricsHandlerFunc:   defaultMetricsHandler,
+		pingHandlerFunc:      defaultPingHandler,
+		pprofHandlerFunc:     defaultPprofHandler,
+		statusHandlerFunc:    defaultStatusHandler,
+		serverAddr:           ":8080",
+		serverReadTimeout:    1 * time.Minute,
+		serverWriteTimeout:   1 * time.Minute,
+		shutdownTimeout:      30 * time.Second,
+		router:               defaultRouter(),
 	}
 }
 
 type config struct {
-	defaultEnabledRoutes  []defaultRoute
-	metricsHandlerFunc    http.HandlerFunc
-	pingHandlerFunc       http.HandlerFunc
-	pprofHandlerFunc      http.HandlerFunc
-	statusHandlerFunc     http.HandlerFunc
-	ipHandlerFunc         http.HandlerFunc
-	routeIndexHandlerFunc RouteIndexHandlerFunc
-	router                Router
-	serverAddr            string
-	serverReadTimeout     time.Duration
-	serverWriteTimeout    time.Duration
-	shutdownTimeout       time.Duration
-	tlsConfig             *tls.Config
+	defaultEnabledRoutes []defaultRoute
+	indexHandlerFunc     IndexHandlerFunc
+	ipHandlerFunc        http.HandlerFunc
+	metricsHandlerFunc   http.HandlerFunc
+	pingHandlerFunc      http.HandlerFunc
+	pprofHandlerFunc     http.HandlerFunc
+	statusHandlerFunc    http.HandlerFunc
+	router               Router
+	serverAddr           string
+	serverReadTimeout    time.Duration
+	serverWriteTimeout   time.Duration
+	shutdownTimeout      time.Duration
+	tlsConfig            *tls.Config
 }
 
 func (c *config) isIndexRouteEnabled() bool {
@@ -85,6 +85,10 @@ func (c *config) validate() error {
 		return fmt.Errorf("router is required")
 	}
 
+	if c.ipHandlerFunc == nil {
+		return fmt.Errorf("ip handler is required")
+	}
+
 	if c.metricsHandlerFunc == nil {
 		return fmt.Errorf("metrics handler is required")
 	}
@@ -99,10 +103,6 @@ func (c *config) validate() error {
 
 	if c.statusHandlerFunc == nil {
 		return fmt.Errorf("status handler is required")
-	}
-
-	if c.ipHandlerFunc == nil {
-		return fmt.Errorf("ip handler is required")
 	}
 
 	return nil

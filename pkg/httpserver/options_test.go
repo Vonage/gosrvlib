@@ -112,7 +112,7 @@ func TestWithIPHandlerFunc(t *testing.T) {
 	require.Equal(t, reflect.ValueOf(v).Pointer(), reflect.ValueOf(cfg.ipHandlerFunc).Pointer())
 }
 
-func TestWithRoutesIndexHandlerFunc(t *testing.T) {
+func TestWithIndexHandlerFunc(t *testing.T) {
 	t.Parallel()
 
 	v := func(routes []route.Route) http.HandlerFunc {
@@ -121,9 +121,9 @@ func TestWithRoutesIndexHandlerFunc(t *testing.T) {
 		}
 	}
 	cfg := &config{}
-	err := WithRoutesIndexHandlerFunc(v)(cfg)
+	err := WithIndexHandlerFunc(v)(cfg)
 	require.NoError(t, err)
-	require.Equal(t, reflect.ValueOf(v).Pointer(), reflect.ValueOf(cfg.routeIndexHandlerFunc).Pointer())
+	require.Equal(t, reflect.ValueOf(v).Pointer(), reflect.ValueOf(cfg.indexHandlerFunc).Pointer())
 }
 
 func TestWithServerAddr(t *testing.T) {

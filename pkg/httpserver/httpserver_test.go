@@ -87,33 +87,7 @@ func Test_defaultRouter(t *testing.T) {
 	}
 }
 
-func Test_defaultStatusHandler(t *testing.T) {
-	rr := httptest.NewRecorder()
-	req, _ := http.NewRequestWithContext(testutil.Context(), http.MethodGet, "/", nil)
-	defaultStatusHandler(rr, req)
-
-	resp := rr.Result()
-	body, _ := ioutil.ReadAll(resp.Body)
-
-	require.Equal(t, http.StatusOK, resp.StatusCode)
-	require.Equal(t, "text/plain; charset=utf-8", resp.Header.Get("Content-Type"))
-	require.Equal(t, "OK\n", string(body))
-}
-
-func Test_defaultPingHandler(t *testing.T) {
-	rr := httptest.NewRecorder()
-	req, _ := http.NewRequestWithContext(testutil.Context(), http.MethodGet, "/", nil)
-	defaultPingHandler(rr, req)
-
-	resp := rr.Result()
-	body, _ := ioutil.ReadAll(resp.Body)
-
-	require.Equal(t, http.StatusOK, resp.StatusCode)
-	require.Equal(t, "text/plain; charset=utf-8", resp.Header.Get("Content-Type"))
-	require.Equal(t, "OK\n", string(body))
-}
-
-func Test_defaultRouteIndexHandler(t *testing.T) {
+func Test_defaultIndexHandler(t *testing.T) {
 	routes := []route.Route{
 		{
 			Method:      "GET",
@@ -130,7 +104,7 @@ func Test_defaultRouteIndexHandler(t *testing.T) {
 	}
 	rr := httptest.NewRecorder()
 	req, _ := http.NewRequestWithContext(testutil.Context(), http.MethodGet, "/", nil)
-	defaultRouteIndexHandler(routes).ServeHTTP(rr, req)
+	defaultIndexHandler(routes).ServeHTTP(rr, req)
 
 	resp := rr.Result()
 	body, _ := ioutil.ReadAll(resp.Body)
@@ -141,6 +115,32 @@ func Test_defaultRouteIndexHandler(t *testing.T) {
 	expBody, _ := json.Marshal(&route.Index{Routes: routes})
 
 	require.Equal(t, string(expBody)+"\n", string(body))
+}
+
+func Test_defaultPingHandler(t *testing.T) {
+	rr := httptest.NewRecorder()
+	req, _ := http.NewRequestWithContext(testutil.Context(), http.MethodGet, "/", nil)
+	defaultPingHandler(rr, req)
+
+	resp := rr.Result()
+	body, _ := ioutil.ReadAll(resp.Body)
+
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	require.Equal(t, "text/plain; charset=utf-8", resp.Header.Get("Content-Type"))
+	require.Equal(t, "OK\n", string(body))
+}
+
+func Test_defaultStatusHandler(t *testing.T) {
+	rr := httptest.NewRecorder()
+	req, _ := http.NewRequestWithContext(testutil.Context(), http.MethodGet, "/", nil)
+	defaultStatusHandler(rr, req)
+
+	resp := rr.Result()
+	body, _ := ioutil.ReadAll(resp.Body)
+
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	require.Equal(t, "text/plain; charset=utf-8", resp.Header.Get("Content-Type"))
+	require.Equal(t, "OK\n", string(body))
 }
 
 func TestStart(t *testing.T) {
