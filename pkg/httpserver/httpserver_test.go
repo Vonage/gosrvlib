@@ -117,6 +117,52 @@ func Test_defaultIndexHandler(t *testing.T) {
 	require.Equal(t, string(expBody)+"\n", string(body))
 }
 
+func Test_defaultIPHandler(t *testing.T) {
+	tests := []struct {
+		name    string
+		ipFunc  GetPublicIPFunc
+		wantIP  string
+		wantErr bool
+	}{
+		{
+			name:    "success response",
+			ipFunc:  func(ctx context.Context) (string, error) { return "0.0.0.0", nil },
+			wantIP:  "0.0.0.0",
+			wantErr: false,
+		},
+		{
+			name:    "error response",
+			ipFunc:  func(ctx context.Context) (string, error) { return "ERROR", fmt.Errorf("ERROR") },
+			wantIP:  "",
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			rr := httptest.NewRecorder()
+			req, _ := http.NewRequestWithContext(testutil.Context(), http.MethodGet, "/", nil)
+			defaultIPHandler(tt.ipFunc).ServeHTTP(rr, req)
+
+			resp := rr.Result()
+			bodyData, _ := ioutil.ReadAll(resp.Body)
+			body := string(bodyData)
+
+			require.Equal(t, "text/plain; charset=utf-8", resp.Header.Get("Content-Type"))
+
+			if tt.wantErr {
+				require.Equal(t, http.StatusFailedDependency, resp.StatusCode)
+				require.Equal(t, "ERROR", body)
+			} else {
+				require.Equal(t, http.StatusOK, resp.StatusCode)
+				require.Equal(t, "0.0.0.0", body)
+			}
+		})
+	}
+}
+
 func Test_defaultPingHandler(t *testing.T) {
 	rr := httptest.NewRecorder()
 	req, _ := http.NewRequestWithContext(testutil.Context(), http.MethodGet, "/", nil)
