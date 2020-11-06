@@ -27,8 +27,13 @@ type IndexHandlerFunc func(routes []route.Route) http.HandlerFunc
 // GetPublicIPFunc is a type alias for function to get public IP of the service
 type GetPublicIPFunc func(ctx context.Context) (string, error)
 
+// GetPublicIPDefaultFunc returns the GetPublicIP function for a default ipify client
+func GetPublicIPDefaultFunc() GetPublicIPFunc {
+	c, _ := ipify.NewClient()
+	return c.GetPublicIP
+}
+
 func defaultConfig() *config {
-	ipc, _ := ipify.NewClient() // we can ignore the error because the default URL is hard-coded
 	return &config{
 		router:               defaultRouter(),
 		serverAddr:           ":8017",
@@ -37,7 +42,7 @@ func defaultConfig() *config {
 		shutdownTimeout:      30 * time.Second,
 		defaultEnabledRoutes: nil,
 		indexHandlerFunc:     defaultIndexHandler,
-		ipHandlerFunc:        defaultIPHandler(ipc.GetPublicIP),
+		ipHandlerFunc:        defaultIPHandler(GetPublicIPDefaultFunc()),
 		metricsHandlerFunc:   defaultMetricsHandler,
 		pingHandlerFunc:      defaultPingHandler,
 		pprofHandlerFunc:     defaultPprofHandler,

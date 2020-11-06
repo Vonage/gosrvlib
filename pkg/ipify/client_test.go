@@ -30,11 +30,11 @@ func TestNewClient(t *testing.T) {
 		{
 			name: "succeeds with custom values",
 			opts: []ClientOption{
-				WithTimeout(2 * time.Second),
+				WithTimeout(3 * time.Second),
 				WithURL("http://test.ipify.invalid"),
 				WithErrorIP("0.0.0.0"),
 			},
-			wantTimeout: 2 * time.Second,
+			wantTimeout: 3 * time.Second,
 			wantAPIURL:  "http://test.ipify.invalid",
 			wantErrorIP: "0.0.0.0",
 			wantErr:     false,
@@ -85,7 +85,7 @@ func TestClient_GetPublicIP(t *testing.T) {
 		{
 			name: "fails because of timeout",
 			getIPHandler: func(w http.ResponseWriter, r *http.Request) {
-				time.Sleep(2 * time.Second)
+				time.Sleep(3 * time.Second)
 				httputil.SendStatus(testutil.Context(), w, http.StatusOK)
 			},
 			wantErr: true,
