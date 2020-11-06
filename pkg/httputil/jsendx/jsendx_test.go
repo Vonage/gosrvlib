@@ -115,52 +115,6 @@ func TestNewRouter(t *testing.T) {
 	}
 }
 
-func TestDefaultStatusHandler(t *testing.T) {
-	appInfo := &AppInfo{
-		ProgramName:    "Test",
-		ProgramVersion: "3.4.5",
-		ProgramRelease: "1",
-	}
-
-	rr := httptest.NewRecorder()
-	req, _ := http.NewRequestWithContext(testutil.Context(), http.MethodGet, "/", nil)
-	DefaultStatusHandler(appInfo)(rr, req)
-
-	resp := rr.Result()
-	bodyData, _ := ioutil.ReadAll(resp.Body)
-
-	body := string(bodyData)
-	body = testutil.ReplaceDateTime(body, "<DT>")
-	body = testutil.ReplaceUnixTimestamp(body, "<TS>")
-
-	require.Equal(t, http.StatusOK, resp.StatusCode)
-	require.Equal(t, "application/json; charset=utf-8", resp.Header.Get("Content-Type"))
-	require.Equal(t, "{\"program\":\"Test\",\"version\":\"3.4.5\",\"release\":\"1\",\"datetime\":\"<DT>\",\"timestamp\":<TS>,\"status\":\"success\",\"code\":200,\"message\":\"OK\",\"data\":\"OK\"}\n", body)
-}
-
-func TestDefaultPingHandler(t *testing.T) {
-	appInfo := &AppInfo{
-		ProgramName:    "Test",
-		ProgramVersion: "4.5.6",
-		ProgramRelease: "2",
-	}
-
-	rr := httptest.NewRecorder()
-	req, _ := http.NewRequestWithContext(testutil.Context(), http.MethodGet, "/", nil)
-	DefaultPingHandler(appInfo)(rr, req)
-
-	resp := rr.Result()
-	bodyData, _ := ioutil.ReadAll(resp.Body)
-
-	body := string(bodyData)
-	body = testutil.ReplaceDateTime(body, "<DT>")
-	body = testutil.ReplaceUnixTimestamp(body, "<TS>")
-
-	require.Equal(t, http.StatusOK, resp.StatusCode)
-	require.Equal(t, "application/json; charset=utf-8", resp.Header.Get("Content-Type"))
-	require.Equal(t, "{\"program\":\"Test\",\"version\":\"4.5.6\",\"release\":\"2\",\"datetime\":\"<DT>\",\"timestamp\":<TS>,\"status\":\"success\",\"code\":200,\"message\":\"OK\",\"data\":\"OK\"}\n", body)
-}
-
 func TestDefaultIndexHandler(t *testing.T) {
 	appInfo := &AppInfo{
 		ProgramName:    "Test",
@@ -197,6 +151,52 @@ func TestDefaultIndexHandler(t *testing.T) {
 	require.Equal(t, "application/json; charset=utf-8", resp.Header.Get("Content-Type"))
 	require.Equal(t, `{"program":"Test","version":"5.6.7","release":"3","datetime":"<DT>","timestamp":<TS>,"status":"success","code":200,"message":"OK","data":{"routes":[{"method":"GET","path":"/get","description":"Get endpoint"},{"method":"POST","path":"/post","description":"Post endpoint"}]}}
 `, body)
+}
+
+func TestDefaultPingHandler(t *testing.T) {
+	appInfo := &AppInfo{
+		ProgramName:    "Test",
+		ProgramVersion: "4.5.6",
+		ProgramRelease: "2",
+	}
+
+	rr := httptest.NewRecorder()
+	req, _ := http.NewRequestWithContext(testutil.Context(), http.MethodGet, "/", nil)
+	DefaultPingHandler(appInfo)(rr, req)
+
+	resp := rr.Result()
+	bodyData, _ := ioutil.ReadAll(resp.Body)
+
+	body := string(bodyData)
+	body = testutil.ReplaceDateTime(body, "<DT>")
+	body = testutil.ReplaceUnixTimestamp(body, "<TS>")
+
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	require.Equal(t, "application/json; charset=utf-8", resp.Header.Get("Content-Type"))
+	require.Equal(t, "{\"program\":\"Test\",\"version\":\"4.5.6\",\"release\":\"2\",\"datetime\":\"<DT>\",\"timestamp\":<TS>,\"status\":\"success\",\"code\":200,\"message\":\"OK\",\"data\":\"OK\"}\n", body)
+}
+
+func TestDefaultStatusHandler(t *testing.T) {
+	appInfo := &AppInfo{
+		ProgramName:    "Test",
+		ProgramVersion: "3.4.5",
+		ProgramRelease: "1",
+	}
+
+	rr := httptest.NewRecorder()
+	req, _ := http.NewRequestWithContext(testutil.Context(), http.MethodGet, "/", nil)
+	DefaultStatusHandler(appInfo)(rr, req)
+
+	resp := rr.Result()
+	bodyData, _ := ioutil.ReadAll(resp.Body)
+
+	body := string(bodyData)
+	body = testutil.ReplaceDateTime(body, "<DT>")
+	body = testutil.ReplaceUnixTimestamp(body, "<TS>")
+
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	require.Equal(t, "application/json; charset=utf-8", resp.Header.Get("Content-Type"))
+	require.Equal(t, "{\"program\":\"Test\",\"version\":\"3.4.5\",\"release\":\"1\",\"datetime\":\"<DT>\",\"timestamp\":<TS>,\"status\":\"success\",\"code\":200,\"message\":\"OK\",\"data\":\"OK\"}\n", body)
 }
 
 func TestHealthCheckResultWriter(t *testing.T) {

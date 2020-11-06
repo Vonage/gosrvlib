@@ -12,7 +12,6 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"github.com/nexmoinc/gosrvlib/pkg/httpserver/route"
 	"github.com/nexmoinc/gosrvlib/pkg/httputil"
-	"github.com/nexmoinc/gosrvlib/pkg/ipify"
 	"github.com/nexmoinc/gosrvlib/pkg/logging"
 	"github.com/nexmoinc/gosrvlib/pkg/metrics"
 	"go.uber.org/zap"
@@ -73,7 +72,7 @@ func Start(ctx context.Context, binder Binder, opts ...Option) error {
 	// attach route index if enabled
 	if cfg.isIndexRouteEnabled() {
 		l.Debug("enabling route index handler")
-		cfg.router.Handler(http.MethodGet, "/", metrics.Handler("/", cfg.indexHandlerFunc(routes)))
+		cfg.router.Handler(http.MethodGet, indexPath, metrics.Handler(indexPath, cfg.indexHandlerFunc(routes)))
 	}
 
 	// wrap router with default middlewares
@@ -150,13 +149,15 @@ func defaultIndexHandler(routes []route.Route) http.HandlerFunc {
 	}
 }
 
-func defaultIPHandler(w http.ResponseWriter, r *http.Request) {
-	status := http.StatusOK
-	ip, err := ipify.GetPublicIP(r.Context())
-	if err != nil {
-		status = http.StatusFailedDependency
+func defaultIPHandler(fn GetPublicIPFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		status := http.StatusOK
+		ip, err := fn(r.Context())
+		if err != nil {
+			status = http.StatusFailedDependency
+		}
+		httputil.SendText(r.Context(), w, status, ip)
 	}
-	httputil.SendText(r.Context(), w, status, ip)
 }
 
 func defaultPingHandler(w http.ResponseWriter, r *http.Request) {

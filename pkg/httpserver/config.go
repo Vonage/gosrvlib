@@ -1,6 +1,7 @@
 package httpserver
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	"math"
@@ -10,16 +11,9 @@ import (
 	"time"
 
 	"github.com/nexmoinc/gosrvlib/pkg/httpserver/route"
+	"github.com/nexmoinc/gosrvlib/pkg/ipify"
 	"github.com/nexmoinc/gosrvlib/pkg/profiling"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-)
-
-const (
-	metricsHandlerPath = "/metrics"
-	pingHandlerPath    = "/ping"
-	pprofHandlerPath   = "/pprof/*option"
-	statusHandlerPath  = "/status"
-	ipHandlerPath      = "/ip"
 )
 
 var (
@@ -30,24 +24,34 @@ var (
 // IndexHandlerFunc is a type alias for the route index function
 type IndexHandlerFunc func(routes []route.Route) http.HandlerFunc
 
+// GetPublicIPFunc is a type alias for function to get public IP of the service
+type GetPublicIPFunc func(ctx context.Context) (string, error)
+
 func defaultConfig() *config {
+	ipc, _ := ipify.NewClient() // we can ignore the error because the default URL is hard-coded
 	return &config{
+		router:               defaultRouter(),
+		serverAddr:           ":8017",
+		serverReadTimeout:    1 * time.Minute,
+		serverWriteTimeout:   1 * time.Minute,
+		shutdownTimeout:      30 * time.Second,
 		defaultEnabledRoutes: nil,
 		indexHandlerFunc:     defaultIndexHandler,
-		ipHandlerFunc:        defaultIPHandler,
+		ipHandlerFunc:        defaultIPHandler(ipc.GetPublicIP),
 		metricsHandlerFunc:   defaultMetricsHandler,
 		pingHandlerFunc:      defaultPingHandler,
 		pprofHandlerFunc:     defaultPprofHandler,
 		statusHandlerFunc:    defaultStatusHandler,
-		serverAddr:           ":8080",
-		serverReadTimeout:    1 * time.Minute,
-		serverWriteTimeout:   1 * time.Minute,
-		shutdownTimeout:      30 * time.Second,
-		router:               defaultRouter(),
 	}
 }
 
 type config struct {
+	router               Router
+	serverAddr           string
+	serverReadTimeout    time.Duration
+	serverWriteTimeout   time.Duration
+	shutdownTimeout      time.Duration
+	tlsConfig            *tls.Config
 	defaultEnabledRoutes []defaultRoute
 	indexHandlerFunc     IndexHandlerFunc
 	ipHandlerFunc        http.HandlerFunc
@@ -55,12 +59,6 @@ type config struct {
 	pingHandlerFunc      http.HandlerFunc
 	pprofHandlerFunc     http.HandlerFunc
 	statusHandlerFunc    http.HandlerFunc
-	router               Router
-	serverAddr           string
-	serverReadTimeout    time.Duration
-	serverWriteTimeout   time.Duration
-	shutdownTimeout      time.Duration
-	tlsConfig            *tls.Config
 }
 
 func (c *config) isIndexRouteEnabled() bool {

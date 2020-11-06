@@ -11,8 +11,11 @@ import (
 	"github.com/nexmoinc/gosrvlib/pkg/httpserver"
 	"github.com/nexmoinc/gosrvlib/pkg/httpserver/route"
 	"github.com/nexmoinc/gosrvlib/pkg/httputil"
-	"github.com/nexmoinc/gosrvlib/pkg/ipify"
 	"github.com/nexmoinc/gosrvlib/pkg/metrics"
+)
+
+const (
+	okMessage = "OK"
 )
 
 // Response wraps data into a JSend compliant response
@@ -88,11 +91,11 @@ func DefaultIndexHandler(info *AppInfo) httpserver.IndexHandlerFunc {
 	}
 }
 
-// DefaultIPHandler returns the public IP address of this service instance
-func DefaultIPHandler(info *AppInfo) http.HandlerFunc {
+// DefaultIPHandler returns the route ip in JSendX format
+func DefaultIPHandler(info *AppInfo, fn httpserver.GetPublicIPFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		status := http.StatusOK
-		ip, err := ipify.GetPublicIP(r.Context())
+		ip, err := fn(r.Context())
 		if err != nil {
 			status = http.StatusFailedDependency
 		}
@@ -103,14 +106,14 @@ func DefaultIPHandler(info *AppInfo) http.HandlerFunc {
 // DefaultPingHandler returns a ping request in JSendX format
 func DefaultPingHandler(info *AppInfo) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		Send(r.Context(), w, http.StatusOK, info, "OK")
+		Send(r.Context(), w, http.StatusOK, info, okMessage)
 	}
 }
 
 // DefaultStatusHandler returns the server status in JSendX format
 func DefaultStatusHandler(info *AppInfo) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		Send(r.Context(), w, http.StatusOK, info, "OK")
+		Send(r.Context(), w, http.StatusOK, info, okMessage)
 	}
 }
 

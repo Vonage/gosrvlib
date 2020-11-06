@@ -148,17 +148,17 @@ func Test_validateAddr(t *testing.T) {
 		},
 		{
 			name:    "valid address (no host)",
-			addr:    ":8080",
+			addr:    ":8017",
 			wantErr: false,
 		},
 		{
 			name:    "valid address (localhost)",
-			addr:    "localhost:8080",
+			addr:    "localhost:8017",
 			wantErr: false,
 		},
 		{
 			name:    "valid address (ip)",
-			addr:    "0.0.0.0:8080",
+			addr:    "0.0.0.0:8017",
 			wantErr: false,
 		},
 	}
