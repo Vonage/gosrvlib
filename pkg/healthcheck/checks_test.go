@@ -80,6 +80,7 @@ func TestCheckHttpStatus(t *testing.T) {
 			wantErr:           false,
 		},
 	}
+	httpClient := &http.Client{Timeout: 1 * time.Second}
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
@@ -102,7 +103,7 @@ func TestCheckHttpStatus(t *testing.T) {
 			ts := httptest.NewServer(mux)
 			defer ts.Close()
 
-			err := CheckHTTPStatus(tt.checkContext, tt.checkMethod, ts.URL, tt.checkWantStatus, tt.checkTimeout)
+			err := CheckHTTPStatus(tt.checkContext, httpClient, tt.checkMethod, ts.URL, tt.checkWantStatus, tt.checkTimeout)
 			t.Logf("check error: %v", err)
 			if tt.wantErr {
 				require.Error(t, err, "CheckHTTPStatus() error = %v, wantErr %v", err, tt.wantErr)

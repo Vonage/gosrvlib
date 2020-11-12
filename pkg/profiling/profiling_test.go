@@ -43,6 +43,7 @@ func TestPProfHandler(t *testing.T) {
 			path: "/pprof/heap",
 		},
 	}
+	httpClient := &http.Client{Timeout: 2 * time.Second}
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
@@ -56,8 +57,7 @@ func TestPProfHandler(t *testing.T) {
 			req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s%s", ts.URL, tt.path), nil)
 			require.NoError(t, err, "unexpected error while creating request for path %q", tt.path)
 
-			c := &http.Client{Timeout: 2 * time.Second}
-			resp, err := c.Do(req)
+			resp, err := httpClient.Do(req)
 			require.NoError(t, err, "unexpected error while performing request %q", req.URL.String())
 			require.Equal(t, http.StatusOK, resp.StatusCode, "unexpected status code %d", resp.StatusCode)
 		})
