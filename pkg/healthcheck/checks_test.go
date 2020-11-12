@@ -29,7 +29,7 @@ func TestCheckHttpStatus(t *testing.T) {
 	}{
 		{
 			name:              "fails with invalid request method",
-			checkContext:      testutil.Context(),
+			checkContext:      nil,
 			checkMethod:       "INVALID",
 			handlerMethod:     http.MethodGet,
 			handlerStatusCode: http.StatusOK,
