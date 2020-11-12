@@ -80,7 +80,10 @@ func runCheckWithTimeout(ctx context.Context, hc HealthChecker, timeout time.Dur
 
 	resCh := make(chan error)
 	go func() {
-		resCh <- hc.HealthCheck(ctx)
+		select {
+		case resCh <- hc.HealthCheck(ctx):
+		case <-ctx.Done():
+		}
 	}()
 
 	select {
