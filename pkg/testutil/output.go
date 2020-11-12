@@ -30,9 +30,8 @@ func CaptureOutput(t *testing.T, fn func()) string {
 	wg := new(sync.WaitGroup)
 	wg.Add(1)
 	go func() {
-		defer wg.Done()
-
 		var buf bytes.Buffer
+		wg.Done()
 		_, err := io.Copy(&buf, reader)
 		require.Nil(t, err, "Unexpected error (io.Copy)")
 		out <- buf.String()
