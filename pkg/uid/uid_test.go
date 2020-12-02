@@ -28,47 +28,7 @@ func BenchmarkNewID64(b *testing.B) {
 }
 
 func TestNewID64_Collision(t *testing.T) {
-	t.Parallel()
-
-	concurrency := 10
-	iterations := 1000
-	total := concurrency * iterations
-
-	idCh := make(chan string, total)
-	defer close(idCh)
-
-	// generators
-	genWg := &sync.WaitGroup{}
-	genWg.Add(concurrency)
-
-	for i := 0; i < concurrency; i++ {
-		go func() {
-			defer genWg.Done()
-			for i := 0; i < iterations; i++ {
-				idCh <- NewID64()
-			}
-		}()
-	}
-
-	// wait for generators to finish
-	genWg.Wait()
-
-	ids := make(map[string]bool, total)
-	for i := 0; i < total; i++ {
-		id, ok := <-idCh
-		if !ok {
-			t.Errorf("unexpected closed id channel")
-			return
-		}
-
-		if _, exists := ids[id]; exists {
-			t.Errorf("unexpected duplicate ID detected")
-			return
-		}
-
-		// store generated id for duplicate detection
-		ids[id] = true
-	}
+	collisionTest(t, NewID64, 10, 1000)
 }
 
 func TestNewID128(t *testing.T) {
@@ -87,10 +47,12 @@ func BenchmarkNewID128(b *testing.B) {
 }
 
 func TestNewID128_Collision(t *testing.T) {
+	collisionTest(t, NewID128, 100, 10_000)
+}
+
+func collisionTest(t *testing.T, f func() string, concurrency, iterations int) {
 	t.Parallel()
 
-	concurrency := 10
-	iterations := 100_000
 	total := concurrency * iterations
 
 	idCh := make(chan string, total)
@@ -104,7 +66,7 @@ func TestNewID128_Collision(t *testing.T) {
 		go func() {
 			defer genWg.Done()
 			for i := 0; i < iterations; i++ {
-				idCh <- NewID128()
+				idCh <- f()
 			}
 		}()
 	}

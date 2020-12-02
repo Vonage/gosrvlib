@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/nexmoinc/gosrvlib-sample-service/internal/httphandler"
+	"github.com/gosrvlibexample/gosrvlibexample/internal/httphandler"
 	"github.com/nexmoinc/gosrvlib/pkg/bootstrap"
 	"github.com/nexmoinc/gosrvlib/pkg/healthcheck"
 	"github.com/nexmoinc/gosrvlib/pkg/httpserver"
@@ -46,7 +46,8 @@ func bind(cfg *appConfig, appInfo *jsendx.AppInfo) bootstrap.BindFunc {
 			httpserver.WithServerAddr(cfg.MonitoringAddress),
 			httpserver.WithEnableAllDefaultRoutes(),
 			httpserver.WithRouter(jsendx.NewRouter(appInfo)), // set default 404, 405 and panic handlers
-			httpserver.WithRoutesIndexHandlerFunc(jsendx.DefaultRoutesIndexHandler(appInfo)),
+			httpserver.WithIndexHandlerFunc(jsendx.DefaultIndexHandler(appInfo)),
+			httpserver.WithIPHandlerFunc(jsendx.DefaultIPHandler(appInfo, httpserver.GetPublicIPDefaultFunc())),
 			httpserver.WithPingHandlerFunc(jsendx.DefaultPingHandler(appInfo)),
 			httpserver.WithStatusHandlerFunc(statusHandler),
 		}
@@ -57,6 +58,7 @@ func bind(cfg *appConfig, appInfo *jsendx.AppInfo) bootstrap.BindFunc {
 		// start service server
 		httpServiceOpts := []httpserver.Option{
 			httpserver.WithServerAddr(cfg.ServerAddress),
+			httpserver.WithEnableDefaultRoutes(httpserver.PingRoute),
 		}
 		if err := httpserver.Start(ctx, serviceBinder, httpServiceOpts...); err != nil {
 			return fmt.Errorf("error starting service HTTP server: %w", err)

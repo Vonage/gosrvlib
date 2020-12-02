@@ -8,7 +8,7 @@ import (
 
 	"github.com/nexmoinc/gosrvlib/pkg/httpserver/route"
 	"github.com/nexmoinc/gosrvlib/pkg/httputil"
-	"github.com/nexmoinc/gosrvlib/pkg/uid"
+	"github.com/nexmoinc/gosrvlib/pkg/uidc"
 )
 
 // Service is the interface representing the business logic of the service
@@ -38,11 +38,11 @@ func (h *HTTPHandler) BindHTTP(_ context.Context) []route.Route {
 			Method:      http.MethodGet,
 			Path:        "/uid",
 			Handler:     h.handleGenUID,
-			Description: "Generates a random UID.",
+			Description: "Generates a random UID",
 		},
 	}
 }
 
 func (h *HTTPHandler) handleGenUID(w http.ResponseWriter, r *http.Request) {
-	httputil.SendJSON(r.Context(), w, http.StatusOK, uid.NewID64())
+	httputil.SendJSON(r.Context(), w, http.StatusOK, uidc.NewID128())
 }

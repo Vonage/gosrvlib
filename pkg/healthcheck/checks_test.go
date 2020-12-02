@@ -12,6 +12,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var testHTTPClient = &http.Client{Timeout: 2 * time.Second}
+
 // nolint:gocognit
 func TestCheckHttpStatus(t *testing.T) {
 	tests := []struct {
@@ -26,26 +28,18 @@ func TestCheckHttpStatus(t *testing.T) {
 		wantErr           bool
 	}{
 		{
-			name:              "fails with invalid request method",
+			name:              "fails with invalid context",
 			checkContext:      nil,
-			checkMethod:       "INVALID",
+			checkMethod:       http.MethodGet,
 			handlerMethod:     http.MethodGet,
 			handlerStatusCode: http.StatusOK,
 			wantErr:           true,
 		},
 		{
-			name:              "fails with wrong check method HEAD",
+			name:              "fails with wrong check method",
 			checkContext:      testutil.Context(),
 			checkMethod:       http.MethodHead,
 			handlerMethod:     http.MethodGet,
-			handlerStatusCode: http.StatusOK,
-			wantErr:           true,
-		},
-		{
-			name:              "fails with wrong check method GET",
-			checkContext:      testutil.Context(),
-			checkMethod:       http.MethodGet,
-			handlerMethod:     http.MethodHead,
 			handlerStatusCode: http.StatusOK,
 			wantErr:           true,
 		},
@@ -102,7 +96,7 @@ func TestCheckHttpStatus(t *testing.T) {
 			ts := httptest.NewServer(mux)
 			defer ts.Close()
 
-			err := CheckHTTPStatus(tt.checkContext, tt.checkMethod, ts.URL, tt.checkWantStatus, tt.checkTimeout)
+			err := CheckHTTPStatus(tt.checkContext, testHTTPClient, tt.checkMethod, ts.URL, tt.checkWantStatus, tt.checkTimeout)
 			t.Logf("check error: %v", err)
 			if tt.wantErr {
 				require.Error(t, err, "CheckHTTPStatus() error = %v, wantErr %v", err, tt.wantErr)

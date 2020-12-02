@@ -1,23 +1,23 @@
 # MAKEFILE
 #
 # @author      Nicola Asuni
-# @link        https://github.com/nexmoinc/srvxmplname
+# @link        https://github.com/gosrvlibexample/gosrvlibexample
 # ------------------------------------------------------------------------------
 
 # Use bash as shell (Note: Ubuntu now uses dash which doesn't support PIPESTATUS).
 SHELL=/bin/bash
 
 # CVS path (path to the parent dir containing the project)
-CVSPATH=github.com/nexmoinc
+CVSPATH=github.com/gosrvlibexample
 
 # Project owner
-OWNER=vonage
+OWNER=gosrvlibexample
 
 # Project vendor
-VENDOR=vonage
+VENDOR=gosrvlibexample
 
 # Project name
-PROJECT=srvxmplname
+PROJECT=gosrvlibexample
 
 # Project version
 VERSION=$(shell cat VERSION)
@@ -52,9 +52,11 @@ BINPATH=usr/bin/
 # Path for configuration files
 CONFIGPATH=etc/$(PROJECT)/
 
-# Path for ssl root certs
-#SSLCONFIGPATH=etc/ssl/
-SSLCONFIGPATH=
+# Path for custom root CA certificates
+SSLCONFIGPATH=etc/ssl/
+
+# Search paths for system root CA certificates to include
+CACERTPATH=/etc/ssl/certs/ca-certificates.crt /etc/pki/tls/certs/ca-bundle.crt /etc/ssl/ca-bundle.pem /etc/pki/tls/cacert.pem /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem /etc/ssl/cert.pem
 
 # Path for init script
 INITPATH=
@@ -127,6 +129,23 @@ else
 	TESTEXTRACMD=2>&1 | tee >(PATH=$(GOPATH)/bin:$(PATH) go-junit-report > $(TARGETDIR)/test/report.xml); test $${PIPESTATUS[0]} -eq 0
 endif
 
+# Specify api test configuration files to execute (venom YAML files or * for all)
+ifeq ($(API_TEST_FILE),)
+	API_TEST_FILE=*.yaml
+endif
+
+# Deployment environment
+ifeq ($(DEPLOY_ENV),)
+	DEPLOY_ENV=int
+endif
+
+# INT - integration environment via docker-compose
+ifeq ($(DEPLOY_ENV), int)
+	GOSRVLIBEXAMPLE_URL=http://gosrvlibexample:8081
+	GOSRVLIBEXAMPLE_MONITORING_URL=http://gosrvlibexample:8082
+	API_TEST_FILE=*.yaml
+endif
+
 # Display general help about this command
 .PHONY: help
 help:
@@ -153,6 +172,10 @@ help:
 	@echo "    make dbuild      : Build everything inside a Docker container"
 	@echo ""
 	@echo "    make docker      : Build a scratch docker container to run this service"
+	@echo "    make dockertest  : Test the newly built docker container"
+	@echo ""
+	@echo "    make openapitest : Test the OpenAPI specification"
+	@echo "    make apitest     : Execute API tests"
 	@echo ""
 
 # Alias for help target
@@ -221,7 +244,7 @@ mod:
 # Get the test dependencies
 .PHONY: deps
 deps: ensuretarget
-	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(BINUTIL) v1.27.0
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(BINUTIL) v1.32.0
 	(GO111MODULE=off $(GO) get github.com/jstemmer/go-junit-report)
 	(GO111MODULE=off $(GO) get github.com/rakyll/gotest)
 	(GO111MODULE=off $(GO) get github.com/golang/mock/mockgen)
@@ -274,13 +297,21 @@ ifneq ($(strip $(MANPATH)),)
 	find $(PATHINSTMAN) -type f -exec chmod 644 {} \;
 endif
 
-# Install SSL certificates
+# Install TLS root CA certificates
 .PHONY: installssl
-installssl: 
+installssl:
 ifneq ($(strip $(SSLCONFIGPATH)),)
+	# add system root CA certificates
+	for CERT in ${CACERTPATH} ; do \
+		test -f $${CERT} && \
+		mkdir -p $${DESTDIR}$$(dirname $${CERT}) && \
+		cp $${CERT} $${DESTDIR}$${CERT} && \
+		break ; \
+	done
+	# add custom CA certificates
 	mkdir -p $(PATHINSTSSLCFG)
-	touch -c $(PATHINSTSSLCFG)*
-	cp -ru ./resources/${SSLCONFIGPATH}* $(PATHINSTSSLCFG)
+	cp -r ./resources/${SSLCONFIGPATH}* $(PATHINSTSSLCFG)
+	rm $(PATHINSTSSLCFG)certs/.keep
 	find $(PATHINSTSSLCFG) -type d -exec chmod 755 {} \;
 	find $(PATHINSTSSLCFG) -type f -exec chmod 644 {} \;
 endif
@@ -328,3 +359,58 @@ docker: dockerdir dockerbuild
 #buildall: deps qa rpm deb bz2 crossbuild
 .PHONY: buildall
 buildall: build qa docker
+
+# Run the integration tests; locally we need to execute 'build' and 'docker' targets first
+.PHONY: dockertestenv
+dockertestenv: ensuretarget
+	@echo "GOSRVLIBEXAMPLE_REMOTECONFIGPROVIDER=envvar" > $(TARGETDIR)/gosrvlibexample.integration.env
+	@echo "GOSRVLIBEXAMPLE_REMOTECONFIGDATA=$(shell cat resources/test/integration/gosrvlibexample/config.json | base64 -w0)" >> $(TARGETDIR)/gosrvlibexample.integration.env
+
+.PHONY: dockertest
+dockertest: dockertestenv
+ifeq ("$(wildcard $(BINUTIL)/dockerize)","")
+	curl -sSfL https://github.com/jwilder/dockerize/releases/download/v0.6.1/dockerize-linux-amd64-v0.6.1.tar.gz | tar -xz -C $(BINUTIL)
+endif
+	@echo 0 > $(TARGETDIR)/make.exit
+	docker-compose down --volumes || true
+	docker-compose up --build --exit-code-from gosrvlibexample_integration || echo $${?} > $(TARGETDIR)/make.exit
+	docker-compose down --rmi local --volumes --remove-orphans || true
+	@exit `cat $(TARGETDIR)/make.exit`
+
+# Test the OpenAPI specification against the real deployed service
+.PHONY: schemathesistest
+schemathesistest:
+	schemathesis run \
+	--validate-schema=true \
+	--checks=all \
+	--request-timeout=2000 \
+	--hypothesis-max-examples=100 \
+	--hypothesis-deadline=2000 \
+	--show-errors-tracebacks \
+	--base-url='${API_TEST_URL}' \
+	${OPENAPI_FILE}
+
+# Test the OpenAPI specification against the real deployed service
+.PHONY: openapitest
+openapitest:
+	$(MAKE) schemathesistest API_TEST_URL=${GOSRVLIBEXAMPLE_MONITORING_URL} OPENAPI_FILE=openapi_monitoring.yaml
+	$(MAKE) schemathesistest API_TEST_URL=${GOSRVLIBEXAMPLE_URL} OPENAPI_FILE=openapi.yaml
+
+# Run venom tests (https://github.com/ovh/venom)
+.PHONY: venomtest
+venomtest:
+	@mkdir -p $(TARGETDIR)/report/${DEPLOY_ENV}/venom/$(API_TEST_DIR)
+	venom run \
+		--var gosrvlibexample.url="${API_TEST_URL}" \
+		--var gosrvlibexample.version="${VERSION}" \
+		--var gosrvlibexample.release="${RELEASE}" \
+		--strict \
+		--log=info \
+		--output-dir=$(TARGETDIR)/report/${DEPLOY_ENV}/venom/$(API_TEST_DIR) \
+		resources/test/venom/$(API_TEST_DIR)/$(API_TEST_FILE)
+
+# Run venom tests (https://github.com/ovh/venom)
+.PHONY: apitest
+apitest:
+	$(MAKE) venomtest API_TEST_DIR=monitoring API_TEST_URL=${GOSRVLIBEXAMPLE_MONITORING_URL} API_TEST_FILE=api.yaml
+	$(MAKE) venomtest API_TEST_DIR=public API_TEST_URL=${GOSRVLIBEXAMPLE_URL} API_TEST_FILE=${API_TEST_FILE}

@@ -2,7 +2,10 @@
 
 *Go Service Library*
 
-[![Build Status](https://travis-ci.com/nexmoinc/gosrvlib.svg?token=YHpDM41jM29w1XFFg2HR&branch=main)](https://travis-ci.com/nexmoinc/gosrvlib?token=YHpDM41jM29w1XFFg2HR&branch=main)
+[![Build Status](https://travis-ci.org/nexmoinc/gosrvlib.svg?branch=main)](https://travis-ci.org/nexmoinc/gosrvlib?branch=main)
+[![Go Report Card](https://goreportcard.com/badge/github.com/nexmoinc/gosrvlib)](https://goreportcard.com/report/github.com/nexmoinc/gosrvlib)
+[![GoDoc](https://godoc.org/github.com/nexmoinc/gosrvlib?status.svg)](https://godoc.org/github.com/nexmoinc/gosrvlib)
+
 
 * **category**    Library
 * **copyright**   2020 Vonage
@@ -48,7 +51,7 @@ make dbuild
 
 An arbitrary make target can be executed inside a Docker container by specifying the "MAKETARGET" parameter:
 ```
-MAKETARGET='qa' make dbuild
+MAKETARGET='deps mod qa example' make dbuild
 ```
 The list of make targets can be obtained by typing ```make```
 
@@ -83,14 +86,9 @@ make format
 <a name="runtest"></a>
 ## Running all tests
 
-Before committing the code, please check if it passes all tests using
+Before committing the code, please format it and check if it passes all tests using
 ```bash
-make qa
-```
-
-To run the example service tests:
-```bash
-make example
+make format deps mod qa example
 ```
 
 -----------------------------------------------------------------
