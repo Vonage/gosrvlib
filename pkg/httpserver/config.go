@@ -29,8 +29,8 @@ type IndexHandlerFunc func(routes []route.Route) http.HandlerFunc
 type GetPublicIPFunc func(ctx context.Context) (string, error)
 
 // GetPublicIPDefaultFunc returns the GetPublicIP function for a default ipify client
-func GetPublicIPDefaultFunc() GetPublicIPFunc {
-	c, _ := ipify.NewClient()
+func GetPublicIPDefaultFunc(opts ...ipify.ClientOption) GetPublicIPFunc {
+	c, _ := ipify.NewClient(opts...)
 	return c.GetPublicIP
 }
 
