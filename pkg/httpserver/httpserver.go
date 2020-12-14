@@ -141,7 +141,6 @@ func defaultRouter() *httprouter.Router {
 			zap.Any("err", p),
 			zap.String("stacktrace", string(debug.Stack())),
 		)
-		logging.FromContext(r.Context()).Error("panic", zap.Any("err", p))
 		httputil.SendStatus(r.Context(), w, http.StatusInternalServerError)
 	}
 
