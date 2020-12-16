@@ -15,6 +15,7 @@ import (
 	"github.com/nexmoinc/gosrvlib/pkg/httputil"
 	"github.com/nexmoinc/gosrvlib/pkg/logging"
 	"github.com/nexmoinc/gosrvlib/pkg/metrics"
+	"github.com/nexmoinc/gosrvlib/pkg/traceid"
 	"go.uber.org/zap"
 )
 
@@ -42,7 +43,7 @@ func (b *nopBinder) BindHTTP(_ context.Context) []route.Route { return nil }
 func Start(ctx context.Context, binder Binder, opts ...Option) error {
 	l := logging.WithComponent(ctx, "httpserver")
 
-	cfg := defaultConfig()
+	cfg := defaultConfig(ctx)
 
 	for _, applyOpt := range opts {
 		if err := applyOpt(cfg); err != nil {
@@ -86,7 +87,7 @@ func startServer(ctx context.Context, cfg *config) error {
 	// create and start the http server
 	s := &http.Server{
 		Addr:         cfg.serverAddr,
-		Handler:      requestInjectHandler(l, cfg.traceIDHeaderName, cfg.router),
+		Handler:      RequestInjectHandler(l, cfg.traceIDHeaderName, cfg.router),
 		ReadTimeout:  cfg.serverReadTimeout,
 		TLSConfig:    cfg.tlsConfig,
 		WriteTimeout: cfg.serverWriteTimeout,
@@ -125,23 +126,26 @@ func startServer(ctx context.Context, cfg *config) error {
 	return nil
 }
 
-func defaultRouter() *httprouter.Router {
+func defaultRouter(ctx context.Context) *httprouter.Router {
 	r := httprouter.New()
+	l := logging.FromContext(ctx)
 
-	r.NotFound = metrics.Handler("404", func(w http.ResponseWriter, r *http.Request) {
+	r.NotFound = RequestInjectHandler(l, traceid.DefaultHeader, metrics.Handler("404", func(w http.ResponseWriter, r *http.Request) {
 		httputil.SendStatus(r.Context(), w, http.StatusNotFound)
-	})
+	}))
 
-	r.MethodNotAllowed = metrics.Handler("405", func(w http.ResponseWriter, r *http.Request) {
+	r.MethodNotAllowed = RequestInjectHandler(l, traceid.DefaultHeader, metrics.Handler("405", func(w http.ResponseWriter, r *http.Request) {
 		httputil.SendStatus(r.Context(), w, http.StatusMethodNotAllowed)
-	})
+	}))
 
 	r.PanicHandler = func(w http.ResponseWriter, r *http.Request, p interface{}) {
-		logging.FromContext(r.Context()).Error("panic",
-			zap.Any("err", p),
-			zap.String("stacktrace", string(debug.Stack())),
-		)
-		httputil.SendStatus(r.Context(), w, http.StatusInternalServerError)
+		RequestInjectHandler(l, traceid.DefaultHeader, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			logging.FromContext(r.Context()).Error("panic",
+				zap.Any("err", p),
+				zap.String("stacktrace", string(debug.Stack())),
+			)
+			httputil.SendStatus(r.Context(), w, http.StatusInternalServerError)
+		})).ServeHTTP(w, r)
 	}
 
 	return r

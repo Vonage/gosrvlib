@@ -72,7 +72,7 @@ func Test_defaultRouter(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			r := defaultRouter()
+			r := defaultRouter(testutil.Context())
 
 			if tt.setupRouter != nil {
 				tt.setupRouter(r)

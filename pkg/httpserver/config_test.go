@@ -5,11 +5,12 @@ package httpserver
 import (
 	"testing"
 
+	"github.com/nexmoinc/gosrvlib/pkg/testutil"
 	"github.com/stretchr/testify/require"
 )
 
 func Test_defaultConfig(t *testing.T) {
-	cfg := defaultConfig()
+	cfg := defaultConfig(testutil.Context())
 	require.NotNil(t, cfg)
 	require.NotNil(t, cfg.metricsHandlerFunc)
 	require.NotNil(t, cfg.pingHandlerFunc)
@@ -31,7 +32,7 @@ func Test_config_validate(t *testing.T) {
 		{
 			name: "fail with invalid httpServer address",
 			cfg: func() *config {
-				cfg := defaultConfig()
+				cfg := defaultConfig(testutil.Context())
 				cfg.serverAddr = "::"
 				return cfg
 			}(),
@@ -40,7 +41,7 @@ func Test_config_validate(t *testing.T) {
 		{
 			name: "fail with invalid shutdown timeout",
 			cfg: func() *config {
-				cfg := defaultConfig()
+				cfg := defaultConfig(testutil.Context())
 				cfg.shutdownTimeout = 0
 				return cfg
 			}(),
@@ -49,7 +50,7 @@ func Test_config_validate(t *testing.T) {
 		{
 			name: "fail with missing router",
 			cfg: func() *config {
-				cfg := defaultConfig()
+				cfg := defaultConfig(testutil.Context())
 				cfg.router = nil
 				return cfg
 			}(),
@@ -58,7 +59,7 @@ func Test_config_validate(t *testing.T) {
 		{
 			name: "fail with missing metrics handler",
 			cfg: func() *config {
-				cfg := defaultConfig()
+				cfg := defaultConfig(testutil.Context())
 				cfg.metricsHandlerFunc = nil
 				return cfg
 			}(),
@@ -67,7 +68,7 @@ func Test_config_validate(t *testing.T) {
 		{
 			name: "fail with missing ping handler",
 			cfg: func() *config {
-				cfg := defaultConfig()
+				cfg := defaultConfig(testutil.Context())
 				cfg.pingHandlerFunc = nil
 				return cfg
 			}(),
@@ -76,7 +77,7 @@ func Test_config_validate(t *testing.T) {
 		{
 			name: "fail with missing pprof handler",
 			cfg: func() *config {
-				cfg := defaultConfig()
+				cfg := defaultConfig(testutil.Context())
 				cfg.pprofHandlerFunc = nil
 				return cfg
 			}(),
@@ -84,7 +85,7 @@ func Test_config_validate(t *testing.T) {
 		}, {
 			name: "fail with missing status handler",
 			cfg: func() *config {
-				cfg := defaultConfig()
+				cfg := defaultConfig(testutil.Context())
 				cfg.statusHandlerFunc = nil
 				return cfg
 			}(),
@@ -92,7 +93,7 @@ func Test_config_validate(t *testing.T) {
 		}, {
 			name: "fail with missing ip handler",
 			cfg: func() *config {
-				cfg := defaultConfig()
+				cfg := defaultConfig(testutil.Context())
 				cfg.ipHandlerFunc = nil
 				return cfg
 			}(),
@@ -100,7 +101,7 @@ func Test_config_validate(t *testing.T) {
 		},
 		{
 			name:    "succeed with valid configuration",
-			cfg:     defaultConfig(),
+			cfg:     defaultConfig(testutil.Context()),
 			wantErr: false,
 		},
 	}

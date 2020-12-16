@@ -34,9 +34,9 @@ func GetPublicIPDefaultFunc() GetPublicIPFunc {
 	return c.GetPublicIP
 }
 
-func defaultConfig() *config {
+func defaultConfig(ctx context.Context) *config {
 	return &config{
-		router:               defaultRouter(),
+		router:               defaultRouter(ctx),
 		serverAddr:           ":8017",
 		serverReadTimeout:    1 * time.Minute,
 		serverWriteTimeout:   1 * time.Minute,
