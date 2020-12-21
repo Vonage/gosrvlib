@@ -207,7 +207,8 @@ func TestLogDifferences(t *testing.T) {
 		),
 		WithFormatStr("json"),
 		WithLevelStr("info"),
-		WithOutputPaths([]string{"memory://"}), // Redirect all messages to the MemorySink.
+		WithOutputPaths([]string{"memory://"}),      // Redirect all messages to the MemorySink.
+		WithErrorOutputPaths([]string{"memory://"}), // Redirect all errors to the MemorySink.
 	)
 	require.NoError(t, err)
 	require.NotNil(t, l)

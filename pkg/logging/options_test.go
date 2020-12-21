@@ -106,3 +106,11 @@ func TestWithOutputPaths(t *testing.T) {
 	require.Nil(t, err)
 	require.Equal(t, v, cfg.outputPaths)
 }
+
+func TestWithErrorOutputPaths(t *testing.T) {
+	v := []string{"stdout", "stderr"}
+	cfg := &config{}
+	err := WithErrorOutputPaths(v)(cfg)
+	require.Nil(t, err)
+	require.Equal(t, v, cfg.errorOutputPaths)
+}

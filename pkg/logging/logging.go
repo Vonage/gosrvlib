@@ -89,7 +89,7 @@ func NewLogger(opts ...Option) (*zap.Logger, error) {
 			EncodeCaller: zapcore.ShortCallerEncoder,
 		},
 		OutputPaths:      cfg.outputPaths,
-		ErrorOutputPaths: []string{"stderr"},
+		ErrorOutputPaths: cfg.errorOutputPaths,
 		DisableCaller:    disableCaller,
 		InitialFields: map[string]interface{}{
 			"hostname": hostname,

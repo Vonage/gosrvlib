@@ -71,3 +71,11 @@ func WithOutputPaths(paths []string) Option {
 		return nil
 	}
 }
+
+// WithErrorOutputPaths manually overrides the ErrorOutputPaths option
+func WithErrorOutputPaths(paths []string) Option {
+	return func(cfg *config) error {
+		cfg.errorOutputPaths = paths
+		return nil
+	}
+}
