@@ -98,3 +98,11 @@ func TestWithLevelStr(t *testing.T) {
 		})
 	}
 }
+
+func TestWithOutputPaths(t *testing.T) {
+	v := []string{"stdout", "stderr"}
+	cfg := &config{}
+	err := WithOutputPaths(v)(cfg)
+	require.Nil(t, err)
+	require.Equal(t, v, cfg.outputPaths)
+}

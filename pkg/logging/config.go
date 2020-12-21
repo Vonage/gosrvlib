@@ -14,6 +14,7 @@ func defaultConfig() *config {
 		fields:            make([]zap.Field, 0),
 		format:            JSONFormat,
 		level:             zap.DebugLevel,
+		outputPaths:       []string{"stderr"},
 		incMetricLogLevel: metrics.IncLogLevelCounter,
 	}
 }
@@ -22,5 +23,6 @@ type config struct {
 	fields            []zap.Field
 	format            Format
 	level             zapcore.Level
+	outputPaths       []string
 	incMetricLogLevel IncrementLogMetricsFunc
 }
