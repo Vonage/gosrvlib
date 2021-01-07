@@ -6,6 +6,7 @@ import (
 
 	lc "github.com/go-playground/locales/en"
 	ut "github.com/go-playground/universal-translator"
+	"github.com/go-playground/validator/v10"
 	tr "github.com/go-playground/validator/v10/translations/en"
 )
 
@@ -38,5 +39,15 @@ func WithFieldNameTag(fieldNameTag string) Option {
 			}
 			return name
 		})
+	}
+}
+
+// WithValidationTranslated allows to register a validation func and a translation for the provided tag
+func WithValidationTranslated(
+	tag string, fn validator.Func, registerFn validator.RegisterTranslationsFunc, translationFn validator.TranslationFunc,
+) Option {
+	return func(v *Validator) {
+		_ = v.V.RegisterValidation(tag, fn)
+		_ = v.V.RegisterTranslation(tag, v.T, registerFn, translationFn)
 	}
 }
