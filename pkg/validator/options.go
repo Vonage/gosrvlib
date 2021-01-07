@@ -11,43 +11,50 @@ import (
 )
 
 // Option is the interface that allows to set options.
-type Option func(v *Validator)
+type Option func(v *Validator) error
 
 // WithDefaultTranslations sets the default English translations.
 func WithDefaultTranslations() Option {
-	return func(v *Validator) {
+	return func(v *Validator) error {
 		en := lc.New()
 		uni := ut.New(en, en)
 		trans, ok := uni.GetTranslator("en")
 		if ok {
-			_ = tr.RegisterDefaultTranslations(v.V, trans)
+			if err := tr.RegisterDefaultTranslations(v.V, trans); err != nil {
+				return err
+			}
 			v.T = trans
 		}
+		return nil
 	}
 }
 
-// WithFieldNameTag allows to use the field names specified by the fieldNameTag instead of the original struct names.
-func WithFieldNameTag(fieldNameTag string) Option {
-	return func(v *Validator) {
-		if fieldNameTag == "" {
-			return
+// WithFieldNameTag allows to use the field names specified by the tag instead of the original struct names.
+func WithFieldNameTag(tag string) Option {
+	return func(v *Validator) error {
+		if tag == "" {
+			return nil
 		}
 		v.V.RegisterTagNameFunc(func(fld reflect.StructField) string {
-			name := strings.SplitN(fld.Tag.Get(fieldNameTag), ",", 2)[0]
+			name := strings.SplitN(fld.Tag.Get(tag), ",", 2)[0]
 			if name == "-" {
 				return ""
 			}
 			return name
 		})
+		return nil
 	}
 }
 
-// WithValidationTranslated allows to register a validation func and a translation for the provided tag
-func WithValidationTranslated(
-	tag string, fn validator.Func, registerFn validator.RegisterTranslationsFunc, translationFn validator.TranslationFunc,
-) Option {
-	return func(v *Validator) {
-		_ = v.V.RegisterValidation(tag, fn)
-		_ = v.V.RegisterTranslation(tag, v.T, registerFn, translationFn)
+// WithValidationTranslated allows to register a validation func and a translation for the provided tag.
+func WithValidationTranslated(tag string, fn validator.Func, registerFn validator.RegisterTranslationsFunc, translationFn validator.TranslationFunc) Option {
+	return func(v *Validator) error {
+		if err := v.V.RegisterValidation(tag, fn); err != nil {
+			return err
+		}
+		if err := v.V.RegisterTranslation(tag, v.T, registerFn, translationFn); err != nil {
+			return err
+		}
+		return nil
 	}
 }

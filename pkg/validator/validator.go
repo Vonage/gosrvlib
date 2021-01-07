@@ -65,14 +65,16 @@ type Validator struct {
 }
 
 // New returns a new validator with the specified options.
-func New(opts ...Option) *Validator {
+func New(opts ...Option) (*Validator, error) {
 	v := &Validator{
 		V: vt.New(),
 	}
 	for _, applyOpt := range opts {
-		applyOpt(v)
+		if err := applyOpt(v); err != nil {
+			return nil, err
+		}
 	}
-	return v
+	return v, nil
 }
 
 // ValidateStruct validates the structure fields tagged with "validate".

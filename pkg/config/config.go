@@ -50,7 +50,7 @@ const (
 	defaultConfigName                = "config" // Base name of the file containing the configuration data.
 	defaultConfigType                = "json"   // Type of configuration data
 	defaultLogFormat                 = "JSON"
-	defaultLogLevel                  = "INFO"
+	defaultLogLevel                  = "DEBUG"
 	defaultLogAddress                = ""
 	defaultLogNetwork                = ""
 	defaultRemoteConfigProvider      = ""
@@ -99,24 +99,24 @@ type Viper interface {
 
 // BaseConfig contains the default configuration options to be used in the application config struct
 type BaseConfig struct {
-	Log LogConfig `mapstructure:"log"`
+	Log LogConfig `mapstructure:"log" validate:"required"`
 }
 
 // LogConfig contains the configuration for the application logger
 type LogConfig struct {
-	Level   string `mapstructure:"level"`   // Log level: EMERGENCY, ALERT, CRITICAL, ERROR, WARNING, NOTICE, INFO, DEBUG.
-	Format  string `mapstructure:"format"`  // Log format: CONSOLE, JSON.
-	Network string `mapstructure:"network"` // Network type used by the Syslog (i.e. udp or tcp).
-	Address string `mapstructure:"address"` // Network address of the Syslog daemon (ip:port) or just (:port).
+	Level   string `mapstructure:"level" validate:"required,oneof=EMERGENCY ALERT CRITICAL ERROR WARNING NOTICE INFO DEBUG"` // Log level
+	Format  string `mapstructure:"format" validate:"required,oneof=CONSOLE JSON"`                                            // Log format
+	Network string `mapstructure:"network" validate:"omitempty,oneof=udp tcp"`                                               // Network type used by the Syslog
+	Address string `mapstructure:"address" validate:"omitempty,hostname_port"`                                               // Network address of the Syslog daemon (ip:port) or just (:port).
 }
 
 // remoteSourceConfig contains the default remote source options to be used in the application config struct
 type remoteSourceConfig struct {
-	Provider      string `mapstructure:"remoteConfigProvider"`      // remote configuration source ("consul", "etcd", "envvar")
-	Endpoint      string `mapstructure:"remoteConfigEndpoint"`      // remote configuration URL (ip:port)
-	Path          string `mapstructure:"remoteConfigPath"`          // remote configuration path where to search fo the configuration file ("/cli/program")
-	SecretKeyring string `mapstructure:"remoteConfigSecretKeyring"` // path to the openpgp secret keyring used to decript the remote configuration data ("/etc/program/configkey.gpg")
-	Data          string `mapstructure:"remoteConfigData"`          // base64 encoded JSON configuration data to be used with the "envvar" provider
+	Provider      string `mapstructure:"remoteConfigProvider" validate:"omitempty,oneof=consul etcd envvar"`      // remote configuration source
+	Endpoint      string `mapstructure:"remoteConfigEndpoint" validate:"omitempty,url|hostname_port"`             // remote configuration URL (ip:port)
+	Path          string `mapstructure:"remoteConfigPath" validate:"omitempty,file"`                              // remote configuration path where to search fo the configuration file ("/cli/program")
+	SecretKeyring string `mapstructure:"remoteConfigSecretKeyring" validate:"omitempty,file"`                     // path to the openpgp secret keyring used to decript the remote configuration data ("/etc/program/configkey.gpg")
+	Data          string `mapstructure:"remoteConfigData" validate:"required_if=Provider envar,omitempty,base64"` // base64 encoded JSON configuration data to be used with the "envvar" provider
 }
 
 var (
