@@ -7,7 +7,7 @@ require (
 	github.com/go-playground/locales v0.13.0
 	github.com/go-playground/universal-translator v0.17.0
 	github.com/go-playground/validator/v10 v10.4.1
-	github.com/golang/mock v1.3.1
+	github.com/golang/mock v1.4.4
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/prometheus/client_golang v1.9.0
 	github.com/spf13/pflag v1.0.5
