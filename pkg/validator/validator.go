@@ -98,7 +98,7 @@ func (v *Validator) ValidateStruct(obj interface{}) error {
 				StructField:     e.StructField(),
 				Value:           e.Value(),
 				Param:           e.Param(),
-				Err:             e.Translate(v.T),
+				Err:             strings.Replace(e.Translate(v.T), e.Field(), ns, 1),
 			})
 		}
 	}
