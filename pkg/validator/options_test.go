@@ -2,9 +2,9 @@ package validator
 
 import (
 	"fmt"
-	ut "github.com/go-playground/universal-translator"
 	"testing"
 
+	ut "github.com/go-playground/universal-translator"
 	vt "github.com/go-playground/validator/v10"
 	"github.com/stretchr/testify/require"
 )
