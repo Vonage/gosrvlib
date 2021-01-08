@@ -70,11 +70,11 @@ func TestValidator_ValidateStruct(t *testing.T) {
 		IntField int    `json:"sub_int" validate:"required,min=2"`
 	}
 	type rootStruct struct {
-		BoolField       bool       `json:"bool_field" validate:"required"`
-		SubStruct       subStruct  `json:"sub_struct" validate:"required"`
-		SubStructPtr    *subStruct `json:"sub_struct_ptr" validate:"required"`
-		StringField     string     `json:"string_field" validate:"required"`
-		NoValidateField string     `json:"no_validate_field" validate:"-"`
+		BoolField    bool       `json:"bool_field" validate:"required"`
+		SubStruct    subStruct  `json:"sub_struct" validate:"required"`
+		SubStructPtr *subStruct `json:"sub_struct_ptr" validate:"required"`
+		StringField  string     `json:"string_field" validate:"required"`
+		NoNameField  string     `json:"-" validate:"required"`
 	}
 
 	tests := []struct {
@@ -94,8 +94,8 @@ func TestValidator_ValidateStruct(t *testing.T) {
 					URLField: "http://second.test.invalid",
 					IntField: 123,
 				},
-				StringField:     "hello world",
-				NoValidateField: "test",
+				StringField: "hello world",
+				NoNameField: "test",
 			},
 			wantErr: false,
 		},
