@@ -111,11 +111,11 @@ type LogConfig struct {
 
 // remoteSourceConfig contains the default remote source options to be used in the application config struct
 type remoteSourceConfig struct {
-	Provider      string `mapstructure:"remoteConfigProvider" validate:"omitempty,oneof=consul etcd envvar"`      // remote configuration source
-	Endpoint      string `mapstructure:"remoteConfigEndpoint" validate:"omitempty,url|hostname_port"`             // remote configuration URL (ip:port)
-	Path          string `mapstructure:"remoteConfigPath" validate:"omitempty,file"`                              // remote configuration path where to search fo the configuration file ("/cli/program")
-	SecretKeyring string `mapstructure:"remoteConfigSecretKeyring" validate:"omitempty,file"`                     // path to the openpgp secret keyring used to decript the remote configuration data ("/etc/program/configkey.gpg")
-	Data          string `mapstructure:"remoteConfigData" validate:"required_if=Provider envar,omitempty,base64"` // base64 encoded JSON configuration data to be used with the "envvar" provider
+	Provider      string `mapstructure:"remoteConfigProvider" validate:"omitempty,oneof=consul etcd firestore envvar"` // remote configuration source
+	Endpoint      string `mapstructure:"remoteConfigEndpoint" validate:"omitempty,url|hostname_port"`                  // remote configuration URL (ip:port)
+	Path          string `mapstructure:"remoteConfigPath" validate:"omitempty,file"`                                   // remote configuration path where to search fo the configuration file ("/cli/program")
+	SecretKeyring string `mapstructure:"remoteConfigSecretKeyring" validate:"omitempty,file"`                          // path to the openpgp secret keyring used to decript the remote configuration data ("/etc/program/configkey.gpg")
+	Data          string `mapstructure:"remoteConfigData" validate:"required_if=Provider envar,omitempty,base64"`      // base64 encoded JSON configuration data to be used with the "envvar" provider
 }
 
 var (
