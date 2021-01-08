@@ -11,7 +11,6 @@
 // 1. In the “myprog” program the configuration parameters are defined as a data structure that can be easily mapped to and from a JSON (or YAML) object, and they are initialized with constant default values;
 //
 // 2. The program attempts to load the local “config.json” configuration file (or what is specified by defaultConfigName and defaultConfigType) and, as soon one is found, overwrites the values previously set. The configuration file is searched in the following ordered directories:
-//    ../resources/test/etc/myprog/
 //    ./
 //    ~/.myprog/
 //    /etc/myprog/
