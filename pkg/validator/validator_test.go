@@ -65,14 +65,16 @@ func TestNew(t *testing.T) {
 }
 
 func TestValidator_ValidateStruct(t *testing.T) {
-	type baseConfig struct {
-		Base1 string `mapstructure:"base1" validate:"required,url"`
-		Base2 int    `mapstructure:"base2" validate:"required"`
+	type subStruct struct {
+		URLField string `json:"sub_string" validate:"required,url"`
+		IntField int    `json:"sub_int" validate:"required,min=2"`
 	}
-	type appConfig struct {
-		Base    baseConfig `mapstructure:"base" validate:"required"`
-		Config1 bool       `mapstructure:"config1" validate:"required"`
-		Config2 string     `mapstructure:"config2" validate:"required"`
+	type rootStruct struct {
+		BoolField       bool       `json:"bool_field" validate:"required"`
+		SubStruct       subStruct  `json:"sub_struct" validate:"required"`
+		SubStructPtr    *subStruct `json:"sub_struct_ptr" validate:"required"`
+		StringField     string     `json:"string_field" validate:"required"`
+		NoValidateField string     `json:"no_validate_field" validate:"-"`
 	}
 
 	tests := []struct {
@@ -82,21 +84,24 @@ func TestValidator_ValidateStruct(t *testing.T) {
 	}{
 		{
 			name: "success struct validated",
-			obj: appConfig{
-				Base: baseConfig{
-					Base1: "https://test.ipify.url.invalid",
-					Base2: 1234,
+			obj: rootStruct{
+				BoolField: true,
+				SubStruct: subStruct{
+					URLField: "http://first.test.invalid",
+					IntField: 3,
 				},
-				Config1: true,
-				Config2: "test_string",
+				SubStructPtr: &subStruct{
+					URLField: "http://second.test.invalid",
+					IntField: 123,
+				},
+				StringField:     "hello world",
+				NoValidateField: "test",
 			},
 			wantErr: false,
 		},
 		{
-			name: "failed in validation",
-			obj: appConfig{
-				Base: baseConfig{Base1: "not_url"},
-			},
+			name:    "failed in validation with empty struct",
+			obj:     rootStruct{},
 			wantErr: true,
 		},
 	}
@@ -105,7 +110,7 @@ func TestValidator_ValidateStruct(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			opts := []Option{
-				WithFieldNameTag("mapstructure"),
+				WithFieldNameTag("json"),
 				WithDefaultTranslations(),
 			}
 			v, _ := New(opts...)

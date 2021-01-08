@@ -39,10 +39,6 @@ func TestWithFieldNameTag(t *testing.T) {
 			tag:  "",
 		},
 		{
-			name: "name with -",
-			tag:  "-abc-efgh-ijkl",
-		},
-		{
 			name: "success return name",
 			tag:  "abcderfghijk",
 		},

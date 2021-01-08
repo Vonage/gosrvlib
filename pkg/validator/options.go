@@ -37,9 +37,7 @@ func WithDefaultTranslations() Option {
 		uni := ut.New(en, en)
 		trans, ok := uni.GetTranslator("en")
 		if ok {
-			if err := tr.RegisterDefaultTranslations(v.V, trans); err != nil {
-				return err
-			}
+			_ = tr.RegisterDefaultTranslations(v.V, trans)
 			v.T = trans
 		}
 		return nil
