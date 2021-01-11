@@ -3,7 +3,7 @@
 package validator
 
 import (
-	"strings"
+	"fmt"
 
 	ut "github.com/go-playground/universal-translator"
 	vt "github.com/go-playground/validator/v10"
@@ -56,12 +56,19 @@ func (e *ValidationError) Error() string {
 	return e.Err
 }
 
+// TransFunc is the internal basic translation function for a given tag
+type TransFunc func(fe vt.FieldError) string
+
 // Validator contains the validator object fields.
 type Validator struct {
 	// V is the validate object
 	V *vt.Validate
+
 	// Trans is the translator object
 	T ut.Translator
+
+	// translate contains the map of translation functions indexed by tag
+	translate map[string]TransFunc
 }
 
 // New returns a new validator with the specified options.
@@ -85,22 +92,35 @@ func (v *Validator) ValidateStruct(obj interface{}) error {
 	}
 	for _, e := range err.(vt.ValidationErrors) {
 		if e != nil {
-			ns := e.Namespace()
-			if idx := strings.Index(ns, "."); idx != -1 {
-				ns = ns[idx+1:] // remove root struct name
-			}
 			err = multierr.Append(err, &ValidationError{
 				Tag:             e.Tag(),
 				ActualTag:       e.ActualTag(),
-				Namespace:       ns,
+				Namespace:       e.Namespace(),
 				StructNamespace: e.StructNamespace(),
 				Field:           e.Field(),
 				StructField:     e.StructField(),
 				Value:           e.Value(),
 				Param:           e.Param(),
-				Err:             strings.Replace(e.Translate(v.T), e.Field(), ns, 1),
+				Err:             v.stringify(e),
 			})
 		}
 	}
 	return err
+}
+
+func (v *Validator) stringify(fe vt.FieldError) string {
+	if v.T != nil {
+		return fe.Translate(v.T)
+	}
+	if v.translate != nil {
+		// ns := fe.Namespace()
+		// if idx := strings.Index(ns, "."); idx != -1 {
+		// 	ns = ns[idx+1:] // remove root struct name
+		// }
+		s, ok := v.translate[fe.Tag()]
+		if ok {
+			return s(fe)
+		}
+	}
+	return fmt.Sprintf("%s", fe)
 }

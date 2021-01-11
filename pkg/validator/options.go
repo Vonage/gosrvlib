@@ -1,6 +1,7 @@
 package validator
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
 
@@ -30,6 +31,14 @@ func WithFieldNameTag(tag string) Option {
 	}
 }
 
+// WithBasicTranslations enable the basic internal error message translations.
+func WithBasicTranslations(t map[string]TransFunc) Option {
+	return func(v *Validator) error {
+		v.translate = t
+		return nil
+	}
+}
+
 // WithDefaultTranslations sets the default English translations.
 func WithDefaultTranslations() Option {
 	return func(v *Validator) error {
@@ -49,6 +58,9 @@ func WithValidationTranslated(tag string, fn vt.Func, registerFn vt.RegisterTran
 	return func(v *Validator) error {
 		if err := v.V.RegisterValidation(tag, fn); err != nil {
 			return err
+		}
+		if v.T == nil {
+			return fmt.Errorf("the Translator object is nil")
 		}
 		if err := v.V.RegisterTranslation(tag, v.T, registerFn, translationFn); err != nil {
 			return err
