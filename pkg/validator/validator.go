@@ -117,18 +117,16 @@ func (v *Validator) stringify(fe vt.FieldError, ve *ValidationError) string {
 	if v.T != nil {
 		return fe.Translate(v.T)
 	}
-	if v.translate != nil {
-		ns := fe.Namespace()
+	t, ok := v.translate[ve.Tag]
+	if ok {
+		ns := ve.Namespace
 		if idx := strings.Index(ns, "."); idx != -1 {
 			ns = ns[idx+1:] // remove root struct name
 		}
 		ve.Namespace = ns
-		t, ok := v.translate[ve.Tag]
-		if ok {
-			var tpl bytes.Buffer
-			if err := t.Execute(&tpl, fe); err == nil {
-				return tpl.String()
-			}
+		var tpl bytes.Buffer
+		if err := t.Execute(&tpl, ve); err == nil {
+			return tpl.String()
 		}
 	}
 	return fmt.Sprintf("%s", fe)
