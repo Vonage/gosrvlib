@@ -3,7 +3,10 @@
 package validator
 
 import (
+	"bytes"
 	"fmt"
+	"strings"
+	"text/template"
 
 	ut "github.com/go-playground/universal-translator"
 	vt "github.com/go-playground/validator/v10"
@@ -47,6 +50,9 @@ type ValidationError struct {
 	// Param is the param value
 	Param string
 
+	// Kind returns the Field's reflect Kind in string format
+	Kind string
+
 	// Error returns the translated error message
 	Err string
 }
@@ -56,9 +62,6 @@ func (e *ValidationError) Error() string {
 	return e.Err
 }
 
-// TransFunc is the internal basic translation function for a given tag
-type TransFunc func(fe vt.FieldError) string
-
 // Validator contains the validator object fields.
 type Validator struct {
 	// V is the validate object
@@ -67,8 +70,8 @@ type Validator struct {
 	// Trans is the translator object
 	T ut.Translator
 
-	// translate contains the map of translation functions indexed by tag
-	translate map[string]TransFunc
+	// translate contains the map of basic translation templates indexed by tag
+	translate map[string]*template.Template
 }
 
 // New returns a new validator with the specified options.
@@ -92,7 +95,7 @@ func (v *Validator) ValidateStruct(obj interface{}) error {
 	}
 	for _, e := range err.(vt.ValidationErrors) {
 		if e != nil {
-			err = multierr.Append(err, &ValidationError{
+			ve := &ValidationError{
 				Tag:             e.Tag(),
 				ActualTag:       e.ActualTag(),
 				Namespace:       e.Namespace(),
@@ -101,25 +104,31 @@ func (v *Validator) ValidateStruct(obj interface{}) error {
 				StructField:     e.StructField(),
 				Value:           e.Value(),
 				Param:           e.Param(),
-				Err:             v.stringify(e),
-			})
+				Kind:            e.Kind().String(),
+			}
+			ve.Err = v.stringify(e, ve)
+			err = multierr.Append(err, ve)
 		}
 	}
 	return err
 }
 
-func (v *Validator) stringify(fe vt.FieldError) string {
+func (v *Validator) stringify(fe vt.FieldError, ve *ValidationError) string {
 	if v.T != nil {
 		return fe.Translate(v.T)
 	}
 	if v.translate != nil {
-		// ns := fe.Namespace()
-		// if idx := strings.Index(ns, "."); idx != -1 {
-		// 	ns = ns[idx+1:] // remove root struct name
-		// }
-		s, ok := v.translate[fe.Tag()]
+		ns := fe.Namespace()
+		if idx := strings.Index(ns, "."); idx != -1 {
+			ns = ns[idx+1:] // remove root struct name
+		}
+		ve.Namespace = ns
+		t, ok := v.translate[ve.Tag]
 		if ok {
-			return s(fe)
+			var tpl bytes.Buffer
+			if err := t.Execute(&tpl, fe); err == nil {
+				return tpl.String()
+			}
 		}
 	}
 	return fmt.Sprintf("%s", fe)

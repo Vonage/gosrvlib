@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"text/template"
 
 	lc "github.com/go-playground/locales/en"
 	ut "github.com/go-playground/universal-translator"
@@ -32,7 +33,8 @@ func WithFieldNameTag(tag string) Option {
 }
 
 // WithBasicTranslations enable the basic internal error message translations.
-func WithBasicTranslations(t map[string]TransFunc) Option {
+// The argument t maps tag to the error template using the ValidationError data.
+func WithBasicTranslations(t map[string]*template.Template) Option {
 	return func(v *Validator) error {
 		v.translate = t
 		return nil
