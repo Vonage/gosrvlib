@@ -20,8 +20,8 @@ type Validator struct {
 	// Trans is the translator object used by the parent library.
 	T ut.Translator
 
-	// translate contains the map of basic translation templates indexed by tag.
-	translate map[string]*template.Template
+	// tpl contains the map of basic translation templates indexed by tag.
+	tpl map[string]*template.Template
 }
 
 // New returns a new validator with the specified options.
@@ -65,18 +65,18 @@ func (v *Validator) ValidateStruct(obj interface{}) error {
 }
 
 func (v *Validator) stringify(fe vt.FieldError, ve *ValidationError) string {
-	if v.T != nil {
-		return fe.Translate(v.T)
-	}
-	t, ok := v.translate[ve.Tag]
+	t, ok := v.tpl[ve.Tag]
 	if ok {
 		if idx := strings.Index(ve.Namespace, "."); idx != -1 {
 			ve.Namespace = ve.Namespace[idx+1:] // remove root struct name
 		}
-		var tpl bytes.Buffer
-		if err := t.Execute(&tpl, ve); err == nil {
-			return tpl.String()
+		var out bytes.Buffer
+		if err := t.Execute(&out, ve); err == nil {
+			return out.String()
 		}
+	}
+	if v.T != nil {
+		return fe.Translate(v.T)
 	}
 	return fe.Error()
 }

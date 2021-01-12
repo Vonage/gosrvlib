@@ -37,6 +37,48 @@ func TestWithFieldNameTag(t *testing.T) {
 	}
 }
 
+func TestWithErrorTemplates(t *testing.T) {
+	tests := []struct {
+		name    string
+		arg     map[string]string
+		wantErr bool
+	}{
+		{
+			name:    "success with default templates",
+			arg:     BasicTranslations,
+			wantErr: false,
+		},
+		{
+			name:    "success with one templates",
+			arg:     map[string]string{"test": "field {{.Tag}}"},
+			wantErr: false,
+		},
+		{
+			name:    "success with empty template",
+			arg:     map[string]string{},
+			wantErr: false,
+		},
+		{
+			name:    "error with invalid template",
+			arg:     map[string]string{"test": "{{.Something} missing closing curly brace"},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			v := &Validator{V: vt.New()}
+			err := WithErrorTemplates(tt.arg)(v)
+			if tt.wantErr {
+				require.Error(t, err, "WithErrorTemplates() error = %v, wantErr %v", err, tt.wantErr)
+			} else {
+				require.Nil(t, err, "WithErrorTemplates() unexpected error = %v", err)
+			}
+		})
+	}
+}
+
 func TestWithDefaultTranslations(t *testing.T) {
 	t.Parallel()
 	v := &Validator{V: vt.New()}

@@ -62,7 +62,7 @@ var BasicTranslations = map[string]string{
 	"ipv6":                    "{{.Namespace}} must be a valid IPv6 address",
 	"isbn":                    "{{.Namespace}} must be a valid ISBN number",
 	"isbn10":                  "{{.Namespace}} must be a valid ISBN-10 number",
-	"isbn13":                  "{{.Namespace} must be a valid ISBN-13 number}",
+	"isbn13":                  "{{.Namespace}} must be a valid ISBN-13 number",
 	"iscolor":                 "{{.Namespace}} must be a valid color",
 	"isdefault":               "{{.Namespace}} must not be present or it must be empty",
 	"iso3166_1_alpha2":        "{{.Namespace}} must be a valid iso3166-1 alpha-2 country code",
