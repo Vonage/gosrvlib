@@ -50,10 +50,13 @@ type ValidationError struct {
 	// Param is the param value
 	Param string
 
-	// Kind returns the Field's reflect Kind in string format
+	// Kind returns the Field's reflect Kind as string
 	Kind string
 
-	// Error returns the translated error message
+	// Type returns the Field's reflect Type as string
+	Type string
+
+	// Error returns the error message as string
 	Err string
 }
 
@@ -105,6 +108,7 @@ func (v *Validator) ValidateStruct(obj interface{}) error {
 				Value:           e.Value(),
 				Param:           e.Param(),
 				Kind:            e.Kind().String(),
+				Type:            e.Type().String(),
 			}
 			ve.Err = v.stringify(e, ve)
 			err = multierr.Append(err, ve)
@@ -119,11 +123,9 @@ func (v *Validator) stringify(fe vt.FieldError, ve *ValidationError) string {
 	}
 	t, ok := v.translate[ve.Tag]
 	if ok {
-		ns := ve.Namespace
-		if idx := strings.Index(ns, "."); idx != -1 {
-			ns = ns[idx+1:] // remove root struct name
+		if idx := strings.Index(ve.Namespace, "."); idx != -1 {
+			ve.Namespace = ve.Namespace[idx+1:] // remove root struct name
 		}
-		ve.Namespace = ns
 		var tpl bytes.Buffer
 		if err := t.Execute(&tpl, ve); err == nil {
 			return tpl.String()
