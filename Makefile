@@ -138,9 +138,9 @@ dbuild:
 .PHONY: deps
 deps: ensuretarget
 	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(BINUTIL) v1.35.2
-	($(GO) get -u github.com/jstemmer/go-junit-report)
-	($(GO) get -u github.com/rakyll/gotest)
-	($(GO) get -u github.com/golang/mock/mockgen)
+	(GO111MODULE=off $(GO) get -u github.com/jstemmer/go-junit-report)
+	(GO111MODULE=off $(GO) get -u github.com/rakyll/gotest)
+	(GO111MODULE=off $(GO) get -u github.com/golang/mock/mockgen)
 
 # Create the trget directories if missing
 .PHONY: ensuretarget
