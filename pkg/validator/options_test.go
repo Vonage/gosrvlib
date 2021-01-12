@@ -45,7 +45,7 @@ func TestWithErrorTemplates(t *testing.T) {
 	}{
 		{
 			name:    "success with default templates",
-			arg:     BasicTranslations,
+			arg:     ErrorTemplates,
 			wantErr: false,
 		},
 		{
@@ -74,6 +74,7 @@ func TestWithErrorTemplates(t *testing.T) {
 				require.Error(t, err, "WithErrorTemplates() error = %v, wantErr %v", err, tt.wantErr)
 			} else {
 				require.Nil(t, err, "WithErrorTemplates() unexpected error = %v", err)
+				require.Equal(t, len(tt.arg), len(v.tpl), "Not all templates were imported")
 			}
 		})
 	}

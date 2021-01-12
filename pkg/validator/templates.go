@@ -1,7 +1,7 @@
 package validator
 
-// BasicTranslations maps validation tags to html templates.
-var BasicTranslations = map[string]string{
+// ErrorTemplates maps validation tags to html templates.
+var ErrorTemplates = map[string]string{
 	"alpha":                   "{{.Namespace}} can only contain alphabetic characters",
 	"alphanum":                "{{.Namespace}} can only contain alphanumeric characters",
 	"alphanumunicode":         "{{.Namespace}} can only contain unicode alphanumeric characters",
