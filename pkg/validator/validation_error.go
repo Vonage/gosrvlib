@@ -31,19 +31,22 @@ type ValidationError struct {
 	// StructField is the field's actual name from the struct, when able to determine.
 	StructField string
 
-	// Value the actual field's value.
+	// Value is the actual field's value.
 	Value interface{}
 
 	// Param is the param value.
 	Param string
 
-	// Kind returns the Field's reflect Kind as string.
+	// Kind is the Field's reflect Kind as string.
 	Kind string
 
-	// Type returns the Field's reflect Type as string.
+	// Type is the Field's reflect Type as string.
 	Type string
 
-	// Error returns the error message as string.
+	// OrigErr is the original error message.
+	OrigErr string
+
+	// Err is the translated error message.
 	Err string
 }
 

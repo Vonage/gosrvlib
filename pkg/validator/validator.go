@@ -38,12 +38,12 @@ func New(opts ...Option) (*Validator, error) {
 }
 
 // ValidateStruct validates the structure fields tagged with "validate".
-func (v *Validator) ValidateStruct(obj interface{}) error {
-	err := v.V.Struct(obj)
-	if err == nil {
+func (v *Validator) ValidateStruct(obj interface{}) (err error) {
+	verr := v.V.Struct(obj)
+	if verr == nil {
 		return nil
 	}
-	for _, e := range err.(vt.ValidationErrors) {
+	for _, e := range verr.(vt.ValidationErrors) {
 		if e != nil {
 			ve := &ValidationError{
 				Tag:             e.Tag(),
@@ -56,15 +56,16 @@ func (v *Validator) ValidateStruct(obj interface{}) error {
 				Param:           e.Param(),
 				Kind:            e.Kind().String(),
 				Type:            e.Type().String(),
+				OrigErr:         e.Error(),
 			}
-			ve.Err = v.stringify(e, ve)
+			ve.Err = v.translate(e, ve)
 			err = multierr.Append(err, ve)
 		}
 	}
 	return err
 }
 
-func (v *Validator) stringify(fe vt.FieldError, ve *ValidationError) string {
+func (v *Validator) translate(fe vt.FieldError, ve *ValidationError) string {
 	t, ok := v.tpl[ve.Tag]
 	if ok {
 		if idx := strings.Index(ve.Namespace, "."); idx != -1 {
@@ -78,5 +79,5 @@ func (v *Validator) stringify(fe vt.FieldError, ve *ValidationError) string {
 	if v.T != nil {
 		return fe.Translate(v.T)
 	}
-	return fe.Error()
+	return ve.OrigErr
 }
