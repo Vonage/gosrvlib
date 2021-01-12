@@ -1,7 +1,7 @@
 package validator
 
-// ValidationError is a custom error adding a Field member.
-type ValidationError struct {
+// Error is a custom error adding a Field member.
+type Error struct {
 	// Tag is the validation tag that failed.
 	// If the validation was an alias, this will return the alias name and not the underlying tag that failed.
 	//
@@ -51,6 +51,6 @@ type ValidationError struct {
 }
 
 // Error returns a string representation of the error.
-func (e *ValidationError) Error() string {
+func (e *Error) Error() string {
 	return e.Err
 }

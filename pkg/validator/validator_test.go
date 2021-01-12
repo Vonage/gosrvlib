@@ -6,10 +6,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestValidationError_Error(t *testing.T) {
+func TestError_Error(t *testing.T) {
 	t.Parallel()
 	want := "mock_error"
-	e := &ValidationError{Err: "mock_error"}
+	e := &Error{Err: "mock_error"}
 	got := e.Error()
 	require.Equal(t, want, got, "Error() = %v, want %v", got, want)
 }
@@ -38,7 +38,7 @@ func TestNew(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "success with default tranaslations",
+			name: "success with default translations",
 			opts: []Option{
 				WithFieldNameTag("test_tag"),
 				WithDefaultTranslations(),

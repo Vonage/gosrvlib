@@ -33,7 +33,7 @@ func WithFieldNameTag(tag string) Option {
 }
 
 // WithErrorTemplates sets basic template-based error message translations.
-// The argument t maps tags to html templates that uses the ValidationError data.
+// The argument t maps tags to html templates that uses the Error data.
 // These translations takes precedence over the parent library translation object.
 func WithErrorTemplates(t map[string]string) Option {
 	return func(v *Validator) error {

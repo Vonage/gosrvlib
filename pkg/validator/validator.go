@@ -39,13 +39,13 @@ func New(opts ...Option) (*Validator, error) {
 
 // ValidateStruct validates the structure fields tagged with "validate".
 func (v *Validator) ValidateStruct(obj interface{}) (err error) {
-	verr := v.V.Struct(obj)
-	if verr == nil {
+	vErr := v.V.Struct(obj)
+	if vErr == nil {
 		return nil
 	}
-	for _, e := range verr.(vt.ValidationErrors) {
+	for _, e := range vErr.(vt.ValidationErrors) {
 		if e != nil {
-			ve := &ValidationError{
+			ve := &Error{
 				Tag:             e.Tag(),
 				ActualTag:       e.ActualTag(),
 				Namespace:       e.Namespace(),
@@ -65,7 +65,7 @@ func (v *Validator) ValidateStruct(obj interface{}) (err error) {
 	return err
 }
 
-func (v *Validator) translate(fe vt.FieldError, ve *ValidationError) string {
+func (v *Validator) translate(fe vt.FieldError, ve *Error) string {
 	t, ok := v.tpl[ve.Tag]
 	if ok {
 		if idx := strings.Index(ve.Namespace, "."); idx != -1 {
