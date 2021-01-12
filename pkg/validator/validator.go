@@ -4,8 +4,8 @@ package validator
 
 import (
 	"bytes"
+	"html/template"
 	"strings"
-	"text/template"
 
 	ut "github.com/go-playground/universal-translator"
 	vt "github.com/go-playground/validator/v10"

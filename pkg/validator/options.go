@@ -2,9 +2,9 @@ package validator
 
 import (
 	"fmt"
+	"html/template"
 	"reflect"
 	"strings"
-	"text/template"
 
 	lc "github.com/go-playground/locales/en"
 	ut "github.com/go-playground/universal-translator"
