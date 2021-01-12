@@ -15,6 +15,4 @@ require (
 	github.com/stretchr/testify v1.6.1
 	go.uber.org/multierr v1.6.0
 	go.uber.org/zap v1.16.0
-	golang.org/x/mod v0.4.0 // indirect
-	golang.org/x/tools v0.0.0-20210111221946-d33bae441459 // indirect
 )

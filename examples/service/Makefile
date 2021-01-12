@@ -329,7 +329,7 @@ deps: ensuretarget
 	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(BINUTIL) v1.35.2
 	(GO111MODULE=off $(GO) get -u github.com/jstemmer/go-junit-report)
 	(GO111MODULE=off $(GO) get -u github.com/rakyll/gotest)
-	(GO111MODULE=on $(GO) get -u github.com/golang/mock/mockgen@v1.4.4)
+	(GO111MODULE=off $(GO) get -u github.com/golang/mock/mockgen)
 
 # Build a docker container to run this service
 .PHONY: docker
