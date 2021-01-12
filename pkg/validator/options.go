@@ -33,7 +33,7 @@ func WithFieldNameTag(tag string) Option {
 }
 
 // WithBasicTranslations enable the basic internal error message translations.
-// The argument t maps tag to the error template using the ValidationError data.
+// The argument t maps tag to a template that uses the ValidationError data.
 func WithBasicTranslations(t map[string]string) Option {
 	return func(v *Validator) error {
 		v.translate = make(map[string]*template.Template, len(t))

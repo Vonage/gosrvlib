@@ -4,7 +4,6 @@ package validator
 
 import (
 	"bytes"
-	"fmt"
 	"strings"
 	"text/template"
 
@@ -67,13 +66,13 @@ func (e *ValidationError) Error() string {
 
 // Validator contains the validator object fields.
 type Validator struct {
-	// V is the validate object
+	// V is the validate object.
 	V *vt.Validate
 
-	// Trans is the translator object
+	// Trans is the translator object used by the parent library.
 	T ut.Translator
 
-	// translate contains the map of basic translation templates indexed by tag
+	// translate contains the map of basic translation templates indexed by tag.
 	translate map[string]*template.Template
 }
 
@@ -131,5 +130,5 @@ func (v *Validator) stringify(fe vt.FieldError, ve *ValidationError) string {
 			return tpl.String()
 		}
 	}
-	return fmt.Sprintf("%s", fe)
+	return fe.Error()
 }
