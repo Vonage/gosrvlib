@@ -61,6 +61,7 @@ func isUSState(fl vt.FieldLevel) bool {
 }
 
 // falseIf is a special tag to be used in "OR" combination with another tag.
+// It returns false if the specified parameter exist and has the specified value.
 // This tag should never be used alone.
 // The combined tag will be checked only if this validator returns false.
 // Examples:
