@@ -7,24 +7,33 @@ import (
 )
 
 type testCustomTagStruct struct {
-	E164FieldA      string `json:"e164_field_a" validate:"e164"`
-	E164FieldB      string `json:"e164_field_b" validate:"e164"`
-	EINFieldA       string `json:"ein_field_a" validate:"ein"`
-	EINFieldB       string `json:"ein_field_b" validate:"ein"`
-	USZIPCodeFieldA string `json:"zip_field_a" validate:"zipcode"`
-	USZIPCodeFieldB string `json:"zip_field_b" validate:"zipcode"`
-	USStateField    string `json:"state_field" validate:"usstate"`
+	E164       string `json:"e164" validate:"e164"`
+	E164B      string `json:"e164_b" validate:"e164"`
+	EIN        string `json:"ein" validate:"ein"`
+	EINB       string `json:"ein_b" validate:"ein"`
+	USZIPCode  string `json:"zip" validate:"zipcode"`
+	USZIPCodeB string `json:"zip_b" validate:"zipcode"`
+	Country    string `json:"country" validate:"iso3166_1_alpha2"`
+	State      string `json:"state" validate:"usstate"`
+	StateB     string `json:"state_b" validate:"falseif=Country|usstate"`
+	StateC     string `json:"state_c" validate:"falseif=Country US|usstate"`
+	StateD     string `json:"state_d" validate:"falseif|usstate"`
+	FalseIf    string `json:"false_if" validate:"falseif=MissingField"`
 }
 
 func getTestCustomTagData() testCustomTagStruct {
 	return testCustomTagStruct{
-		E164FieldA:      "+123456789012345",
-		E164FieldB:      "123456789012345",
-		EINFieldA:       "12-3456789",
-		EINFieldB:       "123456789",
-		USZIPCodeFieldA: "12345",
-		USZIPCodeFieldB: "12345-1234",
-		USStateField:    "NY",
+		E164:       "+123456789012345",
+		E164B:      "123456789012345",
+		EIN:        "12-3456789",
+		EINB:       "123456789",
+		USZIPCode:  "12345",
+		USZIPCodeB: "12345-1234",
+		Country:    "US",
+		State:      "NY",
+		StateB:     "AL",
+		StateC:     "WI",
+		StateD:     "AK",
 	}
 }
 
@@ -41,23 +50,46 @@ func TestCustomTags(t *testing.T) {
 		},
 		{
 			name:    "fail with invalid e164",
-			fobj:    func(obj testCustomTagStruct) testCustomTagStruct { obj.E164FieldA = "012345678"; return obj },
+			fobj:    func(obj testCustomTagStruct) testCustomTagStruct { obj.E164 = "012345678"; return obj },
 			wantErr: true,
 		},
 		{
 			name:    "fail with invalid ein",
-			fobj:    func(obj testCustomTagStruct) testCustomTagStruct { obj.EINFieldA = "12-345-56789"; return obj },
+			fobj:    func(obj testCustomTagStruct) testCustomTagStruct { obj.EIN = "12-345-56789"; return obj },
 			wantErr: true,
 		},
 		{
 			name:    "fail with invalid zip code",
-			fobj:    func(obj testCustomTagStruct) testCustomTagStruct { obj.USZIPCodeFieldA = "1234"; return obj },
+			fobj:    func(obj testCustomTagStruct) testCustomTagStruct { obj.USZIPCode = "1234"; return obj },
 			wantErr: true,
 		},
 		{
 			name:    "fail with invalid US state",
-			fobj:    func(obj testCustomTagStruct) testCustomTagStruct { obj.USStateField = "XX"; return obj },
+			fobj:    func(obj testCustomTagStruct) testCustomTagStruct { obj.State = "XX"; return obj },
 			wantErr: true,
+		},
+		{
+			name:    "fail with invalid US state when country is not set",
+			fobj:    func(obj testCustomTagStruct) testCustomTagStruct { obj.Country = ""; obj.StateB = "XX"; return obj },
+			wantErr: true,
+		},
+		{
+			name: "pass with non US state",
+			fobj: func(obj testCustomTagStruct) testCustomTagStruct {
+				obj.Country = "GB"
+				obj.StateC = "England"
+				return obj
+			},
+			wantErr: false,
+		},
+		{
+			name: "pass with US state and non-US country",
+			fobj: func(obj testCustomTagStruct) testCustomTagStruct {
+				obj.Country = "GB"
+				obj.StateC = "NY"
+				return obj
+			},
+			wantErr: false,
 		},
 	}
 	opts := []Option{
