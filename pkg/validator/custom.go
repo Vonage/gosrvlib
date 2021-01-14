@@ -70,7 +70,7 @@ func isUSState(fl vt.FieldLevel) bool {
 func falseIf(fl vt.FieldLevel) bool {
 	param := strings.TrimSpace(fl.Param())
 	if len(param) == 0 {
-		return false
+		return true
 	}
 	params := strings.SplitN(fl.Param(), " ", 3)
 	numParams := len(params)
