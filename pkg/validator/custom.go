@@ -69,17 +69,16 @@ func isUSState(fl vt.FieldLevel) bool {
 //     "falseif=Country|usstate" checks if the field is a valid US state only if the Country field is set and not empty.
 func isFalseIf(fl vt.FieldLevel) bool {
 	param := strings.TrimSpace(fl.Param())
-	if len(param) == 0 {
+	if param == "" {
 		return true
 	}
-	params := strings.SplitN(fl.Param(), " ", 3)
-	numParams := len(params)
+	params := strings.SplitN(param, " ", 3)
 	paramField, paramKind, nullable, found := fl.GetStructFieldOKAdvanced2(fl.Parent(), params[0])
 	if !found {
 		// the field in the param do not exist
 		return true
 	}
-	if numParams == 1 {
+	if len(params) == 1 {
 		return hasDefaultValue(paramField, paramKind, nullable)
 	}
 	return hasNotValue(paramField, paramKind, params[1])
