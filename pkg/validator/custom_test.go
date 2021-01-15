@@ -1,7 +1,6 @@
 package validator
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 
@@ -147,7 +146,6 @@ func TestCustomTags(t *testing.T) {
 			t.Parallel()
 			s := tt.fobj(getTestCustomTagData())
 			err := v.ValidateStruct(s)
-			fmt.Printf("\n\n\n%s\n\n\n\n", err)
 			require.Equal(t, tt.wantErr, err != nil, "error = %v, wantErr %v", err, tt.wantErr)
 		})
 	}
