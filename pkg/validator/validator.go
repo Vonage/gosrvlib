@@ -38,6 +38,7 @@ func New(opts ...Option) (*Validator, error) {
 }
 
 // ValidateStruct validates the structure fields tagged with "validate".
+// nolint: gocognit,gocyclo
 func (v *Validator) ValidateStruct(obj interface{}) (err error) {
 	vErr := v.V.Struct(obj)
 	if vErr == nil {
@@ -58,8 +59,15 @@ func (v *Validator) ValidateStruct(obj interface{}) (err error) {
 				Type:            e.Type().String(),
 				OrigErr:         e.Error(),
 			}
-			ve.Err = v.translate(e, ve)
-			err = multierr.Append(err, ve)
+			tags := strings.Split(ve.Tag, "|")
+			for _, tag := range tags {
+				if strings.HasPrefix(tag, "falseif") {
+					continue
+				}
+				ve.Tag = tag
+				ve.Err = v.translate(e, ve)
+				err = multierr.Append(err, ve)
+			}
 		}
 	}
 	return err

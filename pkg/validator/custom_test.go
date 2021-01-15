@@ -98,6 +98,11 @@ func TestCustomTags(t *testing.T) {
 			wantErr: true,
 		},
 		{
+			name:    "fail with invalid required US state",
+			fobj:    func(obj testCustomTagStruct) testCustomTagStruct { obj.StateB = "XX"; return obj },
+			wantErr: true,
+		},
+		{
 			name:    "fail with invalid US state when country is not set",
 			fobj:    func(obj testCustomTagStruct) testCustomTagStruct { obj.Country = ""; obj.StateB = "XX"; return obj },
 			wantErr: true,
