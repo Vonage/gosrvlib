@@ -23,7 +23,7 @@ var (
 
 // CustomValidationTags maps custom tags with validation function
 var CustomValidationTags = map[string]vt.Func{
-	"falseif": falseIf,
+	"falseif": isFalseIf,
 	"e164":    isE164,
 	"ein":     isEIN,
 	"zipcode": isUSZIPCode,
@@ -60,15 +60,14 @@ func isUSState(fl vt.FieldLevel) bool {
 	return false
 }
 
-// falseIf is a special tag to be used in "OR" combination with another tag.
+// isFalseIf is a special tag to be used in "OR" combination with another tag.
 // It returns false if the specified parameter exist and has the specified value.
 // This tag should never be used alone.
 // The combined tag will be checked only if this validator returns false.
 // Examples:
-//     "falseIf=Country US|usstate" checks if the field is a valid US state only if the Country field is set to "US".
-//     "falseIf=Country|usstate" checks if the field is a valid US state only if the Country field is set and not empty.
-// nolint: gocognit,gocyclo
-func falseIf(fl vt.FieldLevel) bool {
+//     "falseif=Country US|usstate" checks if the field is a valid US state only if the Country field is set to "US".
+//     "falseif=Country|usstate" checks if the field is a valid US state only if the Country field is set and not empty.
+func isFalseIf(fl vt.FieldLevel) bool {
 	param := strings.TrimSpace(fl.Param())
 	if len(param) == 0 {
 		return true
@@ -80,44 +79,44 @@ func falseIf(fl vt.FieldLevel) bool {
 		// the field in the param do not exist
 		return true
 	}
-	// check if the field specifies has zero/nil value
 	if numParams == 1 {
-		switch paramKind {
-		case reflect.Invalid:
-			return true
-		case reflect.Slice, reflect.Map, reflect.Ptr, reflect.Interface, reflect.Chan, reflect.Func:
-			return paramField.IsNil()
-		default:
-			if nullable && paramField.Interface() == nil {
-				return true
-			}
-			if !paramField.IsValid() {
-				return true
-			}
-			// check if the value is not the default one
-			return paramField.Interface() == reflect.Zero(paramField.Type()).Interface()
-		}
+		return hasDefaultValue(paramField, paramKind, nullable)
 	}
-	// check if the field specifies has the specified value
-	paramValue := params[1]
-	switch paramKind {
+	return hasNotValue(paramField, paramKind, params[1])
+}
+
+// hasDefaultvalue returns true if the field has a default value (nil/zero) or if is unset/invalid.
+func hasDefaultValue(value reflect.Value, kind reflect.Kind, nullable bool) bool {
+	switch kind {
+	case reflect.Invalid:
+		return true
+	case reflect.Slice, reflect.Map, reflect.Ptr, reflect.Interface, reflect.Chan, reflect.Func:
+		return value.IsNil()
+	}
+	return (nullable && value.Interface() == nil) || !value.IsValid() || (value.Interface() == reflect.Zero(value.Type()).Interface())
+}
+
+// hasNotValue returns true if the field has not the specified value.
+// nolint:gocognit,gocyclo
+func hasNotValue(value reflect.Value, kind reflect.Kind, paramValue string) bool {
+	switch kind {
 	case reflect.String:
-		return paramField.String() != paramValue
+		return value.String() != paramValue
 	case reflect.Slice, reflect.Map, reflect.Array:
 		p, err := strconv.ParseInt(paramValue, 0, 64)
-		return err != nil || int64(paramField.Len()) != p
+		return err != nil || int64(value.Len()) != p
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		p, err := strconv.ParseInt(paramValue, 0, 64)
-		return err != nil || paramField.Int() != p
+		return err != nil || value.Int() != p
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
 		p, err := strconv.ParseUint(paramValue, 0, 64)
-		return err != nil || paramField.Uint() != p
+		return err != nil || value.Uint() != p
 	case reflect.Float32, reflect.Float64:
 		p, err := strconv.ParseFloat(paramValue, 64)
-		return err != nil || paramField.Float() != p
+		return err != nil || value.Float() != p
 	case reflect.Bool:
 		p, err := strconv.ParseBool(paramValue)
-		return err != nil || paramField.Bool() != p
+		return err != nil || value.Bool() != p
 	}
 	return true
 }

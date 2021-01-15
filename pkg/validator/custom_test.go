@@ -1,6 +1,7 @@
 package validator
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -133,7 +134,15 @@ func TestCustomTags(t *testing.T) {
 			t.Parallel()
 			s := tt.fobj(getTestCustomTagData())
 			err := v.ValidateStruct(s)
-			require.Equal(t, tt.wantErr, err != nil, "ValidateStruct() error = %v, wantErr %v", err, tt.wantErr)
+			require.Equal(t, tt.wantErr, err != nil, "error = %v, wantErr %v", err, tt.wantErr)
 		})
 	}
+}
+
+func Test_hasDefaultValue_invalid(t *testing.T) {
+	var i interface{}
+	vi := reflect.ValueOf(i)
+	t.Parallel()
+	got := hasDefaultValue(vi, vi.Kind(), true)
+	require.True(t, got, "Expecting true value")
 }
