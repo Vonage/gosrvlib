@@ -51,15 +51,20 @@ func (v *Validator) ValidateStruct(obj interface{}) (err error) {
 				if strings.HasPrefix(tag, "falseif") {
 					continue
 				}
+				tagParts := strings.SplitN(tag, "=", 2)
+				param := e.Param()
+				if len(tagParts) == 2 {
+					param = tagParts[1]
+				}
 				ve := &Error{
-					Tag:             tag,
+					Tag:             tagParts[0],
 					ActualTag:       e.ActualTag(),
 					Namespace:       e.Namespace(),
 					StructNamespace: e.StructNamespace(),
 					Field:           e.Field(),
 					StructField:     e.StructField(),
 					Value:           e.Value(),
-					Param:           e.Param(),
+					Param:           param,
 					Kind:            e.Kind().String(),
 					Type:            e.Type().String(),
 					OrigErr:         e.Error(),
