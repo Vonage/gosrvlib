@@ -1,6 +1,7 @@
 package validator
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -34,6 +35,7 @@ type testCustomTagStruct struct {
 	FalseIfBool      string      `json:"falseif_bool" validate:"falseif=FieldBool true|alpha"`
 	FalseIfReqArray  string      `json:"falseif_req_array" validate:"falseif=FieldArray|alpha"`
 	FalseIfInterface string      `json:"falseif_interface" validate:"falseif=FieldInterface 1|alpha"`
+	FieldOrTest      string      `json:"field_or_test" validate:"max=3|alpha"`
 }
 
 func getTestCustomTagData() testCustomTagStruct {
@@ -63,6 +65,7 @@ func getTestCustomTagData() testCustomTagStruct {
 		FalseIfBool:      "E",
 		FalseIfReqArray:  "F",
 		FalseIfInterface: "G",
+		FieldOrTest:      "123",
 	}
 }
 
@@ -125,6 +128,11 @@ func TestCustomTags(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name:    "fail with or tags",
+			fobj:    func(obj testCustomTagStruct) testCustomTagStruct { obj.FieldOrTest = "1234"; return obj },
+			wantErr: true,
+		},
 	}
 	opts := []Option{
 		WithFieldNameTag("json"),
@@ -139,6 +147,7 @@ func TestCustomTags(t *testing.T) {
 			t.Parallel()
 			s := tt.fobj(getTestCustomTagData())
 			err := v.ValidateStruct(s)
+			fmt.Printf("\n\n\n%s\n\n\n\n", err)
 			require.Equal(t, tt.wantErr, err != nil, "error = %v, wantErr %v", err, tt.wantErr)
 		})
 	}

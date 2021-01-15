@@ -46,25 +46,24 @@ func (v *Validator) ValidateStruct(obj interface{}) (err error) {
 	}
 	for _, e := range vErr.(vt.ValidationErrors) {
 		if e != nil {
-			ve := &Error{
-				Tag:             e.Tag(),
-				ActualTag:       e.ActualTag(),
-				Namespace:       e.Namespace(),
-				StructNamespace: e.StructNamespace(),
-				Field:           e.Field(),
-				StructField:     e.StructField(),
-				Value:           e.Value(),
-				Param:           e.Param(),
-				Kind:            e.Kind().String(),
-				Type:            e.Type().String(),
-				OrigErr:         e.Error(),
-			}
-			tags := strings.Split(ve.Tag, "|")
+			tags := strings.Split(e.Tag(), "|")
 			for _, tag := range tags {
 				if strings.HasPrefix(tag, "falseif") {
 					continue
 				}
-				ve.Tag = tag
+				ve := &Error{
+					Tag:             tag,
+					ActualTag:       e.ActualTag(),
+					Namespace:       e.Namespace(),
+					StructNamespace: e.StructNamespace(),
+					Field:           e.Field(),
+					StructField:     e.StructField(),
+					Value:           e.Value(),
+					Param:           e.Param(),
+					Kind:            e.Kind().String(),
+					Type:            e.Type().String(),
+					OrigErr:         e.Error(),
+				}
 				ve.Err = v.translate(e, ve)
 				err = multierr.Append(err, ve)
 			}
