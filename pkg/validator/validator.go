@@ -52,19 +52,22 @@ func (v *Validator) ValidateStruct(obj interface{}) (err error) {
 					continue
 				}
 				tagParts := strings.SplitN(tag, "=", 2)
-				param := e.Param()
+				tagKey := tagParts[0]
+				var tagParam string
 				if len(tagParts) == 2 {
-					param = tagParts[1]
+					tagParam = tagParts[1]
+				} else {
+					tagParam = e.Param()
 				}
 				ve := &Error{
-					Tag:             tagParts[0],
+					Tag:             tagKey,
 					ActualTag:       e.ActualTag(),
 					Namespace:       e.Namespace(),
 					StructNamespace: e.StructNamespace(),
 					Field:           e.Field(),
 					StructField:     e.StructField(),
 					Value:           e.Value(),
-					Param:           param,
+					Param:           tagParam,
 					Kind:            e.Kind().String(),
 					Type:            e.Type().String(),
 					OrigErr:         e.Error(),
