@@ -23,8 +23,8 @@ type Error struct {
 	// StructField is the field's actual name from the struct.
 	StructField string
 
-	// Type is the Field's string representation of the type.
-	Type string
+	// Kind is the Field's string representation of the kind (e.g. Int,Slice,...)
+	Kind string
 
 	// Value is the actual field's value.
 	Value interface{}

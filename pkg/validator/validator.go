@@ -72,7 +72,7 @@ func (v *Validator) tagError(fe vt.FieldError, tag string) (err error) {
 		StructNamespace: fe.StructNamespace(),
 		Field:           fe.Field(),
 		StructField:     fe.StructField(),
-		Type:            fe.Type().String(),
+		Kind:            fe.Kind().String(),
 		Value:           fe.Value(),
 	}
 	ve.Err = v.translate(ve)
