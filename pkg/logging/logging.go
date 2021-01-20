@@ -1,5 +1,3 @@
-//go:generate mockgen -package mocks -destination ../internal/mocks/logging_mocks.go . Syncer
-
 // Package logging provides an interface to configure and use the logging framework
 // in a consistent way across multiple applications.
 package logging
@@ -8,7 +6,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"time"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -89,8 +86,8 @@ func NewLogger(opts ...Option) (*zap.Logger, error) {
 			CallerKey:    "caller",
 			EncodeCaller: zapcore.ShortCallerEncoder,
 		},
-		OutputPaths:      []string{"stderr"},
-		ErrorOutputPaths: []string{"stderr"},
+		OutputPaths:      cfg.outputPaths,
+		ErrorOutputPaths: cfg.errorOutputPaths,
 		DisableCaller:    disableCaller,
 		InitialFields: map[string]interface{}{
 			"hostname": hostname,
@@ -104,20 +101,11 @@ func NewLogger(opts ...Option) (*zap.Logger, error) {
 
 	l, err := zapCfg.Build(zap.Hooks(loggingMetricsHook))
 	if err == nil {
-		fields := cfg.fields
-		fields = append(fields, zap.Stringer("datetime", dateTimeField{}))
-		l = l.With(fields...)
+		l = l.With(cfg.fields...)
 		// replace global logger with the configured root logger
 		zap.ReplaceGlobals(l)
 	}
 	return l, err
-}
-
-type dateTimeField struct {
-}
-
-func (dt dateTimeField) String() string {
-	return time.Now().UTC().Format(time.RFC3339)
 }
 
 // NopLogger returns a no operation logger

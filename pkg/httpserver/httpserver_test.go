@@ -1,4 +1,4 @@
-// +build unit
+//go:generate mockgen -package httpserver -destination ./mock_test.go . Router,Binder
 
 package httpserver
 
@@ -15,8 +15,8 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/nexmoinc/gosrvlib/pkg/httpserver/route"
-	"github.com/nexmoinc/gosrvlib/pkg/internal/mocks"
 	"github.com/nexmoinc/gosrvlib/pkg/testutil"
+	"github.com/nexmoinc/gosrvlib/pkg/traceid"
 	"github.com/stretchr/testify/require"
 )
 
@@ -25,7 +25,7 @@ func TestNopBinder(t *testing.T) {
 }
 
 func Test_nopBinder_BindHTTP(t *testing.T) {
-	require.Nil(t, NopBinder().BindHTTP(nil))
+	require.Nil(t, NopBinder().BindHTTP(context.Background()))
 }
 
 func Test_defaultRouter(t *testing.T) {
@@ -72,7 +72,7 @@ func Test_defaultRouter(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			r := defaultRouter()
+			r := defaultRouter(testutil.Context(), traceid.DefaultHeader)
 
 			if tt.setupRouter != nil {
 				tt.setupRouter(r)
@@ -189,19 +189,20 @@ func Test_defaultStatusHandler(t *testing.T) {
 	require.Equal(t, "OK\n", string(body))
 }
 
+// nolint:gocognit
 func TestStart(t *testing.T) {
 	tests := []struct {
 		name           string
 		opts           []Option
 		failListenPort int
-		setupBinder    func(*mocks.MockBinder)
-		setupRouter    func(*mocks.MockRouter)
+		setupBinder    func(*MockBinder)
+		setupRouter    func(*MockRouter)
 		wantErr        bool
 	}{
 		{
 			name: "fail with invalid config",
 			opts: []Option{
-				WithRouter(nil),
+				WithTraceIDHeaderName(""),
 			},
 			wantErr: true,
 		},
@@ -218,10 +219,10 @@ func TestStart(t *testing.T) {
 				WithServerAddr(":12345"),
 				WithShutdownTimeout(1 * time.Millisecond),
 			},
-			setupBinder: func(b *mocks.MockBinder) {
+			setupBinder: func(b *MockBinder) {
 				b.EXPECT().BindHTTP(gomock.Any()).Times(1)
 			},
-			setupRouter: func(r *mocks.MockRouter) {
+			setupRouter: func(r *MockRouter) {
 				r.EXPECT().Handler(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 			},
 			failListenPort: 12345,
@@ -234,10 +235,10 @@ func TestStart(t *testing.T) {
 				WithShutdownTimeout(1 * time.Millisecond),
 				WithEnableAllDefaultRoutes(),
 			},
-			setupBinder: func(b *mocks.MockBinder) {
+			setupBinder: func(b *MockBinder) {
 				b.EXPECT().BindHTTP(gomock.Any()).Times(1)
 			},
-			setupRouter: func(r *mocks.MockRouter) {
+			setupRouter: func(r *MockRouter) {
 				r.EXPECT().Handler(gomock.Any(), gomock.Any(), gomock.Any()).Times(6)
 			},
 			wantErr: false,
@@ -277,10 +278,10 @@ YlAqGKDZ+A+l
 				WithShutdownTimeout(1 * time.Millisecond),
 				WithEnableAllDefaultRoutes(),
 			},
-			setupBinder: func(b *mocks.MockBinder) {
+			setupBinder: func(b *MockBinder) {
 				b.EXPECT().BindHTTP(gomock.Any()).Times(1)
 			},
-			setupRouter: func(r *mocks.MockRouter) {
+			setupRouter: func(r *MockRouter) {
 				r.EXPECT().Handler(gomock.Any(), gomock.Any(), gomock.Any()).Times(6)
 			},
 			wantErr: false,
@@ -292,7 +293,7 @@ YlAqGKDZ+A+l
 			mockCtrl := gomock.NewController(t)
 			defer mockCtrl.Finish()
 
-			mockBinder := mocks.NewMockBinder(mockCtrl)
+			mockBinder := NewMockBinder(mockCtrl)
 			if tt.setupBinder != nil {
 				tt.setupBinder(mockBinder)
 			}
@@ -304,7 +305,7 @@ YlAqGKDZ+A+l
 			}()
 			opts := tt.opts
 
-			mockRouter := mocks.NewMockRouter(mockCtrl)
+			mockRouter := NewMockRouter(mockCtrl)
 			if tt.setupRouter != nil {
 				tt.setupRouter(mockRouter)
 				opts = append(opts, WithRouter(mockRouter))

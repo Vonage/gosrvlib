@@ -1,5 +1,3 @@
-// +build unit
-
 package httpserver
 
 import (
@@ -14,7 +12,7 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-func Test_requestInjectHandler(t *testing.T) {
+func TestRequestInjectHandler(t *testing.T) {
 	t.Parallel()
 
 	nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -25,7 +23,7 @@ func Test_requestInjectHandler(t *testing.T) {
 	})
 
 	ctx, logs := testutil.ContextWithLogObserver(zapcore.DebugLevel)
-	handler := requestInjectHandler(logging.FromContext(ctx), traceid.DefaultHeader, nextHandler)
+	handler := RequestInjectHandler(logging.FromContext(ctx), traceid.DefaultHeader, nextHandler)
 
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	handler.ServeHTTP(nil, req)

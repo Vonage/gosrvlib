@@ -137,7 +137,7 @@ dbuild:
 # Get the test dependencies
 .PHONY: deps
 deps: ensuretarget
-	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(BINUTIL) v1.33.0
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(BINUTIL) v1.35.2
 	(GO111MODULE=off $(GO) get -u github.com/jstemmer/go-junit-report)
 	(GO111MODULE=off $(GO) get -u github.com/rakyll/gotest)
 	(GO111MODULE=off $(GO) get -u github.com/golang/mock/mockgen)
@@ -164,7 +164,7 @@ format:
 # Generate test mocks
 .PHONY: generate
 generate:
-	rm -f internal/mocks/*.go
+	@find $(SRCDIR) -type f -name "*mock_test.go" -exec rm {} \;
 	$(GO) generate $(GOPKGS)
 
 # Execute multiple linter tools
@@ -217,7 +217,7 @@ test: ensuretarget
 	@echo -e "\n\n>>> START: Unit Tests <<<\n\n"
 	$(GOTEST) \
 	-count=1 \
-	-tags=unit \
+	-tags=unit,benchmark \
 	-covermode=atomic \
 	-bench=. \
 	-race \
