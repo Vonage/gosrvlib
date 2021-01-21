@@ -21,7 +21,7 @@ type Client struct {
 	CollectorHistogramVec map[string]*prometheus.HistogramVec
 }
 
-// New creates a new metrics instance
+// New creates a new metrics instance.
 func New(opts ...Option) (*Client, error) {
 	c := initClient()
 	err := c.Configure(opts...)
@@ -31,7 +31,7 @@ func New(opts ...Option) (*Client, error) {
 	return c, nil
 }
 
-// Configure allow to specify more options
+// Configure allows to specify more options.
 func (c *Client) Configure(opts ...Option) error {
 	for _, applyOpt := range opts {
 		if err := applyOpt(c); err != nil {
