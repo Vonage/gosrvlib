@@ -24,12 +24,21 @@ type Client struct {
 // New creates a new metrics instance
 func New(opts ...Option) (*Client, error) {
 	c := initClient()
-	for _, applyOpt := range opts {
-		if err := applyOpt(c); err != nil {
-			return nil, err
-		}
+	err := c.Configure(opts...)
+	if err != nil {
+		return nil, err
 	}
 	return c, nil
+}
+
+// Configure allow to specify more options
+func (c *Client) Configure(opts ...Option) error {
+	for _, applyOpt := range opts {
+		if err := applyOpt(c); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func initClient() *Client {
