@@ -88,6 +88,11 @@ func (c *Client) MetricsHandlerFunc() http.HandlerFunc {
 	return promhttp.InstrumentMetricHandler(c.Registry, h).ServeHTTP
 }
 
+// DefaultMetricsHandlerFunc returns a default http handler function to serve the metrics endpoint.
+func DefaultMetricsHandlerFunc() http.HandlerFunc {
+	return promhttp.Handler().ServeHTTP
+}
+
 // IncLogLevelCounter counts the number of errors for each syslog level.
 // Requires DefaultCollectors.
 func (c *Client) IncLogLevelCounter(level string) {

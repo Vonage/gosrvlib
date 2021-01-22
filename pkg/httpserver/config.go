@@ -12,9 +12,9 @@ import (
 
 	"github.com/nexmoinc/gosrvlib/pkg/httpserver/route"
 	"github.com/nexmoinc/gosrvlib/pkg/ipify"
+	"github.com/nexmoinc/gosrvlib/pkg/metrics"
 	"github.com/nexmoinc/gosrvlib/pkg/profiling"
 	"github.com/nexmoinc/gosrvlib/pkg/traceid"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 // IndexHandlerFunc is a type alias for the route index function.
@@ -61,7 +61,7 @@ func defaultConfig() *config {
 		defaultEnabledRoutes: nil,
 		indexHandlerFunc:     defaultIndexHandler,
 		ipHandlerFunc:        defaultIPHandler(GetPublicIPDefaultFunc()),
-		metricsHandlerFunc:   promhttp.Handler().ServeHTTP,
+		metricsHandlerFunc:   metrics.DefaultMetricsHandlerFunc(),
 		pingHandlerFunc:      defaultPingHandler,
 		pprofHandlerFunc:     profiling.PProfHandler,
 		statusHandlerFunc:    defaultStatusHandler,

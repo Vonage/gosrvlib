@@ -90,3 +90,10 @@ func TestHandler(t *testing.T) {
 	}
 	require.Equal(t, 1, rt, "failed to assert right metrics: got %v want %v", rt, 1)
 }
+
+func TestDefaultMetricsHandlerFunc(t *testing.T) {
+	t.Parallel()
+
+	h := DefaultMetricsHandlerFunc()
+	require.NotNil(t, h, "unexpected nil")
+}
