@@ -1,7 +1,8 @@
-package prometheus
+package metric
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 const (
@@ -94,6 +95,15 @@ var (
 
 // Option is the interface that allows to set client options.
 type Option func(c *Client) error
+
+// WithHandlerOpts sets the options how to serve metrics via an http.Handler.
+// The zero value of HandlerOpts is a reasonable default.
+func WithHandlerOpts(opts promhttp.HandlerOpts) Option {
+	return func(c *Client) error {
+		c.handlerOpts = opts
+		return nil
+	}
+}
 
 // WithCollector register a new generic collector.
 func WithCollector(name string, m prometheus.Collector) Option {

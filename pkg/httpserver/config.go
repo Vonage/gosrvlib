@@ -17,11 +17,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-var (
-	defaultMetricsHandler = promhttp.Handler().ServeHTTP
-	defaultPprofHandler   = profiling.PProfHandler
-)
-
 // IndexHandlerFunc is a type alias for the route index function
 type IndexHandlerFunc func(routes []route.Route) http.HandlerFunc
 
@@ -43,9 +38,9 @@ func defaultConfig() *config {
 		defaultEnabledRoutes: nil,
 		indexHandlerFunc:     defaultIndexHandler,
 		ipHandlerFunc:        defaultIPHandler(GetPublicIPDefaultFunc()),
-		metricsHandlerFunc:   defaultMetricsHandler,
+		metricsHandlerFunc:   promhttp.Handler().ServeHTTP,
 		pingHandlerFunc:      defaultPingHandler,
-		pprofHandlerFunc:     defaultPprofHandler,
+		pprofHandlerFunc:     profiling.PProfHandler,
 		statusHandlerFunc:    defaultStatusHandler,
 		traceIDHeaderName:    traceid.DefaultHeader,
 	}

@@ -1,4 +1,4 @@
-package prometheus
+package metric
 
 import (
 	"fmt"
@@ -71,9 +71,7 @@ func TestHandler(t *testing.T) {
 
 	rr := httptest.NewRecorder()
 
-	handler := c.Handler("/test", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-	})
+	handler := c.Handler("/test", c.MetricsHandlerFunc())
 
 	req, err := http.NewRequest("GET", "/test", nil)
 	if err != nil {

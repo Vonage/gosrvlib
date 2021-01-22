@@ -1,4 +1,4 @@
-package prometheus
+package metric
 
 import (
 	"net/http"
@@ -10,6 +10,7 @@ import (
 // Client represents the state type of this client.
 type Client struct {
 	Registry              *prometheus.Registry
+	handlerOpts           promhttp.HandlerOpts
 	Collector             map[string]prometheus.Collector
 	CollectorGauge        map[string]prometheus.Gauge
 	CollectorCounter      map[string]prometheus.Counter
@@ -44,6 +45,7 @@ func (c *Client) Configure(opts ...Option) error {
 func initClient() *Client {
 	return &Client{
 		Registry:              prometheus.NewRegistry(),
+		handlerOpts:           promhttp.HandlerOpts{},
 		Collector:             make(map[string]prometheus.Collector),
 		CollectorGauge:        make(map[string]prometheus.Gauge),
 		CollectorCounter:      make(map[string]prometheus.Counter),
@@ -78,6 +80,12 @@ func (c *Client) Handler(path string, handler http.HandlerFunc) http.Handler {
 		h = promhttp.InstrumentHandlerInFlight(metricInFlightRequest, h)
 	}
 	return h
+}
+
+// MetricsHandlerFunc returns an http handler function to serve the metrics endpoint.
+func (c *Client) MetricsHandlerFunc() http.HandlerFunc {
+	h := promhttp.HandlerFor(c.Registry, c.handlerOpts)
+	return promhttp.InstrumentMetricHandler(c.Registry, h).ServeHTTP
 }
 
 // IncLogLevelCounter counts the number of errors for each syslog level.
