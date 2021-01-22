@@ -58,9 +58,9 @@ func initClient() *Client {
 	}
 }
 
-// Handler wraps an http.Handler to collect Prometheus metrics.
+// InstrumentHandler wraps an http.Handler to collect Prometheus metrics.
 // Requires DefaultCollectors.
-func (c *Client) Handler(path string, handler http.HandlerFunc) http.Handler {
+func (c *Client) InstrumentHandler(path string, handler http.HandlerFunc) http.Handler {
 	var h http.Handler
 	h = handler
 	metricResponseSize, ok := c.CollectorHistogramVec[MetricResponseSize]

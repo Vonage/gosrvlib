@@ -71,7 +71,7 @@ func TestHandler(t *testing.T) {
 
 	rr := httptest.NewRecorder()
 
-	handler := c.Handler("/test", c.MetricsHandlerFunc())
+	handler := c.InstrumentHandler("/test", c.MetricsHandlerFunc())
 
 	req, err := http.NewRequest("GET", "/test", nil)
 	if err != nil {
