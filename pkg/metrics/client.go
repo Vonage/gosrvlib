@@ -9,17 +9,8 @@ import (
 
 // Client represents the state type of this client.
 type Client struct {
-	Registry              *prometheus.Registry
-	handlerOpts           promhttp.HandlerOpts
-	Collector             map[string]prometheus.Collector
-	CollectorGauge        map[string]prometheus.Gauge
-	CollectorCounter      map[string]prometheus.Counter
-	CollectorSummary      map[string]prometheus.Summary
-	CollectorHistogram    map[string]prometheus.Histogram
-	CollectorGaugeVec     map[string]*prometheus.GaugeVec
-	CollectorCounterVec   map[string]*prometheus.CounterVec
-	CollectorSummaryVec   map[string]*prometheus.SummaryVec
-	CollectorHistogramVec map[string]*prometheus.HistogramVec
+	Registry    *prometheus.Registry
+	handlerOpts promhttp.HandlerOpts
 }
 
 // New creates a new metrics instance.
@@ -44,17 +35,8 @@ func (c *Client) Configure(opts ...Option) error {
 
 func initClient() *Client {
 	return &Client{
-		Registry:              prometheus.NewRegistry(),
-		handlerOpts:           promhttp.HandlerOpts{},
-		Collector:             make(map[string]prometheus.Collector),
-		CollectorGauge:        make(map[string]prometheus.Gauge),
-		CollectorCounter:      make(map[string]prometheus.Counter),
-		CollectorSummary:      make(map[string]prometheus.Summary),
-		CollectorHistogram:    make(map[string]prometheus.Histogram),
-		CollectorGaugeVec:     make(map[string]*prometheus.GaugeVec),
-		CollectorCounterVec:   make(map[string]*prometheus.CounterVec),
-		CollectorSummaryVec:   make(map[string]*prometheus.SummaryVec),
-		CollectorHistogramVec: make(map[string]*prometheus.HistogramVec),
+		Registry:    prometheus.NewRegistry(),
+		handlerOpts: promhttp.HandlerOpts{},
 	}
 }
 
@@ -62,43 +44,19 @@ func initClient() *Client {
 func (c *Client) InstrumentHandler(path string, handler http.HandlerFunc) http.Handler {
 	var h http.Handler
 	h = handler
-	collectorRequestSize, ok := c.CollectorHistogramVec[RequestSize]
-	if ok {
-		h = promhttp.InstrumentHandlerRequestSize(collectorRequestSize, h)
-	}
-	collectorResponseSize, ok := c.CollectorHistogramVec[ResponseSize]
-	if ok {
-		h = promhttp.InstrumentHandlerResponseSize(collectorResponseSize, h)
-	}
-	collectorAPIRequests, ok := c.CollectorCounterVec[APIRequests]
-	if ok {
-		h = promhttp.InstrumentHandlerCounter(collectorAPIRequests, h)
-	}
-	collectorRequestDuration, ok := c.CollectorHistogramVec[RequestDuration]
-	if ok {
-		h = promhttp.InstrumentHandlerDuration(collectorRequestDuration.MustCurryWith(prometheus.Labels{labelHandler: path}), h)
-	}
-	collectorInFlightRequests, ok := c.CollectorGauge[InFlightRequests]
-	if ok {
-		h = promhttp.InstrumentHandlerInFlight(collectorInFlightRequests, h)
-	}
+	h = promhttp.InstrumentHandlerRequestSize(collectorRequestSize, h)
+	h = promhttp.InstrumentHandlerResponseSize(collectorResponseSize, h)
+	h = promhttp.InstrumentHandlerCounter(collectorAPIRequests, h)
+	h = promhttp.InstrumentHandlerDuration(collectorRequestDuration.MustCurryWith(prometheus.Labels{labelHandler: path}), h)
+	h = promhttp.InstrumentHandlerInFlight(collectorInFlightRequests, h)
 	return h
 }
 
 // InstrumentRoundTripper is a middleware that wraps the provided http.RoundTripper to observe the request result with default metrics.
 func (c *Client) InstrumentRoundTripper(next http.RoundTripper) http.RoundTripper {
-	collectorOutboundRequests, ok := c.CollectorCounterVec[OutboundRequests]
-	if ok {
-		next = promhttp.InstrumentRoundTripperCounter(collectorOutboundRequests, next)
-	}
-	collectorOutboundRequestsDuration, ok := c.CollectorHistogramVec[OutboundRequestsDuration]
-	if ok {
-		next = promhttp.InstrumentRoundTripperDuration(collectorOutboundRequestsDuration, next)
-	}
-	collectorOutboundInFlightRequests, ok := c.CollectorGauge[OutboundInFlightRequests]
-	if ok {
-		next = promhttp.InstrumentRoundTripperInFlight(collectorOutboundInFlightRequests, next)
-	}
+	next = promhttp.InstrumentRoundTripperCounter(collectorOutboundRequests, next)
+	next = promhttp.InstrumentRoundTripperDuration(collectorOutboundRequestsDuration, next)
+	next = promhttp.InstrumentRoundTripperInFlight(collectorOutboundInFlightRequests, next)
 	return next
 }
 
@@ -110,16 +68,10 @@ func (c *Client) MetricsHandlerFunc() http.HandlerFunc {
 
 // IncLogLevelCounter counts the number of errors for each log severity level.
 func (c *Client) IncLogLevelCounter(level string) {
-	m, ok := c.CollectorCounterVec[ErrorLevel]
-	if ok {
-		m.With(prometheus.Labels{labelLevel: level}).Inc()
-	}
+	collectorErrorLevel.With(prometheus.Labels{labelLevel: level}).Inc()
 }
 
 // IncErrorCounter increments the number of errors by task, operation and error code.
 func (c *Client) IncErrorCounter(task, operation, code string) {
-	m, ok := c.CollectorCounterVec[ErrorCode]
-	if ok {
-		m.With(prometheus.Labels{labelTask: task, labelOperation: operation, labelCode: code}).Inc()
-	}
+	collectorErrorCode.With(prometheus.Labels{labelTask: task, labelOperation: operation, labelCode: code}).Inc()
 }

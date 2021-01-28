@@ -65,7 +65,7 @@ func TestInstrumentHandler(t *testing.T) {
 			status, http.StatusOK)
 	}
 
-	rt, err := testutil.GatherAndCount(c.Registry, APIRequests)
+	rt, err := testutil.GatherAndCount(c.Registry, NameAPIRequests)
 	require.NoError(t, err, "failed to gather metrics: %s", err)
 	require.Equal(t, 1, rt, "failed to assert right metrics: got %v want %v", rt, 1)
 }
@@ -88,7 +88,7 @@ func TestInstrumentRoundTripper(t *testing.T) {
 	_, err = client.Get(server.URL)
 	require.NoError(t, err, "client.Do() unexpected error = %v", err)
 
-	rt, err := testutil.GatherAndCount(c.Registry, OutboundRequests)
+	rt, err := testutil.GatherAndCount(c.Registry, NameOutboundRequests)
 	require.NoError(t, err, "failed to gather metrics: %s", err)
 	require.Equal(t, 1, rt, "failed to assert right metrics: got %v want %v", rt, 1)
 }
@@ -101,7 +101,7 @@ func TestIncLogLevelCounter(t *testing.T) {
 
 	c.IncLogLevelCounter("debug")
 
-	i, err := testutil.GatherAndCount(c.Registry, ErrorLevel)
+	i, err := testutil.GatherAndCount(c.Registry, NameErrorLevel)
 	require.NoError(t, err, "failed to gather metrics: %s", err)
 
 	if i != 1 {
@@ -117,7 +117,7 @@ func TestIncErrorCounter(t *testing.T) {
 
 	c.IncErrorCounter("test_task", "test_operation", "3791")
 
-	i, err := testutil.GatherAndCount(c.Registry, ErrorCode)
+	i, err := testutil.GatherAndCount(c.Registry, NameErrorCode)
 	require.NoError(t, err, "failed to gather metrics: %s", err)
 
 	if i != 1 {

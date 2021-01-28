@@ -7,43 +7,35 @@ import (
 const (
 	// collector names
 
-	// GoRuntime is the name of the collector which exports metrics about the current go process.
-	GoRuntime = "go_runtime"
+	// NameAPIRequests is the name of the collector that counts the total inbound http requests.
+	NameAPIRequests = "api_requests_total"
 
-	// GoProcess is the name of the collector which exports the current state of process metrics
-	// including cpu, memory and file descriptor usage as well as the process start time for
-	// the given process id under the given namespace.
-	GoProcess = "go_process"
+	// NameInFlightRequests is the name of the collector that counts in-flight inbound http requests.
+	NameInFlightRequests = "in_flight_requests"
 
-	// APIRequests is the name of the collector that counts the total inbound http requests.
-	APIRequests = "api_requests_total"
+	// NameRequestDuration is the name of the collector that measures the inbound http request duration in seconds.
+	NameRequestDuration = "request_duration_seconds"
 
-	// InFlightRequests is the name of the collector that counts in-flight inbound http requests.
-	InFlightRequests = "in_flight_requests"
+	// NameRequestSize is the name of the collector that measures the http request size in bytes.
+	NameRequestSize = "requeste_size_bytes"
 
-	// RequestDuration is the name of the collector that measures the inbound http request duration in seconds.
-	RequestDuration = "request_duration_seconds"
+	// NameResponseSize is the name of the collector that measures the http response size in bytes.
+	NameResponseSize = "response_size_bytes"
 
-	// RequestSize is the name of the collector that measures the http request size in bytes.
-	RequestSize = "requeste_size_bytes"
+	// NameOutboundRequests is the name of the collector that measures the number of outbound requests.
+	NameOutboundRequests = "outbound_requests_total"
 
-	// ResponseSize is the name of the collector that measures the http response size in bytes.
-	ResponseSize = "response_size_bytes"
+	// NameOutboundRequestsDuration is the name of the collector that measures the outbound requests duration in seconds.
+	NameOutboundRequestsDuration = "outbound_request_duration_seconds"
 
-	// OutboundRequests is the name of the collector that measures the number of outbound requests.
-	OutboundRequests = "outbound_requests_total"
+	// NameOutboundInFlightRequests is the name of the collector that counts in-flight outbound http requests.
+	NameOutboundInFlightRequests = "outbound_in_flight_requests"
 
-	// OutboundRequestsDuration is the name of the collector that measures the outbound requests duration in seconds.
-	OutboundRequestsDuration = "outbound_request_duration_seconds"
+	// NameErrorLevel is the name of the collector that counts the number of errors for each log severity level.
+	NameErrorLevel = "error_level_total"
 
-	// OutboundInFlightRequests is the name of the collector that counts in-flight outbound http requests.
-	OutboundInFlightRequests = "outbound_in_flight_requests"
-
-	// ErrorLevel is the name of the collector that counts the number of errors for each log severity level.
-	ErrorLevel = "error_level_total"
-
-	// ErrorCode is the name of the collector that counts the number of errors by task, operation and error code.
-	ErrorCode = "error_code_total"
+	// NameErrorCode is the name of the collector that counts the number of errors by task, operation and error code.
+	NameErrorCode = "error_code_total"
 
 	// labels
 
@@ -65,115 +57,99 @@ var (
 
 	// DefaultCollectors contains the list of default collectors
 	DefaultCollectors = []Option{
-		WithCollector(
-			GoRuntime,
-			prometheus.NewGoCollector(),
-		),
-		WithCollector(
-			GoProcess,
-			prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}),
-		),
-		WithCollectorGauge(
-			InFlightRequests,
-			prometheus.NewGauge(
-				prometheus.GaugeOpts{
-					Name: InFlightRequests,
-					Help: "Number of In-flight http requests.",
-				},
-			),
-		),
-		WithCollectorCounterVec(
-			APIRequests,
-			prometheus.NewCounterVec(
-				prometheus.CounterOpts{
-					Name: APIRequests,
-					Help: "Total number of http requests.",
-				},
-				[]string{labelCode, labelMethod},
-			),
-		),
-		WithCollectorHistogramVec(
-			RequestDuration,
-			prometheus.NewHistogramVec(
-				prometheus.HistogramOpts{
-					Name:    RequestDuration,
-					Help:    "Requests duration in seconds.",
-					Buckets: DefaultDurationBuckets,
-				},
-				[]string{labelHandler, labelMethod},
-			),
-		),
-		WithCollectorHistogramVec(
-			ResponseSize,
-			prometheus.NewHistogramVec(
-				prometheus.HistogramOpts{
-					Name:    ResponseSize,
-					Help:    "Response size in bytes.",
-					Buckets: DefaultSizeBuckets,
-				},
-				[]string{},
-			),
-		),
-		WithCollectorHistogramVec(
-			RequestSize,
-			prometheus.NewHistogramVec(
-				prometheus.HistogramOpts{
-					Name:    RequestSize,
-					Help:    "Requests size in bytes.",
-					Buckets: DefaultSizeBuckets,
-				},
-				[]string{},
-			),
-		),
-		WithCollectorCounterVec(
-			OutboundRequests,
-			prometheus.NewCounterVec(
-				prometheus.CounterOpts{
-					Name: OutboundRequests,
-					Help: "Total number of outbound http requests.",
-				},
-				[]string{labelCode, labelMethod},
-			),
-		),
-		WithCollectorHistogramVec(
-			OutboundRequestsDuration,
-			prometheus.NewHistogramVec(
-				prometheus.HistogramOpts{
-					Name:    OutboundRequestsDuration,
-					Help:    "Outbound requests duration in seconds.",
-					Buckets: DefaultDurationBuckets,
-				},
-				[]string{labelCode, labelMethod},
-			),
-		),
-		WithCollectorGauge(
-			OutboundInFlightRequests,
-			prometheus.NewGauge(
-				prometheus.GaugeOpts{
-					Name: OutboundInFlightRequests,
-					Help: "Number of outbound In-flight http requests.",
-				},
-			),
-		),
-		WithCollectorCounterVec(
-			ErrorLevel,
-			prometheus.NewCounterVec(
-				prometheus.CounterOpts{
-					Name: ErrorLevel,
-					Help: "Number of errors by severity level.",
-				},
-				[]string{labelLevel},
-			),
-		),
-		WithCollectorCounterVec(
-			ErrorCode,
-			prometheus.NewCounterVec(
-				prometheus.CounterOpts{
-					Name: ErrorCode,
-					Help: "Number of errors by task, operation and error code.",
-				},
-				[]string{labelTask, labelOperation, labelCode},
-			),
-		),
+		WithCollector(prometheus.NewGoCollector()),
+		WithCollector(prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{})),
+		WithCollector(collectorInFlightRequests),
+		WithCollector(collectorAPIRequests),
+		WithCollector(collectorRequestDuration),
+		WithCollector(collectorResponseSize),
+		WithCollector(collectorRequestSize),
+		WithCollector(collectorOutboundRequests),
+		WithCollector(collectorOutboundRequestsDuration),
+		WithCollector(collectorOutboundInFlightRequests),
+		WithCollector(collectorErrorLevel),
+		WithCollector(collectorErrorCode),
 	}
+
+	collectorInFlightRequests = prometheus.NewGauge(
+		prometheus.GaugeOpts{
+			Name: NameInFlightRequests,
+			Help: "Number of In-flight http requests.",
+		},
+	)
+
+	collectorAPIRequests = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: NameAPIRequests,
+			Help: "Total number of http requests.",
+		},
+		[]string{labelCode, labelMethod},
+	)
+
+	collectorRequestDuration = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name:    NameRequestDuration,
+			Help:    "Requests duration in seconds.",
+			Buckets: DefaultDurationBuckets,
+		},
+		[]string{labelHandler, labelMethod},
+	)
+
+	collectorResponseSize = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name:    NameResponseSize,
+			Help:    "Response size in bytes.",
+			Buckets: DefaultSizeBuckets,
+		},
+		[]string{},
+	)
+
+	collectorRequestSize = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name:    NameRequestSize,
+			Help:    "Requests size in bytes.",
+			Buckets: DefaultSizeBuckets,
+		},
+		[]string{},
+	)
+
+	collectorOutboundRequests = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: NameOutboundRequests,
+			Help: "Total number of outbound http requests.",
+		},
+		[]string{labelCode, labelMethod},
+	)
+
+	collectorOutboundRequestsDuration = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name:    NameOutboundRequestsDuration,
+			Help:    "Outbound requests duration in seconds.",
+			Buckets: DefaultDurationBuckets,
+		},
+		[]string{labelCode, labelMethod},
+	)
+
+	collectorOutboundInFlightRequests = prometheus.NewGauge(
+		prometheus.GaugeOpts{
+			Name: NameOutboundInFlightRequests,
+			Help: "Number of outbound In-flight http requests.",
+		},
+	)
+
+	collectorErrorLevel = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: NameErrorLevel,
+			Help: "Number of errors by severity level.",
+		},
+		[]string{labelLevel},
+	)
+
+	collectorErrorCode = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: NameErrorCode,
+			Help: "Number of errors by task, operation and error code.",
+		},
+		[]string{labelTask, labelOperation, labelCode},
+	)
 )
