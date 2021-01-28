@@ -1,10 +1,10 @@
 package metrics
 
 import (
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"testing"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/stretchr/testify/require"
 )
 

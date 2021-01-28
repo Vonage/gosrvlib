@@ -2,8 +2,8 @@ package bootstrap
 
 import (
 	"context"
-	"github.com/nexmoinc/gosrvlib/pkg/metrics"
 
+	"github.com/nexmoinc/gosrvlib/pkg/metrics"
 	"go.uber.org/zap"
 )
 

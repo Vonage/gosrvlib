@@ -2,13 +2,13 @@ package cli
 
 import (
 	"fmt"
-	"github.com/nexmoinc/gosrvlib/pkg/metrics"
 	"os"
 
 	"github.com/nexmoinc/gosrvlib/pkg/bootstrap"
 	"github.com/nexmoinc/gosrvlib/pkg/config"
 	"github.com/nexmoinc/gosrvlib/pkg/httputil/jsendx"
 	"github.com/nexmoinc/gosrvlib/pkg/logging"
+	"github.com/nexmoinc/gosrvlib/pkg/metrics"
 	"github.com/spf13/cobra"
 )
 
