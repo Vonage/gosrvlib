@@ -55,8 +55,8 @@ var (
 	// DefaultDurationBuckets default prometheus buckets for duration in seconds.
 	DefaultDurationBuckets = prometheus.ExponentialBuckets(0.001, 10, 6)
 
-	// DefaultCollectors contains the list of default collectors
-	DefaultCollectors = []Option{
+	// DefaultCollectorOptions contains the list of default collectors
+	DefaultCollectorOptions = []Option{
 		WithCollector(prometheus.NewGoCollector()),
 		WithCollector(prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{})),
 		WithCollector(collectorInFlightRequests),

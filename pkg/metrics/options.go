@@ -6,20 +6,20 @@ import (
 )
 
 // Option is the interface that allows to set client options.
-type Option func(c *Client) error
+type Option func(c Client) error
 
 // WithHandlerOpts sets the options how to serve metrics via an http.Handler.
 // The zero value of HandlerOpts is a reasonable default.
 func WithHandlerOpts(opts promhttp.HandlerOpts) Option {
-	return func(c *Client) error {
-		c.handlerOpts = opts
+	return func(c Client) error {
+		c.SetHandlerOpts(opts)
 		return nil
 	}
 }
 
 // WithCollector register a new generic collector.
 func WithCollector(m prometheus.Collector) Option {
-	return func(c *Client) error {
-		return c.Registry.Register(m)
+	return func(c Client) error {
+		return c.PromRegistry().Register(m)
 	}
 }

@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"github.com/nexmoinc/gosrvlib/pkg/metrics"
 	"os"
 
 	"github.com/nexmoinc/gosrvlib/pkg/bootstrap"
@@ -55,8 +56,14 @@ func New(version, release string, bootstrapFn bootstrapFunc) (*cobra.Command, er
 			ProgramRelease: release,
 		}
 
+		// NOTE: Add custom metrics here
+		metricsCollectors := metrics.DefaultCollectorOptions
+
 		// Boostrap application
-		return bootstrapFn(bind(cfg, appInfo), bootstrap.WithLogger(l))
+		return bootstrapFn(
+			bind(cfg, appInfo),
+			bootstrap.WithLogger(l),
+			bootstrap.WithMetricsOptions(metricsCollectors...))
 	}
 
 	// sub-command to print the version

@@ -23,12 +23,12 @@ func TestNew(t *testing.T) {
 		},
 		{
 			name:    "succeeds with default options",
-			opts:    DefaultCollectors,
+			opts:    DefaultCollectorOptions,
 			wantErr: false,
 		},
 		{
 			name:    "fails with invalid option",
-			opts:    []Option{func(c *Client) error { return fmt.Errorf("Error") }},
+			opts:    []Option{func(c Client) error { return fmt.Errorf("Error") }},
 			wantErr: true,
 		},
 	}
@@ -49,7 +49,7 @@ func TestNew(t *testing.T) {
 func TestInstrumentHandler(t *testing.T) {
 	t.Parallel()
 
-	c, err := New(DefaultCollectors...)
+	c, err := New(DefaultCollectorOptions...)
 	require.NoError(t, err, "New() unexpected error = %v", err)
 
 	rr := httptest.NewRecorder()
@@ -65,7 +65,7 @@ func TestInstrumentHandler(t *testing.T) {
 			status, http.StatusOK)
 	}
 
-	rt, err := testutil.GatherAndCount(c.Registry, NameAPIRequests)
+	rt, err := testutil.GatherAndCount(c.PromRegistry(), NameAPIRequests)
 	require.NoError(t, err, "failed to gather metrics: %s", err)
 	require.Equal(t, 1, rt, "failed to assert right metrics: got %v want %v", rt, 1)
 }
@@ -73,7 +73,7 @@ func TestInstrumentHandler(t *testing.T) {
 func TestInstrumentRoundTripper(t *testing.T) {
 	t.Parallel()
 
-	c, err := New(DefaultCollectors...)
+	c, err := New(DefaultCollectorOptions...)
 	require.NoError(t, err, "New() unexpected error = %v", err)
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -88,7 +88,7 @@ func TestInstrumentRoundTripper(t *testing.T) {
 	_, err = client.Get(server.URL)
 	require.NoError(t, err, "client.Do() unexpected error = %v", err)
 
-	rt, err := testutil.GatherAndCount(c.Registry, NameOutboundRequests)
+	rt, err := testutil.GatherAndCount(c.PromRegistry(), NameOutboundRequests)
 	require.NoError(t, err, "failed to gather metrics: %s", err)
 	require.Equal(t, 1, rt, "failed to assert right metrics: got %v want %v", rt, 1)
 }
@@ -96,12 +96,12 @@ func TestInstrumentRoundTripper(t *testing.T) {
 func TestIncLogLevelCounter(t *testing.T) {
 	t.Parallel()
 
-	c, err := New(DefaultCollectors...)
+	c, err := New(DefaultCollectorOptions...)
 	require.NoError(t, err, "unexpected error = %v", err)
 
 	c.IncLogLevelCounter("debug")
 
-	i, err := testutil.GatherAndCount(c.Registry, NameErrorLevel)
+	i, err := testutil.GatherAndCount(c.PromRegistry(), NameErrorLevel)
 	require.NoError(t, err, "failed to gather metrics: %s", err)
 
 	if i != 1 {
@@ -112,12 +112,12 @@ func TestIncLogLevelCounter(t *testing.T) {
 func TestIncErrorCounter(t *testing.T) {
 	t.Parallel()
 
-	c, err := New(DefaultCollectors...)
+	c, err := New(DefaultCollectorOptions...)
 	require.NoError(t, err, "unexpected error = %v", err)
 
 	c.IncErrorCounter("test_task", "test_operation", "3791")
 
-	i, err := testutil.GatherAndCount(c.Registry, NameErrorCode)
+	i, err := testutil.GatherAndCount(c.PromRegistry(), NameErrorCode)
 	require.NoError(t, err, "failed to gather metrics: %s", err)
 
 	if i != 1 {

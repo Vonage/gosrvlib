@@ -2,6 +2,7 @@ package bootstrap
 
 import (
 	"context"
+	"github.com/nexmoinc/gosrvlib/pkg/metrics"
 
 	"go.uber.org/zap"
 )
@@ -36,5 +37,14 @@ func WithCreateLoggerFunc(fn CreateLoggerFunc) Option {
 func WithCreateMetricsClientFunc(fn CreateMetricsClientFunc) Option {
 	return func(cfg *config) {
 		cfg.createMetricsClientFunc = fn
+	}
+}
+
+// WithMetricsOptions overrides the default metrics client register.
+func WithMetricsOptions(opts ...metrics.Option) Option {
+	return func(cfg *config) {
+		cfg.createMetricsClientFunc = func() (metrics.Client, error) {
+			return metrics.New(opts...)
+		}
 	}
 }
