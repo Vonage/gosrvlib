@@ -53,7 +53,7 @@ func TestIncLogLevelCounter(t *testing.T) {
 
 	c.IncLogLevelCounter("debug")
 
-	i, err := testutil.GatherAndCount(c.Registry, MetricErrorLevel)
+	i, err := testutil.GatherAndCount(c.Registry, ErrorLevel)
 	if err != nil {
 		t.Errorf("failed to gather metrics: %s", err)
 	}
@@ -84,7 +84,7 @@ func TestHandler(t *testing.T) {
 			status, http.StatusOK)
 	}
 
-	rt, err := testutil.GatherAndCount(c.Registry, MetricAPIRequests)
+	rt, err := testutil.GatherAndCount(c.Registry, APIRequests)
 	if err != nil {
 		t.Errorf("failed to gather metrics: %s", err)
 	}

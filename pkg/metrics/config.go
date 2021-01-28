@@ -5,88 +5,159 @@ import (
 )
 
 const (
-	// MetricInFlightRequest is a default metric label.
-	MetricInFlightRequest = "in_flight_requests"
+	// collector names
 
-	// MetricAPIRequests is a default metric label.
-	MetricAPIRequests = "api_requests_total"
+	// GoRuntime is the name of the collector which exports metrics about the current go process.
+	GoRuntime = "go_runtime"
 
-	// MetricRequestDuration is a default metric label.
-	MetricRequestDuration = "request_duration_seconds"
+	// GoProcess is the name of the collector which exports the current state of process metrics
+	// including cpu, memory and file descriptor usage as well as the process start time for
+	// the given process id under the given namespace.
+	GoProcess = "go_process"
 
-	// MetricResponseSize is a default metric label.
-	MetricResponseSize = "response_size_bytes"
+	// APIRequests is the name of the collector that counts the total inbound http requests.
+	APIRequests = "api_requests_total"
 
-	// MetricErrorLevel is a default metric label.
-	MetricErrorLevel = "error_level_total"
+	// ErrorLevel is the name of the collector that counts the number of errors for each log severity level.
+	ErrorLevel = "error_level_total"
 
-	// MetricGoRuntime is a default metric label.
-	MetricGoRuntime = "go_runtime"
+	// InFlightRequests is the name of the collector that counts in-flight inbound http requests.
+	InFlightRequests = "in_flight_requests"
 
-	// MetricGoProcess is a default metric label.
-	MetricGoProcess = "go_process"
+	// RequestDuration is the name of the collector that measures the inbound http request duration in seconds.
+	RequestDuration = "request_duration_seconds"
+
+	// RequestSize is the name of the collector that measures the http request size in bytes.
+	RequestSize = "requeste_size_bytes"
+
+	// ResponseSize is the name of the collector that measures the http response size in bytes.
+	ResponseSize = "response_size_bytes"
+
+	// OutboundRequests is the name of the collector that measures the number of outbound requests.
+	OutboundRequests = "outbound_requests_total"
+
+	// OutboundRequestsDuration is the name of the collector that measures the outbound requests duration in seconds.
+	OutboundRequestsDuration = "outbound_request_duration_seconds"
+
+	// OutboundInFlightRequests is the name of the collector that counts in-flight outbound http requests.
+	OutboundInFlightRequests = "outbound_in_flight_requests"
+
+	// labels
+
+	labelStatusCode = "code"
+	labelHandler    = "handler"
+	labelLevel      = "level"
+	labelMethod     = "method"
 )
 
 var (
+
+	// DefaultSizeBuckets default prometheus buckets for size in bytes.
+	DefaultSizeBuckets = prometheus.ExponentialBuckets(100, 10, 6)
+
+	// DefaultDurationBuckets default prometheus buckets for duration in seconds.
+	DefaultDurationBuckets = prometheus.ExponentialBuckets(0.001, 10, 6)
+
 	// DefaultCollectors contains the list of default collectors
 	DefaultCollectors = []Option{
 		WithCollector(
-			MetricGoRuntime,
+			GoRuntime,
 			prometheus.NewGoCollector(),
 		),
 		WithCollector(
-			MetricGoProcess,
+			GoProcess,
 			prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}),
 		),
 		WithCollectorGauge(
-			MetricInFlightRequest,
+			InFlightRequests,
 			prometheus.NewGauge(
 				prometheus.GaugeOpts{
-					Name: MetricInFlightRequest,
-					Help: "A gauge of requests being served by the wrapped handler.",
+					Name: InFlightRequests,
+					Help: "Number of In-flight http requests.",
 				},
 			),
 		),
 		WithCollectorCounterVec(
-			MetricAPIRequests,
+			APIRequests,
 			prometheus.NewCounterVec(
 				prometheus.CounterOpts{
-					Name: MetricAPIRequests,
-					Help: "A counter for requests to the wrapped handler.",
+					Name: APIRequests,
+					Help: "Total number of http requests.",
 				},
-				[]string{"code", "method"},
+				[]string{labelStatusCode, labelMethod},
 			),
 		),
 		WithCollectorHistogramVec(
-			MetricRequestDuration,
+			RequestDuration,
 			prometheus.NewHistogramVec(
 				prometheus.HistogramOpts{
-					Name:    MetricRequestDuration,
-					Help:    "A histogram of latencies for requests.",
-					Buckets: prometheus.ExponentialBuckets(0.001, 10, 6),
+					Name:    RequestDuration,
+					Help:    "Requests duration in seconds.",
+					Buckets: DefaultDurationBuckets,
 				},
-				[]string{"handler", "method"},
+				[]string{labelHandler, labelMethod},
 			),
 		),
 		WithCollectorHistogramVec(
-			MetricResponseSize,
+			ResponseSize,
 			prometheus.NewHistogramVec(
 				prometheus.HistogramOpts{
-					Name:    MetricResponseSize,
-					Help:    "A histogram of response sizes for requests.",
-					Buckets: prometheus.ExponentialBuckets(100, 2, 6),
+					Name:    ResponseSize,
+					Help:    "Response size in bytes.",
+					Buckets: DefaultSizeBuckets,
+				},
+				[]string{},
+			),
+		),
+		WithCollectorHistogramVec(
+			RequestSize,
+			prometheus.NewHistogramVec(
+				prometheus.HistogramOpts{
+					Name:    RequestSize,
+					Help:    "Requests size in bytes.",
+					Buckets: DefaultSizeBuckets,
 				},
 				[]string{},
 			),
 		),
 		WithCollectorCounterVec(
-			MetricErrorLevel,
+			ErrorLevel,
 			prometheus.NewCounterVec(
 				prometheus.CounterOpts{
-					Name: MetricErrorLevel,
-					Help: "Number of errors by levels.",
+					Name: ErrorLevel,
+					Help: "Number of errors by severity level.",
 				},
-				[]string{"level"},
+				[]string{labelLevel},
+			),
+		),
+		WithCollectorCounterVec(
+			OutboundRequests,
+			prometheus.NewCounterVec(
+				prometheus.CounterOpts{
+					Name: OutboundRequests,
+					Help: "Total number of outbound http requests.",
+				},
+				[]string{labelStatusCode, labelMethod},
+			),
+		),
+		WithCollectorHistogramVec(
+			OutboundRequestsDuration,
+			prometheus.NewHistogramVec(
+				prometheus.HistogramOpts{
+					Name:    OutboundRequestsDuration,
+					Help:    "Outbound requests duration in seconds.",
+					Buckets: DefaultDurationBuckets,
+				},
+				[]string{labelStatusCode, labelMethod},
+			),
+		),
+		WithCollectorGauge(
+			OutboundInFlightRequests,
+			prometheus.NewGauge(
+				prometheus.GaugeOpts{
+					Name: OutboundInFlightRequests,
+					Help: "Number of outbound In-flight http requests.",
+				},
 			),
 		),
 	}

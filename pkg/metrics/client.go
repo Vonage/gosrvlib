@@ -59,25 +59,28 @@ func initClient() *Client {
 }
 
 // InstrumentHandler wraps an http.Handler to collect Prometheus metrics.
-// Requires DefaultCollectors.
 func (c *Client) InstrumentHandler(path string, handler http.HandlerFunc) http.Handler {
 	var h http.Handler
 	h = handler
-	metricResponseSize, ok := c.CollectorHistogramVec[MetricResponseSize]
+	collectorRequestSize, ok := c.CollectorHistogramVec[RequestSize]
 	if ok {
-		h = promhttp.InstrumentHandlerResponseSize(metricResponseSize, h)
+		h = promhttp.InstrumentHandlerRequestSize(collectorRequestSize, h)
 	}
-	metricAPIRequests, ok := c.CollectorCounterVec[MetricAPIRequests]
+	collectorResponseSize, ok := c.CollectorHistogramVec[ResponseSize]
 	if ok {
-		h = promhttp.InstrumentHandlerCounter(metricAPIRequests, h)
+		h = promhttp.InstrumentHandlerResponseSize(collectorResponseSize, h)
 	}
-	metricRequestDuration, ok := c.CollectorHistogramVec[MetricRequestDuration]
+	collectorAPIRequests, ok := c.CollectorCounterVec[APIRequests]
 	if ok {
-		h = promhttp.InstrumentHandlerDuration(metricRequestDuration.MustCurryWith(prometheus.Labels{"handler": path}), h)
+		h = promhttp.InstrumentHandlerCounter(collectorAPIRequests, h)
 	}
-	metricInFlightRequest, ok := c.CollectorGauge[MetricInFlightRequest]
+	collectorRequestDuration, ok := c.CollectorHistogramVec[RequestDuration]
 	if ok {
-		h = promhttp.InstrumentHandlerInFlight(metricInFlightRequest, h)
+		h = promhttp.InstrumentHandlerDuration(collectorRequestDuration.MustCurryWith(prometheus.Labels{labelHandler: path}), h)
+	}
+	collectorInFlightRequests, ok := c.CollectorGauge[InFlightRequests]
+	if ok {
+		h = promhttp.InstrumentHandlerInFlight(collectorInFlightRequests, h)
 	}
 	return h
 }
@@ -93,11 +96,27 @@ func DefaultMetricsHandlerFunc() http.HandlerFunc {
 	return promhttp.Handler().ServeHTTP
 }
 
-// IncLogLevelCounter counts the number of errors for each syslog level.
-// Requires DefaultCollectors.
+// IncLogLevelCounter counts the number of errors for each log severity level.
 func (c *Client) IncLogLevelCounter(level string) {
-	m, ok := c.CollectorCounterVec[MetricErrorLevel]
+	m, ok := c.CollectorCounterVec[ErrorLevel]
 	if ok {
-		m.With(prometheus.Labels{"level": level}).Inc()
+		m.With(prometheus.Labels{labelLevel: level}).Inc()
 	}
+}
+
+// InstrumentRoundTripper is a middleware that wraps the provided http.RoundTripper to observe the request result with default metrics.
+func (c *Client) InstrumentRoundTripper(next http.RoundTripper) http.RoundTripper {
+	collectorOutboundRequests, ok := c.CollectorCounterVec[OutboundRequests]
+	if ok {
+		next = promhttp.InstrumentRoundTripperCounter(collectorOutboundRequests, next)
+	}
+	collectorOutboundRequestsDuration, ok := c.CollectorHistogramVec[OutboundRequestsDuration]
+	if ok {
+		next = promhttp.InstrumentRoundTripperDuration(collectorOutboundRequestsDuration, next)
+	}
+	collectorOutboundInFlightRequests, ok := c.CollectorGauge[OutboundInFlightRequests]
+	if ok {
+		next = promhttp.InstrumentRoundTripperInFlight(collectorOutboundInFlightRequests, next)
+	}
+	return next
 }
