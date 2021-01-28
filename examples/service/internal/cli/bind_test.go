@@ -7,10 +7,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gosrvlibexample/gosrvlibexample/internal/metrics"
 	"github.com/nexmoinc/gosrvlib/pkg/bootstrap"
 	"github.com/nexmoinc/gosrvlib/pkg/httputil/jsendx"
 	"github.com/nexmoinc/gosrvlib/pkg/logging"
 	"github.com/nexmoinc/gosrvlib/pkg/testutil"
+	promtest "github.com/prometheus/client_golang/prometheus/testutil"
 	"github.com/stretchr/testify/require"
 )
 
@@ -97,11 +99,17 @@ func Test_bind(t *testing.T) {
 				defer func() { _ = l.Close() }()
 			}
 
-			testBindFn := bind(tt.cfg, &jsendx.AppInfo{
-				ProgramName:    "test",
-				ProgramVersion: "0.0.0",
-				ProgramRelease: "0",
-			})
+			mtr := metrics.New()
+
+			testBindFn := bind(
+				tt.cfg,
+				&jsendx.AppInfo{
+					ProgramName:    "test",
+					ProgramVersion: "0.0.0",
+					ProgramRelease: "0",
+				},
+				mtr,
+			)
 
 			testCtx, cancel := context.WithTimeout(testutil.Context(), 1*time.Second)
 			defer cancel()
@@ -113,6 +121,9 @@ func Test_bind(t *testing.T) {
 			err := bootstrap.Bootstrap(testBindFn, testBootstrapOpts...)
 			if tt.wantErr {
 				require.Error(t, err, "bind() error = %v, wantErr %v", err, tt.wantErr)
+			} else {
+				i := promtest.CollectAndCount(mtr.CollectorExample, metrics.NameExample)
+				require.Equal(t, 1, i, "failed to assert right metrics: got %v want %v", i, 1)
 			}
 			if tt.wantTimeoutErr {
 				require.True(t, errors.Is(err, context.DeadlineExceeded),

@@ -1,4 +1,4 @@
-package metrics
+package prometheus
 
 import (
 	"net/http"
@@ -9,33 +9,24 @@ import (
 
 // Client represents the state type of this client.
 type Client struct {
-	Registry    *prometheus.Registry
+	registry    *prometheus.Registry
 	handlerOpts promhttp.HandlerOpts
 }
 
 // New creates a new metrics instance.
 func New(opts ...Option) (*Client, error) {
 	c := initClient()
-	err := c.Configure(opts...)
-	if err != nil {
-		return nil, err
+	for _, applyOpt := range opts {
+		if err := applyOpt(c); err != nil {
+			return nil, err
+		}
 	}
 	return c, nil
 }
 
-// Configure allows to specify more options.
-func (c *Client) Configure(opts ...Option) error {
-	for _, applyOpt := range opts {
-		if err := applyOpt(c); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 func initClient() *Client {
 	return &Client{
-		Registry:    prometheus.NewRegistry(),
+		registry:    prometheus.NewRegistry(),
 		handlerOpts: promhttp.HandlerOpts{},
 	}
 }
@@ -62,8 +53,8 @@ func (c *Client) InstrumentRoundTripper(next http.RoundTripper) http.RoundTrippe
 
 // MetricsHandlerFunc returns an http handler function to serve the metrics endpoint.
 func (c *Client) MetricsHandlerFunc() http.HandlerFunc {
-	h := promhttp.HandlerFor(c.Registry, c.handlerOpts)
-	return promhttp.InstrumentMetricHandler(c.Registry, h).ServeHTTP
+	h := promhttp.HandlerFor(c.registry, c.handlerOpts)
+	return promhttp.InstrumentMetricHandler(c.registry, h).ServeHTTP
 }
 
 // IncLogLevelCounter counts the number of errors for each log severity level.

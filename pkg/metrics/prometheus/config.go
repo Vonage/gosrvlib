@@ -1,4 +1,4 @@
-package metrics
+package prometheus
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
@@ -48,15 +48,8 @@ const (
 )
 
 var (
-
-	// DefaultSizeBuckets default prometheus buckets for size in bytes.
-	DefaultSizeBuckets = prometheus.ExponentialBuckets(100, 10, 6)
-
-	// DefaultDurationBuckets default prometheus buckets for duration in seconds.
-	DefaultDurationBuckets = prometheus.ExponentialBuckets(0.001, 10, 6)
-
-	// DefaultCollectors contains the list of default collectors
-	DefaultCollectors = []Option{
+	// DefaultCollectorOptions contains the list of default collectors
+	DefaultCollectorOptions = []Option{
 		WithCollector(prometheus.NewGoCollector()),
 		WithCollector(prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{})),
 		WithCollector(collectorInFlightRequests),
@@ -71,12 +64,20 @@ var (
 		WithCollector(collectorErrorCode),
 	}
 
+	// DefaultSizeBuckets default prometheus buckets for size in bytes.
+	DefaultSizeBuckets = prometheus.ExponentialBuckets(100, 10, 6)
+
+	// DefaultDurationBuckets default prometheus buckets for duration in seconds.
+	DefaultDurationBuckets = prometheus.ExponentialBuckets(0.001, 10, 6)
+
 	collectorInFlightRequests = prometheus.NewGauge(
 		prometheus.GaugeOpts{
 			Name: NameInFlightRequests,
 			Help: "Number of In-flight http requests.",
 		},
 	)
+
+	// collectors
 
 	collectorAPIRequests = prometheus.NewCounterVec(
 		prometheus.CounterOpts{

@@ -1,4 +1,4 @@
-package metrics
+package prometheus
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
@@ -20,6 +20,6 @@ func WithHandlerOpts(opts promhttp.HandlerOpts) Option {
 // WithCollector register a new generic collector.
 func WithCollector(m prometheus.Collector) Option {
 	return func(c *Client) error {
-		return c.Registry.Register(m)
+		return c.registry.Register(m)
 	}
 }
