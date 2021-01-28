@@ -18,9 +18,6 @@ const (
 	// APIRequests is the name of the collector that counts the total inbound http requests.
 	APIRequests = "api_requests_total"
 
-	// ErrorLevel is the name of the collector that counts the number of errors for each log severity level.
-	ErrorLevel = "error_level_total"
-
 	// InFlightRequests is the name of the collector that counts in-flight inbound http requests.
 	InFlightRequests = "in_flight_requests"
 
@@ -42,12 +39,20 @@ const (
 	// OutboundInFlightRequests is the name of the collector that counts in-flight outbound http requests.
 	OutboundInFlightRequests = "outbound_in_flight_requests"
 
+	// ErrorLevel is the name of the collector that counts the number of errors for each log severity level.
+	ErrorLevel = "error_level_total"
+
+	// ErrorCode is the name of the collector that counts the number of errors by task, operation and error code.
+	ErrorCode = "error_code_total"
+
 	// labels
 
-	labelStatusCode = "code"
-	labelHandler    = "handler"
-	labelLevel      = "level"
-	labelMethod     = "method"
+	labelCode      = "code"
+	labelHandler   = "handler"
+	labelLevel     = "level"
+	labelMethod    = "method"
+	labelOperation = "operation"
+	labelTask      = "task"
 )
 
 var (
@@ -84,7 +89,7 @@ var (
 					Name: APIRequests,
 					Help: "Total number of http requests.",
 				},
-				[]string{labelStatusCode, labelMethod},
+				[]string{labelCode, labelMethod},
 			),
 		),
 		WithCollectorHistogramVec(
@@ -121,23 +126,13 @@ var (
 			),
 		),
 		WithCollectorCounterVec(
-			ErrorLevel,
-			prometheus.NewCounterVec(
-				prometheus.CounterOpts{
-					Name: ErrorLevel,
-					Help: "Number of errors by severity level.",
-				},
-				[]string{labelLevel},
-			),
-		),
-		WithCollectorCounterVec(
 			OutboundRequests,
 			prometheus.NewCounterVec(
 				prometheus.CounterOpts{
 					Name: OutboundRequests,
 					Help: "Total number of outbound http requests.",
 				},
-				[]string{labelStatusCode, labelMethod},
+				[]string{labelCode, labelMethod},
 			),
 		),
 		WithCollectorHistogramVec(
@@ -148,7 +143,7 @@ var (
 					Help:    "Outbound requests duration in seconds.",
 					Buckets: DefaultDurationBuckets,
 				},
-				[]string{labelStatusCode, labelMethod},
+				[]string{labelCode, labelMethod},
 			),
 		),
 		WithCollectorGauge(
@@ -158,6 +153,26 @@ var (
 					Name: OutboundInFlightRequests,
 					Help: "Number of outbound In-flight http requests.",
 				},
+			),
+		),
+		WithCollectorCounterVec(
+			ErrorLevel,
+			prometheus.NewCounterVec(
+				prometheus.CounterOpts{
+					Name: ErrorLevel,
+					Help: "Number of errors by severity level.",
+				},
+				[]string{labelLevel},
+			),
+		),
+		WithCollectorCounterVec(
+			ErrorCode,
+			prometheus.NewCounterVec(
+				prometheus.CounterOpts{
+					Name: ErrorCode,
+					Help: "Number of errors by task, operation and error code.",
+				},
+				[]string{labelTask, labelOperation, labelCode},
 			),
 		),
 	}

@@ -85,25 +85,6 @@ func (c *Client) InstrumentHandler(path string, handler http.HandlerFunc) http.H
 	return h
 }
 
-// MetricsHandlerFunc returns an http handler function to serve the metrics endpoint.
-func (c *Client) MetricsHandlerFunc() http.HandlerFunc {
-	h := promhttp.HandlerFor(c.Registry, c.handlerOpts)
-	return promhttp.InstrumentMetricHandler(c.Registry, h).ServeHTTP
-}
-
-// DefaultMetricsHandlerFunc returns a default http handler function to serve the metrics endpoint.
-func DefaultMetricsHandlerFunc() http.HandlerFunc {
-	return promhttp.Handler().ServeHTTP
-}
-
-// IncLogLevelCounter counts the number of errors for each log severity level.
-func (c *Client) IncLogLevelCounter(level string) {
-	m, ok := c.CollectorCounterVec[ErrorLevel]
-	if ok {
-		m.With(prometheus.Labels{labelLevel: level}).Inc()
-	}
-}
-
 // InstrumentRoundTripper is a middleware that wraps the provided http.RoundTripper to observe the request result with default metrics.
 func (c *Client) InstrumentRoundTripper(next http.RoundTripper) http.RoundTripper {
 	collectorOutboundRequests, ok := c.CollectorCounterVec[OutboundRequests]
@@ -119,4 +100,26 @@ func (c *Client) InstrumentRoundTripper(next http.RoundTripper) http.RoundTrippe
 		next = promhttp.InstrumentRoundTripperInFlight(collectorOutboundInFlightRequests, next)
 	}
 	return next
+}
+
+// MetricsHandlerFunc returns an http handler function to serve the metrics endpoint.
+func (c *Client) MetricsHandlerFunc() http.HandlerFunc {
+	h := promhttp.HandlerFor(c.Registry, c.handlerOpts)
+	return promhttp.InstrumentMetricHandler(c.Registry, h).ServeHTTP
+}
+
+// IncLogLevelCounter counts the number of errors for each log severity level.
+func (c *Client) IncLogLevelCounter(level string) {
+	m, ok := c.CollectorCounterVec[ErrorLevel]
+	if ok {
+		m.With(prometheus.Labels{labelLevel: level}).Inc()
+	}
+}
+
+// IncErrorCounter increments the number of errors by task, operation and error code.
+func (c *Client) IncErrorCounter(task, operation, code string) {
+	m, ok := c.CollectorCounterVec[ErrorCode]
+	if ok {
+		m.With(prometheus.Labels{labelTask: task, labelOperation: operation, labelCode: code}).Inc()
+	}
 }
