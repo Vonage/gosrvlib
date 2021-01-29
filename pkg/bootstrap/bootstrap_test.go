@@ -89,7 +89,7 @@ func TestBootstrap(t *testing.T) {
 				opts = append(opts, WithCreateMetricsClientFunc(tt.createMetricsClientFunc))
 			} else {
 				fn := func() (metrics.Client, error) {
-					return prometheus.New(prometheus.DefaultCollectorOptions...)
+					return prometheus.New()
 				}
 				opts = append(opts, WithCreateMetricsClientFunc(fn))
 			}

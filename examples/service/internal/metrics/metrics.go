@@ -16,14 +16,14 @@ const (
 
 // Metrics groups the custom collectors to be shared with other packages.
 type Metrics struct {
-	// CollectorExample is an example collector.
-	CollectorExample *prometheus.CounterVec
+	// collectorExample is an example collector.
+	collectorExample *prometheus.CounterVec
 }
 
 // New creates a new Metrics instance.
 func New() *Metrics {
 	return &Metrics{
-		CollectorExample: prometheus.NewCounterVec(
+		collectorExample: prometheus.NewCounterVec(
 			prometheus.CounterOpts{
 				Name: NameExample,
 				Help: "Example of custom collector.",
@@ -35,12 +35,11 @@ func New() *Metrics {
 
 // CreateMetricsClientFunc returns the metrics Client.
 func (m *Metrics) CreateMetricsClientFunc() (metrics.Client, error) {
-	coll := prom.DefaultCollectorOptions
-	coll = append(coll, prom.WithCollector(m.CollectorExample))
-	return prom.New(coll...)
+	opt := prom.WithCollector(m.collectorExample)
+	return prom.New(opt)
 }
 
 // IncExampleCounter is an example function to increment a counter.
 func (m *Metrics) IncExampleCounter(code string) {
-	m.CollectorExample.With(prometheus.Labels{labelCode: code}).Inc()
+	m.collectorExample.With(prometheus.Labels{labelCode: code}).Inc()
 }

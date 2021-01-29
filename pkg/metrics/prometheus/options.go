@@ -23,3 +23,35 @@ func WithCollector(m prometheus.Collector) Option {
 		return c.registry.Register(m)
 	}
 }
+
+// WithInboundRequestSizeBuckets set the buckets size in bytes for the inbound requests.
+func WithInboundRequestSizeBuckets(buckets []float64) Option {
+	return func(c *Client) error {
+		c.inboundRequestSizeBuckets = buckets
+		return nil
+	}
+}
+
+// WithInboundResponseSizeBuckets set the buckets size in bytes for the inbound response.
+func WithInboundResponseSizeBuckets(buckets []float64) Option {
+	return func(c *Client) error {
+		c.inboundResponseSizeBuckets = buckets
+		return nil
+	}
+}
+
+// WithInboundRequestDurationBuckets set the buckets size in seconds for the inbound requests duration.
+func WithInboundRequestDurationBuckets(buckets []float64) Option {
+	return func(c *Client) error {
+		c.inboundRequestDurationBuckets = buckets
+		return nil
+	}
+}
+
+// WithOutboundRequestDurationBuckets set the buckets size in seconds for the outbound requests duration.
+func WithOutboundRequestDurationBuckets(buckets []float64) Option {
+	return func(c *Client) error {
+		c.outboundRequestDurationBuckets = buckets
+		return nil
+	}
+}

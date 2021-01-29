@@ -70,6 +70,7 @@ func bind(cfg *appConfig, appInfo *jsendx.AppInfo, mtr *instr.Metrics) bootstrap
 			return fmt.Errorf("error starting monitoring HTTP server: %w", err)
 		}
 
+		// example of custom metric
 		mtr.IncExampleCounter("START")
 
 		// start service server

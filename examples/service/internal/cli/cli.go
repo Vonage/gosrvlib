@@ -56,6 +56,7 @@ func New(version, release string, bootstrapFn bootstrapFunc) (*cobra.Command, er
 			ProgramRelease: release,
 		}
 
+		// Confifure metrics
 		mtr := metrics.New()
 
 		// Boostrap application
