@@ -45,7 +45,6 @@ func (c *Client) Do(r *http.Request) (resp *http.Response, err error) {
 	l := logging.WithComponent(ctx, c.component)
 	defer func() {
 		if err == nil {
-			_ = resp.Body.Close()
 			l.Debug("outbound")
 			return
 		}
@@ -67,6 +66,7 @@ func (c *Client) Do(r *http.Request) (resp *http.Response, err error) {
 	if resp != nil {
 		respDump, _ := httputil.DumpResponse(resp, true)
 		l = l.With(zap.String("response", string(respDump)))
+		_ = resp.Body.Close()
 	}
 
 	return resp, err
