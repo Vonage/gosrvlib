@@ -2,6 +2,7 @@ package httpclient
 
 import (
 	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 
@@ -26,4 +27,26 @@ func TestNew(t *testing.T) {
 	require.Equal(t, component, got.component)
 	require.Equal(t, timeout, got.client.Timeout)
 	require.Equal(t, fn(http.DefaultTransport), got.client.Transport)
+}
+
+func TestDo(t *testing.T) {
+	t.Parallel()
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(`OK`))
+	}))
+	defer server.Close()
+
+	client := New()
+
+	req, err := http.NewRequest(http.MethodGet, server.URL, nil)
+	require.NoError(t, err, "failed creating http request: %s", err)
+	resp, err := client.Do(req)
+	require.NoError(t, err, "client.Do(): unexpected error = %v", err)
+	require.NotNil(t, resp, "returned response should not be nil")
+
+	req, err = http.NewRequest(http.MethodGet, "/error", nil)
+	require.NoError(t, err, "failed creating http request: %s", err)
+	_, err = client.Do(req)
+	require.Error(t, err, "client.Do with invalud URL: an error was expected")
 }

@@ -63,8 +63,11 @@ func (c *Client) Do(r *http.Request) (resp *http.Response, err error) {
 	start := time.Now()
 	resp, err = c.client.Do(r)
 	l = l.With(zap.Duration("duration", time.Since(start)))
-	respDump, _ := httputil.DumpResponse(resp, true)
-	l = l.With(zap.String("response", string(respDump)))
+
+	if resp != nil {
+		respDump, _ := httputil.DumpResponse(resp, true)
+		l = l.With(zap.String("response", string(respDump)))
+	}
 
 	return resp, err
 }
