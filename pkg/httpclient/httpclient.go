@@ -1,2 +1,2 @@
-// Package httpclient provides an instrumented HTTP client with trace ID header, logging and metrics.
+// Package httpclient provides an instrumented HTTP client with the addition of the traceID header and logging.
 package httpclient

@@ -11,7 +11,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// Client wraps the default HTTP client functionalities and adds logging and metrics collection capabilities.
+// Client wraps the default HTTP client functionalities and adds logging and instrumentation capabilities.
 type Client struct {
 	client            *http.Client
 	traceIDHeaderName string
