@@ -54,10 +54,10 @@ func BuildInClauseString(field string, in []string) string {
 		return ""
 	}
 
-	var values []string
+	values := make([]string, len(in))
 
-	for _, v := range in {
-		values = append(values, "'"+v+"'")
+	for k, v := range in {
+		values[k] = "'" + v + "'"
 	}
 
 	return "`" + field + "` IN (" + strings.Join(values, ",") + ")"

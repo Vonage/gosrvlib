@@ -127,7 +127,7 @@ linters:
 #    - noctx                # noctx finds sending http request without context.Context [fast: true, auto-fix: false]
 #    - nolintlint           # Reports ill-formed or insufficient nolint directives [fast: true, auto-fix: false]
 #    - paralleltest         # paralleltest detects missing usage of t.Parallel() method in your Go test [fast: true, auto-fix: false]
-#    - prealloc             # Finds slice declarations that could potentially be preallocated [fast: true, auto-fix: false]
+    - prealloc             # Finds slice declarations that could potentially be preallocated [fast: true, auto-fix: false]
     - predeclared          # find code that shadows one of Go's predeclared identifiers [fast: true, auto-fix: false]
     - rowserrcheck         # checks whether Err of rows is checked successfully [fast: true, auto-fix: false]
 #    - scopelint            # Scopelint checks for unpinned variables in go programs [fast: true, auto-fix: false]
