@@ -13,8 +13,6 @@ import (
 )
 
 func TestProgramVersion(t *testing.T) {
-	t.Parallel()
-
 	os.Args = []string{cli.AppName, "version"}
 	out := testutil.CaptureOutput(t, func() {
 		main()
@@ -31,8 +29,6 @@ func TestProgramVersion(t *testing.T) {
 }
 
 func TestMainCliError(t *testing.T) {
-	t.Parallel()
-
 	oldLogFatal := logging.LogFatal
 
 	defer func() { logging.LogFatal = oldLogFatal }()
@@ -44,8 +40,6 @@ func TestMainCliError(t *testing.T) {
 }
 
 func TestMainCliExecuteError(t *testing.T) {
-	t.Parallel()
-
 	oldLogFatal := logging.LogFatal
 
 	defer func() { logging.LogFatal = oldLogFatal }()
