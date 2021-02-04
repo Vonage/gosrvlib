@@ -47,12 +47,19 @@ func TestDo(t *testing.T) {
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, "/error", nil)
 	require.NoError(t, err, "failed creating http request: %v", err)
-	_, err = client.Do(req)
+
+	resp, err := client.Do(req) // nolint:bodyclose
+	require.Nil(t, resp)
 	require.Error(t, err, "client.Do with invalud URL: an error was expected")
 
 	req, err = http.NewRequestWithContext(ctx, http.MethodGet, server.URL, nil)
 	require.NoError(t, err, "failed creating http request: %v", err)
-	resp, err := client.Do(req)
+
+	resp, err = client.Do(req) // nolint:bodyclose
+	require.NotNil(t, resp)
+
+	defer func() { _ = resp.Body.Close() }()
+
 	require.NoError(t, err, "client.Do(): unexpected error = %v", err)
 	require.NotNil(t, resp, "returned response should not be nil")
 
@@ -63,7 +70,10 @@ func TestDo(t *testing.T) {
 	req, err = http.NewRequestWithContext(ctx, http.MethodGet, server.URL, nil)
 	require.NoError(t, err, "failed creating http request with context: %v", err)
 
-	resp, err = client.Do(req)
+	resp, err = client.Do(req) // nolint:bodyclose
+	require.NotNil(t, resp)
+
+	defer func() { _ = resp.Body.Close() }()
+
 	require.NoError(t, err, "client.Do() with context unexpected error = %v", err)
-	require.NotNil(t, resp, "returned response should not be nil")
 }

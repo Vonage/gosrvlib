@@ -113,7 +113,11 @@ func TestInstrumentRoundTripper(t *testing.T) {
 	client.Transport = c.InstrumentRoundTripper(client.Transport)
 
 	// nolint:noctx
-	_, err = client.Get(server.URL)
+	resp, err := client.Get(server.URL) // nolint:bodyclose
+	require.NotNil(t, resp)
+
+	defer func() { _ = resp.Body.Close() }()
+
 	require.NoError(t, err, "client.Do() unexpected error = %v", err)
 
 	rt, err := testutil.GatherAndCount(c.registry, NameOutboundRequests)

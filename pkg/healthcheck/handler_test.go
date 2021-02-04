@@ -104,7 +104,11 @@ func TestHandler_ServeHTTP(t *testing.T) {
 			h.ServeHTTP(rr, req)
 			el := time.Since(st)
 
-			resp := rr.Result()
+			resp := rr.Result() // nolint:bodyclose
+			require.NotNil(t, resp)
+
+			defer func() { _ = resp.Body.Close() }()
+
 			payloadData, _ := ioutil.ReadAll(resp.Body)
 			payload := string(payloadData)
 
