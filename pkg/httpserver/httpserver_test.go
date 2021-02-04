@@ -32,6 +32,7 @@ func Test_nopBinder_BindHTTP(t *testing.T) {
 
 func Test_defaultRouter(t *testing.T) {
 	t.Parallel()
+
 	tests := []struct {
 		name        string
 		method      string
@@ -70,6 +71,7 @@ func Test_defaultRouter(t *testing.T) {
 			wantStatus: http.StatusInternalServerError,
 		},
 	}
+
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {

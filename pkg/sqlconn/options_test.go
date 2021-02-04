@@ -12,6 +12,7 @@ import (
 
 func TestWithConnectFunc(t *testing.T) {
 	t.Parallel()
+
 	v := func(ctx context.Context, cfg *config) (db *sql.DB, err error) {
 		// mock function
 		return nil, nil
@@ -23,6 +24,7 @@ func TestWithConnectFunc(t *testing.T) {
 
 func TestWithCheckConnectionFunc(t *testing.T) {
 	t.Parallel()
+
 	v := func(ctx context.Context, db *sql.DB) error {
 		// mock function
 		return nil
@@ -34,6 +36,7 @@ func TestWithCheckConnectionFunc(t *testing.T) {
 
 func TestWithSQLOpenFunc(t *testing.T) {
 	t.Parallel()
+
 	v := func(a, b string) (*sql.DB, error) {
 		// mock function
 		return nil, nil
@@ -45,6 +48,7 @@ func TestWithSQLOpenFunc(t *testing.T) {
 
 func TestWithConnectMaxRetry(t *testing.T) {
 	t.Parallel()
+
 	v := 12345
 	cfg := &config{}
 	WithConnectMaxRetry(v)(cfg)
@@ -53,6 +57,7 @@ func TestWithConnectMaxRetry(t *testing.T) {
 
 func TestWithConnectRetryInterval(t *testing.T) {
 	t.Parallel()
+
 	v := 17 * time.Second
 	cfg := &config{}
 	WithConnectRetryInterval(v)(cfg)
@@ -61,6 +66,7 @@ func TestWithConnectRetryInterval(t *testing.T) {
 
 func TestWithConnMaxOpen(t *testing.T) {
 	t.Parallel()
+
 	v := 24683
 	cfg := &config{}
 	WithConnMaxOpen(v)(cfg)
@@ -69,6 +75,7 @@ func TestWithConnMaxOpen(t *testing.T) {
 
 func TestWithConnMaxIdle(t *testing.T) {
 	t.Parallel()
+
 	v := 24697
 	cfg := &config{}
 	WithConnMaxIdle(v)(cfg)
@@ -77,6 +84,7 @@ func TestWithConnMaxIdle(t *testing.T) {
 
 func TestWithConnMaxLifetime(t *testing.T) {
 	t.Parallel()
+
 	v := 19 * time.Second
 	cfg := &config{}
 	WithConnMaxLifetime(v)(cfg)

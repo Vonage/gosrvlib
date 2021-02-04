@@ -140,6 +140,7 @@ type remoteSourceConfig struct {
 func Load(cmdName, configDir, envPrefix string, cfg Configuration) error {
 	localViper := viper.New()
 	remoteViper := viper.New()
+
 	return loadConfig(localViper, remoteViper, cmdName, configDir, envPrefix, cfg)
 }
 
@@ -149,12 +150,15 @@ func loadConfig(localViper, remoteViper Viper, cmdName, configDir, envPrefix str
 	if err != nil {
 		return fmt.Errorf("failed loading local configuration: %w", err)
 	}
+
 	if err := loadRemoteConfig(localViper, remoteViper, remoteSourceCfg, envPrefix, cfg); err != nil {
 		return fmt.Errorf("failed loading remote configuration: %w", err)
 	}
+
 	if err := cfg.Validate(); err != nil {
 		return fmt.Errorf("failed validating configuration: %w", err)
 	}
+
 	return nil
 }
 
@@ -185,6 +189,7 @@ func loadLocalConfig(v Viper, cmdName, configDir, envPrefix string, cfg Configur
 	// support environment variables for the remote configuration
 	v.AutomaticEnv()
 	v.SetEnvPrefix(strings.ReplaceAll(envPrefix, "-", "_")) // will be uppercased automatically
+
 	envVar := []string{
 		keyRemoteConfigProvider,
 		keyRemoteConfigEndpoint,
@@ -192,6 +197,7 @@ func loadLocalConfig(v Viper, cmdName, configDir, envPrefix string, cfg Configur
 		keyRemoteConfigSecretKeyring,
 		keyRemoteConfigData,
 	}
+
 	for _, ev := range envVar {
 		_ = v.BindEnv(ev) // we ignore the error because we are always passing an argument value
 	}
@@ -202,6 +208,7 @@ func loadLocalConfig(v Viper, cmdName, configDir, envPrefix string, cfg Configur
 	}
 
 	var rsCfg remoteSourceConfig
+
 	if err := v.Unmarshal(&rsCfg); err != nil {
 		return nil, fmt.Errorf("failed unmarshalling config: %w", err)
 	}
@@ -214,9 +221,11 @@ func loadRemoteConfig(lv Viper, rv Viper, rs *remoteSourceConfig, envPrefix stri
 	for _, k := range lv.AllKeys() {
 		rv.SetDefault(k, lv.Get(k))
 	}
+
 	rv.SetConfigType(defaultConfigType)
 
 	var err error
+
 	switch rs.Provider {
 	case "":
 		// ignore remote source
@@ -225,6 +234,7 @@ func loadRemoteConfig(lv Viper, rv Viper, rs *remoteSourceConfig, envPrefix stri
 	default:
 		err = loadFromRemoteSource(rv, rs, envPrefix)
 	}
+
 	if err != nil {
 		return fmt.Errorf("failed loading configuration from remote source: %w", err)
 	}
@@ -259,11 +269,13 @@ func loadFromRemoteSource(v Viper, rc *remoteSourceConfig, envPrefix string) err
 	}
 
 	var err error
+
 	if rc.SecretKeyring == "" {
 		err = v.AddRemoteProvider(rc.Provider, rc.Endpoint, rc.Path)
 	} else {
 		err = v.AddSecureRemoteProvider(rc.Provider, rc.Endpoint, rc.Path, rc.SecretKeyring)
 	}
+
 	if err != nil {
 		return fmt.Errorf("failed adding remote config provider: %w", err)
 	}

@@ -16,6 +16,7 @@ func CloseRows(ctx context.Context, rows *sql.Rows) {
 	if rows == nil {
 		return
 	}
+
 	if err := rows.Close(); err != nil {
 		logging.FromContext(ctx).Error("failed closing SQL rows", zap.Error(err))
 	}
@@ -26,6 +27,7 @@ func CloseStatement(ctx context.Context, stmt *sql.Stmt) {
 	if stmt == nil {
 		return
 	}
+
 	if err := stmt.Close(); err != nil {
 		logging.FromContext(ctx).Error("failed closing SQL statement", zap.Error(err))
 	}
@@ -38,9 +40,11 @@ func BuildInClauseInt(field string, in []int) string {
 	}
 
 	values := make([]string, len(in))
+
 	for i, v := range in {
 		values[i] = strconv.Itoa(v)
 	}
+
 	return "`" + field + "` IN (" + strings.Join(values, ",") + ")"
 }
 
@@ -51,8 +55,10 @@ func BuildInClauseString(field string, in []string) string {
 	}
 
 	var values []string
+
 	for _, v := range in {
 		values = append(values, "'"+v+"'")
 	}
+
 	return "`" + field + "` IN (" + strings.Join(values, ",") + ")"
 }

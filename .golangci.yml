@@ -72,25 +72,6 @@ linters-settings:
   whitespace:
     multi-if: false   # Enforces newlines (or comments) after every multi-line if statement
     multi-func: false # Enforces newlines (or comments) after every multi-line function signature
-#  wsl:
-#    # If true append is only allowed to be cuddled if appending value is
-#    # matching variables, fields or types on line above. Default is true.
-#    strict-append: true
-#    # Allow calls and assignments to be cuddled as long as the lines have any
-#    # matching variables, fields or types. Default is true.
-#    allow-assign-and-call: true
-#    # Allow multiline assignments to be cuddled. Default is true.
-#    allow-multiline-assign: true
-#    # Allow declarations (var) to be cuddled.
-#    allow-cuddle-declarations: false
-#    # Allow trailing comments in ending of blocks
-#    allow-trailing-comment: false
-#    # Force newlines in end of case at this limit (0 = never).
-#    force-case-trailing-whitespace: 0
-#    # Force cuddling of err checks with err var assignment
-#    force-err-cuddling: false
-#    # Allow leading comments to be separated with empty liens
-#    allow-separated-leading-comment: false
 
 linters:
   enable:
@@ -159,4 +140,4 @@ linters:
     - unparam              # Reports unused function parameters [fast: true, auto-fix: false]
     - whitespace           # Tool for detection of leading and trailing whitespace [fast: true, auto-fix: true]
     - wrapcheck            # Checks that errors returned from external packages are wrapped [fast: true, auto-fix: false]
-#    - wsl                  # Whitespace Linter - Forces you to use empty lines! [fast: true, auto-fix: false]
+    - wsl                  # Whitespace Linter - Forces you to use empty lines! [fast: true, auto-fix: false]

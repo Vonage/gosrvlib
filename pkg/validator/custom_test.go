@@ -160,6 +160,7 @@ func TestCustomTags(t *testing.T) {
 	}
 	v, err := New(opts...)
 	require.NoError(t, err, "New() unexpected error = %v", err)
+
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
@@ -175,7 +176,9 @@ func TestCustomTags(t *testing.T) {
 
 func Test_hasDefaultValue_invalid(t *testing.T) {
 	t.Parallel()
+
 	var i interface{}
+
 	vi := reflect.ValueOf(i)
 	got := hasDefaultValue(vi, vi.Kind(), true)
 	require.True(t, got, "Expecting true value")

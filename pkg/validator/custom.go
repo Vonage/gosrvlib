@@ -60,6 +60,7 @@ func isUSState(ctx context.Context, fl vt.FieldLevel) bool {
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -72,6 +73,7 @@ func isUSTerritory(ctx context.Context, fl vt.FieldLevel) bool {
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -87,15 +89,19 @@ func isFalseIf(ctx context.Context, fl vt.FieldLevel) bool {
 	if param == "" {
 		return true
 	}
+
 	params := strings.SplitN(param, " ", 3)
 	paramField, paramKind, nullable, found := fl.GetStructFieldOKAdvanced2(fl.Parent(), params[0])
+
 	if !found {
 		// the field in the param do not exist
 		return true
 	}
+
 	if len(params) == 1 {
 		return hasDefaultValue(paramField, paramKind, nullable)
 	}
+
 	return hasNotValue(paramField, paramKind, params[1])
 }
 
@@ -108,6 +114,7 @@ func hasDefaultValue(value reflect.Value, kind reflect.Kind, nullable bool) bool
 	case reflect.Slice, reflect.Map, reflect.Ptr, reflect.Interface, reflect.Chan, reflect.Func:
 		return value.IsNil()
 	}
+
 	return (nullable && value.Interface() == nil) || !value.IsValid() || (value.Interface() == reflect.Zero(value.Type()).Interface())
 }
 
@@ -133,5 +140,6 @@ func hasNotValue(value reflect.Value, kind reflect.Kind, paramValue string) bool
 		p, err := strconv.ParseBool(paramValue)
 		return err != nil || value.Bool() != p
 	}
+
 	return true
 }

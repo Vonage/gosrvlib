@@ -35,9 +35,11 @@ func NewClient(opts ...ClientOption) (*Client, error) {
 		apiURL:  defaultAPIURL,
 		errorIP: defaultErrorIP,
 	}
+
 	for _, applyOpt := range opts {
 		applyOpt(c)
 	}
+
 	if c.httpClient == nil {
 		c.httpClient = &http.Client{Timeout: c.timeout}
 	}
@@ -63,6 +65,7 @@ func (c *Client) GetPublicIP(ctx context.Context) (string, error) {
 	if err != nil {
 		return c.errorIP, fmt.Errorf("failed performing ipify request: %w", err)
 	}
+
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {

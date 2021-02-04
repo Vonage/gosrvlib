@@ -139,9 +139,12 @@ func TestClient_GetPublicIP(t *testing.T) {
 
 func TestClient_GetPublicIP_URLError(t *testing.T) {
 	t.Parallel()
+
 	c, err := NewClient()
 	require.NoError(t, err, "Client.GetPublicIP() create client unexpected error = %v", err)
+
 	c.apiURL = "\x007"
+
 	_, err = c.GetPublicIP(testutil.Context())
 	require.Error(t, err, "Client.GetPublicIP() error = %v", err)
 }

@@ -18,6 +18,7 @@ func WithFieldNameTag(tag string) Option {
 		if tag == "" {
 			return nil
 		}
+
 		v.v.RegisterTagNameFunc(func(fld reflect.StructField) string {
 			name := strings.SplitN(fld.Tag.Get(tag), ",", 2)[0]
 			if name == "-" {
@@ -25,6 +26,7 @@ func WithFieldNameTag(tag string) Option {
 			}
 			return name
 		})
+
 		return nil
 	}
 }
@@ -37,6 +39,7 @@ func WithCustomValidationTags(t map[string]vt.FuncCtx) Option {
 				return fmt.Errorf("failed registering custom tag: %w", err)
 			}
 		}
+
 		return nil
 	}
 }
@@ -49,13 +52,17 @@ func WithErrorTemplates(t map[string]string) Option {
 		if len(v.tpl) == 0 {
 			v.tpl = make(map[string]*template.Template, len(t))
 		}
+
 		for tag, tpl := range t {
 			t, err := template.New(tag).Parse(tpl)
+
 			if err != nil {
 				return fmt.Errorf("failed adding error template: %w", err)
 			}
+
 			v.tpl[tag] = t
 		}
+
 		return nil
 	}
 }

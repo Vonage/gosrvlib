@@ -26,11 +26,13 @@ type Validator struct {
 // New returns a new validator with the specified options.
 func New(opts ...Option) (*Validator, error) {
 	v := &Validator{v: vt.New()}
+
 	for _, applyOpt := range opts {
 		if err := applyOpt(v); err != nil {
 			return nil, err
 		}
 	}
+
 	return v, nil
 }
 
@@ -42,9 +44,11 @@ func (v *Validator) ValidateStruct(obj interface{}) (err error) {
 // ValidateStructCtx validates the structure fields tagged with "validate" and returns a multierror.
 func (v *Validator) ValidateStructCtx(ctx context.Context, obj interface{}) (err error) {
 	vErr := v.v.StructCtx(ctx, obj)
+
 	if vErr == nil {
 		return nil
 	}
+
 	for _, fe := range vErr.(vt.ValidationErrors) {
 		// separate tags grouped by OR
 		tags := strings.Split(fe.Tag(), "|")
@@ -53,9 +57,11 @@ func (v *Validator) ValidateStructCtx(ctx context.Context, obj interface{}) (err
 				// the "falseif" tag only works in combination with other tags
 				continue
 			}
+
 			err = multierr.Append(err, v.tagError(fe, tag))
 		}
 	}
+
 	// nolint:wrapcheck
 	return err
 }
@@ -65,13 +71,17 @@ func (v *Validator) tagError(fe vt.FieldError, tag string) (err error) {
 	tagParts := strings.SplitN(tag, "=", 2)
 	tagKey := tagParts[0]
 	tagParam := fe.Param()
+
 	if len(tagParts) == 2 {
 		tagParam = tagParts[1]
 	}
+
 	namespace := fe.Namespace()
+
 	if idx := strings.Index(namespace, "."); idx != -1 {
 		namespace = namespace[idx+1:] // remove root struct name
 	}
+
 	ve := &Error{
 		Tag:             tagKey,
 		Param:           tagParam,
@@ -83,7 +93,9 @@ func (v *Validator) tagError(fe vt.FieldError, tag string) (err error) {
 		Kind:            fe.Kind().String(),
 		Value:           fe.Value(),
 	}
+
 	ve.Err = v.translate(ve)
+
 	return ve
 }
 
@@ -95,5 +107,6 @@ func (v *Validator) translate(ve *Error) string {
 			return out.String()
 		}
 	}
+
 	return fmt.Sprintf("%s is invalid because fails the rule: '%s'", ve.Namespace, ve.FullTag)
 }

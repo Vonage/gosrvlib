@@ -52,6 +52,7 @@ func TestSetHTTPRequestHeaderFromContext(t *testing.T) {
 	// header set
 	r2, err := http.NewRequest(http.MethodGet, "/", nil)
 	require.NoError(t, err)
+
 	ctx := NewContext(context.Background(), "test-904117")
 	r2 = r2.WithContext(ctx)
 

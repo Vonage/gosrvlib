@@ -58,6 +58,7 @@ func (tc *testConfig) Validate() error {
 
 func Test_configureConfigSearchPath(t *testing.T) {
 	t.Parallel()
+
 	tests := []struct {
 		name       string
 		configDir  string
@@ -82,6 +83,7 @@ func Test_configureConfigSearchPath(t *testing.T) {
 			},
 		},
 	}
+
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
@@ -116,12 +118,14 @@ func mockViper(ctrl *gomock.Controller) *MockViper {
 	mock.EXPECT().AutomaticEnv()
 	mock.EXPECT().SetEnvPrefix("test")
 	mock.EXPECT().BindEnv(gomock.Any()).AnyTimes()
+
 	return mock
 }
 
 // nolint:tparallel
 func Test_loadLocalConfig(t *testing.T) {
 	t.Parallel()
+
 	tests := []struct {
 		name           string
 		configContent  []byte
@@ -197,13 +201,17 @@ func Test_loadLocalConfig(t *testing.T) {
 			wantErr: false,
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			var configDir string
-			var err error
+			var (
+				configDir string
+				err       error
+			)
+
 			if tt.configContent != nil {
 				configDir, err = ioutil.TempDir("", "test-loadLocalConfig-*")
 				require.NoError(t, err, "failed creating temp config dir: %v", err)
@@ -216,11 +224,14 @@ func Test_loadLocalConfig(t *testing.T) {
 			v := tt.setupViper(ctrl)
 
 			var testCfg testConfig
+
 			got, err := loadLocalConfig(v, "test_name", configDir, "test", &testCfg)
+
 			if (err != nil) != tt.wantErr {
 				t.Errorf("loadLocalConfig() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("loadLocalConfig() got = %v, want %v", got, tt.want)
 			}
@@ -230,6 +241,7 @@ func Test_loadLocalConfig(t *testing.T) {
 
 func Test_validationError(t *testing.T) {
 	t.Parallel()
+
 	err := validationError("provider", "prefix", "var")
 	require.EqualError(t, err, "provider config provider requires PREFIX_VAR to be set")
 }
@@ -237,6 +249,7 @@ func Test_validationError(t *testing.T) {
 // nolint:gocognit,tparallel
 func Test_loadRemoteConfig(t *testing.T) {
 	t.Parallel()
+
 	tests := []struct {
 		name              string
 		setupConfigSource func() *remoteSourceConfig
@@ -359,6 +372,7 @@ func Test_loadRemoteConfig(t *testing.T) {
 			},
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
@@ -385,6 +399,7 @@ func Test_loadRemoteConfig(t *testing.T) {
 
 func Test_loadFromEnvVarSource(t *testing.T) {
 	t.Parallel()
+
 	tests := []struct {
 		name              string
 		setupConfigSource func() *remoteSourceConfig
@@ -437,6 +452,7 @@ func Test_loadFromEnvVarSource(t *testing.T) {
 			wantErr: false,
 		},
 	}
+
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
@@ -458,6 +474,7 @@ func Test_loadFromEnvVarSource(t *testing.T) {
 
 func Test_loadFromRemoteSource(t *testing.T) {
 	t.Parallel()
+
 	tests := []struct {
 		name              string
 		setupConfigSource func() *remoteSourceConfig
@@ -561,6 +578,7 @@ func Test_loadFromRemoteSource(t *testing.T) {
 			wantErr: false,
 		},
 	}
+
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
@@ -582,6 +600,7 @@ func Test_loadFromRemoteSource(t *testing.T) {
 // nolint:gocognit,tparallel
 func Test_loadConfig(t *testing.T) {
 	t.Parallel()
+
 	tests := []struct {
 		name             string
 		setupLocalViper  func(ctrl *gomock.Controller) Viper
@@ -970,6 +989,7 @@ func Test_loadConfig(t *testing.T) {
 			},
 		},
 	}
+
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
@@ -1034,10 +1054,14 @@ func TestLoad(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	var tmpConfigDir string
-	var err error
+	var (
+		tmpConfigDir string
+		err          error
+	)
+
 	tmpConfigDir, err = ioutil.TempDir("", "test-Load-*")
 	require.NoError(t, err, "failed creating temp config dir: %v", err)
+
 	defer func() { _ = os.RemoveAll(tmpConfigDir) }()
 
 	tmpFilePath := filepath.Join(tmpConfigDir, "config.json")
@@ -1061,7 +1085,9 @@ func TestLoad(t *testing.T) {
 }
 `)
 	require.NoError(t, ioutil.WriteFile(tmpFilePath, configContent, 0600), "failed writing temp config file: %v", err)
+
 	targetConfig := &testConfig{}
+
 	err = Load("cmd", tmpConfigDir, "test", targetConfig)
 	require.NoError(t, err)
 }

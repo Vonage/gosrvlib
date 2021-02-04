@@ -11,6 +11,7 @@ import (
 
 func TestWithTimeout(t *testing.T) {
 	t.Parallel()
+
 	want := 17 * time.Second
 	c := &Client{}
 	WithTimeout(want)(c)
@@ -19,6 +20,7 @@ func TestWithTimeout(t *testing.T) {
 
 func TestWithURL(t *testing.T) {
 	t.Parallel()
+
 	want := "https://test.ipify.invalid"
 	c := &Client{}
 	WithURL(want)(c)
@@ -27,6 +29,7 @@ func TestWithURL(t *testing.T) {
 
 func TestWithErrorIP(t *testing.T) {
 	t.Parallel()
+
 	want := "0.0.0.0"
 	c := &Client{}
 	WithErrorIP(want)(c)
@@ -39,6 +42,7 @@ func (thc *testHTTPClient) Do(r *http.Request) (*http.Response, error) { return 
 
 func TestWithHTTPClient(t *testing.T) {
 	t.Parallel()
+
 	v := &testHTTPClient{}
 	c := &Client{}
 	WithHTTPClient(v)(c)

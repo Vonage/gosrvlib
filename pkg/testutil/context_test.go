@@ -14,6 +14,7 @@ import (
 
 func TestContext(t *testing.T) {
 	t.Parallel()
+
 	ctx := Context()
 	l1 := logging.FromContext(ctx)
 	l2 := logging.FromContext(ctx)
@@ -22,6 +23,7 @@ func TestContext(t *testing.T) {
 
 func TestContextWithLogObserver(t *testing.T) {
 	t.Parallel()
+
 	ctx, logs := ContextWithLogObserver(zap.DebugLevel)
 	l := logging.FromContext(ctx)
 	l.Info("test message")
@@ -31,6 +33,7 @@ func TestContextWithLogObserver(t *testing.T) {
 
 func TestContextWithHTTPRouterParams(t *testing.T) {
 	t.Parallel()
+
 	params := map[string]string{"test_arg_1": "test_val_1", "test_arg_2": "test_val_2"}
 	r := httptest.NewRequest(http.MethodGet, "http://test.url.invalid", nil)
 	r = r.WithContext(ContextWithHTTPRouterParams(context.Background(), params))

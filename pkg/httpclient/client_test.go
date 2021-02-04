@@ -14,6 +14,7 @@ import (
 
 func TestNew(t *testing.T) {
 	t.Parallel()
+
 	timeout := 17 * time.Second
 	traceid := "test-header-123"
 	component := "test-component"
@@ -55,9 +56,11 @@ func TestDo(t *testing.T) {
 
 	l, err := logging.NewLogger(logging.WithLevel(zapcore.DebugLevel))
 	require.NoError(t, err, "failed creating logger: %v", err)
+
 	ctx := logging.WithLogger(context.Background(), l)
 	req, err = http.NewRequestWithContext(ctx, http.MethodGet, server.URL, nil)
 	require.NoError(t, err, "failed creating http request with context: %v", err)
+
 	resp, err = client.Do(req)
 	require.NoError(t, err, "client.Do() with context unexpected error = %v", err)
 	require.NotNil(t, resp, "returned response should not be nil")

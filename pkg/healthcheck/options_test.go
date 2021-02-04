@@ -11,6 +11,7 @@ import (
 
 func TestWithResultWriter(t *testing.T) {
 	t.Parallel()
+
 	v := func(ctx context.Context, w http.ResponseWriter, statusCode int, data interface{}) {}
 	h := &Handler{}
 	WithResultWriter(v)(h)

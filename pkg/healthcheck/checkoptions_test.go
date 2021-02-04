@@ -10,6 +10,7 @@ import (
 
 func TestWithConfigureRequest(t *testing.T) {
 	t.Parallel()
+
 	v := func(r *http.Request) {}
 	cfg := &checkConfig{}
 	WithConfigureRequest(v)(cfg)

@@ -177,6 +177,7 @@ func TestNewDefaultLogger(t *testing.T) {
 func testLogContext(level zapcore.Level) (context.Context, *observer.ObservedLogs) {
 	core, logs := observer.New(level)
 	l := zap.New(core)
+
 	return WithLogger(context.Background(), l), logs
 }
 
