@@ -136,32 +136,25 @@ type remoteSourceConfig struct {
 	Data string `mapstructure:"remoteConfigData" validate:"required_if=Provider envar,omitempty,base64"`
 }
 
-var (
-	localViper  Viper = viper.New()
-	remoteViper Viper = viper.New()
-)
-
-// Reset resets the package global instances of Viper. Only used for tests calling Load multiple times.
-func Reset() {
-	localViper = viper.New()
-	remoteViper = viper.New()
-}
-
 // Load populates the configuration parameters.
 func Load(cmdName, configDir, envPrefix string, cfg Configuration) error {
+	localViper := viper.New()
+	remoteViper := viper.New()
+	return loadConfig(localViper, remoteViper, cmdName, configDir, envPrefix, cfg)
+}
+
+// loadConfig loads the configuration.
+func loadConfig(localViper, remoteViper Viper, cmdName, configDir, envPrefix string, cfg Configuration) error {
 	remoteSourceCfg, err := loadLocalConfig(localViper, cmdName, configDir, envPrefix, cfg)
 	if err != nil {
 		return fmt.Errorf("failed loading local configuration: %w", err)
 	}
-
 	if err := loadRemoteConfig(localViper, remoteViper, remoteSourceCfg, envPrefix, cfg); err != nil {
 		return fmt.Errorf("failed loading remote configuration: %w", err)
 	}
-
 	if err := cfg.Validate(); err != nil {
 		return fmt.Errorf("failed validating configuration: %w", err)
 	}
-
 	return nil
 }
 

@@ -600,7 +600,7 @@ func Test_loadFromRemoteSource(t *testing.T) {
 }
 
 // nolint:gocognit
-func TestLoad(t *testing.T) {
+func Test_loadConfig(t *testing.T) {
 	tests := []struct {
 		name             string
 		setupLocalViper  func(ctrl *gomock.Controller) Viper
@@ -1021,12 +1021,14 @@ func TestLoad(t *testing.T) {
 				require.NoError(t, ioutil.WriteFile(tmpFilePath, tt.configContent, 0600), "failed writing temp config file: %v", err)
 			}
 
+			var localViper Viper
 			if tt.setupLocalViper != nil {
 				localViper = tt.setupLocalViper(ctrl)
 			} else {
 				localViper = viper.New()
 			}
 
+			var remoteViper Viper
 			if tt.setupRemoteViper != nil {
 				remoteViper = tt.setupRemoteViper(ctrl)
 			} else {
@@ -1039,7 +1041,7 @@ func TestLoad(t *testing.T) {
 				defer func() { _ = os.Unsetenv(envKey) }()
 			}
 
-			if err := Load("cmd", tmpConfigDir, "test", tt.targetConfig); (err != nil) != tt.wantErr {
+			if err := loadConfig(localViper, remoteViper, "cmd", tmpConfigDir, "test", tt.targetConfig); (err != nil) != tt.wantErr {
 				t.Errorf("Parse() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
@@ -1060,12 +1062,40 @@ func TestLoad(t *testing.T) {
 	}
 }
 
-func TestReset(t *testing.T) {
-	oldLocalViper := localViper
-	oldRemoteViper := remoteViper
+func TestLoad(t *testing.T) {
+	t.Parallel()
 
-	Reset()
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-	require.NotEqual(t, oldLocalViper, localViper)
-	require.NotEqual(t, oldRemoteViper, remoteViper)
+	var tmpConfigDir string
+	var err error
+	tmpConfigDir, err = ioutil.TempDir("", "test-Load-*")
+	require.NoError(t, err, "failed creating temp config dir: %v", err)
+	defer func() { _ = os.RemoveAll(tmpConfigDir) }()
+
+	tmpFilePath := filepath.Join(tmpConfigDir, "config.json")
+	configContent := []byte(`
+{
+  "log": {
+	"format": "json",
+	"level": "debug",
+	"network": "log_network",
+	"address": "log_address"
+  },
+  "data": {
+	"str": "data_string",
+	"int": 12345,
+	"arr": [
+	  1,
+	  2,
+	  3
+	]
+  }
+}
+`)
+	require.NoError(t, ioutil.WriteFile(tmpFilePath, configContent, 0600), "failed writing temp config file: %v", err)
+	targetConfig := &testConfig{}
+	err = Load("cmd", tmpConfigDir, "test", targetConfig)
+	require.NoError(t, err)
 }

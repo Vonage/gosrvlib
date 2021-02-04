@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/nexmoinc/gosrvlib/pkg/bootstrap"
-	"github.com/nexmoinc/gosrvlib/pkg/config"
 	"github.com/nexmoinc/gosrvlib/pkg/testutil"
 	"github.com/stretchr/testify/require"
 )
@@ -87,8 +86,6 @@ func TestNew(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			config.Reset()
-
 			oldOsArgs := os.Args
 			defer func() { os.Args = oldOsArgs }()
 			os.Args = tt.osArgs
