@@ -54,6 +54,8 @@ func NewLogger(opts ...Option) (*zap.Logger, error) {
 	var timeEncoder zapcore.TimeEncoder
 
 	switch cfg.format {
+	case noFormat:
+		// no-op
 	case ConsoleFormat:
 		disableCaller = true
 		encoding = "console"

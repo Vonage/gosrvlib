@@ -100,6 +100,7 @@ func isFalseIf(ctx context.Context, fl vt.FieldLevel) bool {
 }
 
 // hasDefaultvalue returns true if the field has a default value (nil/zero) or if is unset/invalid.
+// nolint:exhaustive
 func hasDefaultValue(value reflect.Value, kind reflect.Kind, nullable bool) bool {
 	switch kind {
 	case reflect.Invalid:
@@ -111,7 +112,7 @@ func hasDefaultValue(value reflect.Value, kind reflect.Kind, nullable bool) bool
 }
 
 // hasNotValue returns true if the field has not the specified value.
-// nolint:gocognit,gocyclo
+// nolint:gocognit,gocyclo,exhaustive
 func hasNotValue(value reflect.Value, kind reflect.Kind, paramValue string) bool {
 	switch kind {
 	case reflect.String:
