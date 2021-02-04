@@ -153,7 +153,7 @@ linters:
     - sqlclosecheck        # Checks that sql.Rows and sql.Stmt are closed. [fast: true, auto-fix: false]
     - stylecheck           # Stylecheck is a replacement for golint [fast: true, auto-fix: false]
 #    - testpackage          # linter that makes you use a separate _test package [fast: true, auto-fix: false]
-#    - thelper              # thelper detects golang test helpers without t.Helper() call and checks the consistency of test helpers [fast: true, auto-fix: false]
+    - thelper              # thelper detects golang test helpers without t.Helper() call and checks the consistency of test helpers [fast: true, auto-fix: false]
     - tparallel            # tparallel detects inappropriate usage of t.Parallel() method in your Go test codes [fast: true, auto-fix: false]
     - unconvert            # Remove unnecessary type conversions [fast: true, auto-fix: false]
     - unparam              # Reports unused function parameters [fast: true, auto-fix: false]

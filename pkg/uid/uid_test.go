@@ -42,6 +42,8 @@ func TestNewID128_Collision(t *testing.T) {
 }
 
 func collisionTest(t *testing.T, f func() string, concurrency, iterations int) {
+	t.Helper()
+
 	total := concurrency * iterations
 
 	idCh := make(chan string, total)
