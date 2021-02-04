@@ -1,6 +1,7 @@
 package sqlutil
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"testing"
@@ -65,7 +66,9 @@ func TestCloseRows(t *testing.T) {
 
 			var rows *sql.Rows
 			if !tt.wantNilTest {
+				// nolint:sqlclosecheck
 				stmt, err := db.Prepare("SELECT")
+				defer CloseStatement(context.Background(), stmt)
 				require.NoError(t, err)
 
 				rows, err = stmt.Query()

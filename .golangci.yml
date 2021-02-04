@@ -150,7 +150,7 @@ linters:
     - predeclared          # find code that shadows one of Go's predeclared identifiers [fast: true, auto-fix: false]
     - rowserrcheck         # checks whether Err of rows is checked successfully [fast: true, auto-fix: false]
 #    - scopelint            # Scopelint checks for unpinned variables in go programs [fast: true, auto-fix: false]
-#    - sqlclosecheck        # Checks that sql.Rows and sql.Stmt are closed. [fast: true, auto-fix: false]
+    - sqlclosecheck        # Checks that sql.Rows and sql.Stmt are closed. [fast: true, auto-fix: false]
     - stylecheck           # Stylecheck is a replacement for golint [fast: true, auto-fix: false]
 #    - testpackage          # linter that makes you use a separate _test package [fast: true, auto-fix: false]
 #    - thelper              # thelper detects golang test helpers without t.Helper() call and checks the consistency of test helpers [fast: true, auto-fix: false]

@@ -9,6 +9,7 @@ import (
 	"sync"
 
 	"github.com/nexmoinc/gosrvlib/pkg/logging"
+	"github.com/nexmoinc/gosrvlib/pkg/sqlutil"
 	"go.uber.org/zap"
 )
 
@@ -110,8 +111,10 @@ func checkConnection(ctx context.Context, db *sql.DB) error {
 		return fmt.Errorf("failed ping on database: %w", err)
 	}
 
-	// nolint:rowserrcheck
-	if _, err = db.QueryContext(ctx, "SELECT 1"); err != nil {
+	// nolint:rowserrcheck,sqlclosecheck
+	rows, err := db.QueryContext(ctx, "SELECT 1")
+	defer sqlutil.CloseRows(ctx, rows)
+	if err != nil {
 		return fmt.Errorf("failed running check query on database: %w", err)
 	}
 
