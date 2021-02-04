@@ -72,7 +72,7 @@ func (c *Client) Do(r *http.Request) (resp *http.Response, err error) {
 
 	if debug {
 		reqDump, _ := httputil.DumpRequestOut(r, true)
-		l = l.With(zap.String("request", string(reqDump)))
+		l = l.With(zap.String("request_body", string(reqDump)))
 	}
 
 	start := time.Now()
@@ -82,7 +82,7 @@ func (c *Client) Do(r *http.Request) (resp *http.Response, err error) {
 	if resp != nil {
 		if debug {
 			respDump, _ := httputil.DumpResponse(resp, true)
-			l = l.With(zap.String("response", string(respDump)))
+			l = l.With(zap.String("response_body", string(respDump)))
 		}
 		_ = resp.Body.Close()
 	}
