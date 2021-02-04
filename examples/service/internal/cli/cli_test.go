@@ -10,8 +10,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// nolint:gocognit
+// nolint:gocognit,tparallel
 func TestNew(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name         string
 		osArgs       []string
@@ -83,6 +85,7 @@ func TestNew(t *testing.T) {
 			wantErr: false,
 		},
 	}
+
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
@@ -119,15 +122,21 @@ func TestNew(t *testing.T) {
 }
 
 func matchErrorOutput(t *testing.T, out string) {
+	t.Helper()
+
 	if strings.HasPrefix(out, "Error:") {
 		return
 	}
+
 	t.Errorf("An error message was expected")
 }
 
 func matchTestVersion(t *testing.T, out string) {
+	t.Helper()
+
 	if strings.HasPrefix(out, "0.0.0-test") {
 		return
 	}
+
 	t.Errorf("A version number was expected")
 }
