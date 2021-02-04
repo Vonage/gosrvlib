@@ -1,6 +1,7 @@
 package validator
 
 import (
+	"fmt"
 	"html/template"
 	"reflect"
 	"strings"
@@ -33,7 +34,7 @@ func WithCustomValidationTags(t map[string]vt.FuncCtx) Option {
 	return func(v *Validator) error {
 		for tag, fn := range t {
 			if err := v.v.RegisterValidationCtx(tag, fn); err != nil {
-				return err
+				return fmt.Errorf("failed registering custom tag: %w", err)
 			}
 		}
 		return nil
@@ -51,7 +52,7 @@ func WithErrorTemplates(t map[string]string) Option {
 		for tag, tpl := range t {
 			t, err := template.New(tag).Parse(tpl)
 			if err != nil {
-				return err
+				return fmt.Errorf("failed adding error template: %w", err)
 			}
 			v.tpl[tag] = t
 		}

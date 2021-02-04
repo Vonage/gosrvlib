@@ -56,6 +56,7 @@ func (v *Validator) ValidateStructCtx(ctx context.Context, obj interface{}) (err
 			err = multierr.Append(err, v.tagError(fe, tag))
 		}
 	}
+	// nolint:wrapcheck
 	return err
 }
 

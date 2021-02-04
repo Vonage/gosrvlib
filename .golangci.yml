@@ -158,5 +158,5 @@ linters:
     - unconvert            # Remove unnecessary type conversions [fast: true, auto-fix: false]
     - unparam              # Reports unused function parameters [fast: true, auto-fix: false]
     - whitespace           # Tool for detection of leading and trailing whitespace [fast: true, auto-fix: true]
-#    - wrapcheck            # Checks that errors returned from external packages are wrapped [fast: true, auto-fix: false]
+    - wrapcheck            # Checks that errors returned from external packages are wrapped [fast: true, auto-fix: false]
 #    - wsl                  # Whitespace Linter - Forces you to use empty lines! [fast: true, auto-fix: false]

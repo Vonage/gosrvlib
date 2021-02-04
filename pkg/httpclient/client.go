@@ -87,5 +87,6 @@ func (c *Client) Do(r *http.Request) (resp *http.Response, err error) {
 		_ = resp.Body.Close()
 	}
 
+	// nolint:wrapcheck
 	return resp, err
 }

@@ -203,7 +203,7 @@ func loadLocalConfig(v Viper, cmdName, configDir, envPrefix string, cfg Configur
 
 	var rsCfg remoteSourceConfig
 	if err := v.Unmarshal(&rsCfg); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed unmarshalling config: %w", err)
 	}
 
 	return &rsCfg, nil

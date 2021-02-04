@@ -1,6 +1,7 @@
 package prometheus
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -181,7 +182,7 @@ func (c *Client) defaultCollectors() error {
 	}
 	for _, m := range collectors {
 		if err := c.registry.Register(m); err != nil {
-			return err
+			return fmt.Errorf("failed registering collector: %w", err)
 		}
 	}
 

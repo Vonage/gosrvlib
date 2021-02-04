@@ -4,6 +4,7 @@ package httpserver
 import (
 	"context"
 	"crypto/tls"
+	"fmt"
 	"net"
 	"net/http"
 	"runtime/debug"
@@ -101,7 +102,7 @@ func startServer(ctx context.Context, cfg *config) error {
 		ls, err = tls.Listen("tcp", cfg.serverAddr, cfg.tlsConfig)
 	}
 	if err != nil {
-		return err
+		return fmt.Errorf("failed creting the address listener: %w", err)
 	}
 	l.Info("listening for HTTP requests", zap.String("addr", cfg.serverAddr))
 

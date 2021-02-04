@@ -100,6 +100,7 @@ func NewLogger(opts ...Option) (*zap.Logger, error) {
 		l = l.With(cfg.fields...)
 		l = WithLevelFunctionHook(l, cfg.incMetricLogLevel)
 	}
+	// nolint:wrapcheck
 	return l, err
 }
 
