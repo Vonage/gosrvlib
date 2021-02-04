@@ -58,7 +58,7 @@ func (c *Client) GetPublicIP(ctx context.Context) (string, error) {
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.apiURL, nil)
 	if err != nil {
-		return c.errorIP, fmt.Errorf("build request: %v", err)
+		return c.errorIP, fmt.Errorf("build request: %w", err)
 	}
 
 	resp, err := c.httpClient.Do(req)

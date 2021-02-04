@@ -49,6 +49,7 @@ func (v *Validator) ValidateStructCtx(ctx context.Context, obj interface{}) (err
 		return nil
 	}
 
+	// nolint:errorlint
 	for _, fe := range vErr.(vt.ValidationErrors) {
 		// separate tags grouped by OR
 		tags := strings.Split(fe.Tag(), "|")

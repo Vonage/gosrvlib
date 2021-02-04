@@ -25,7 +25,7 @@ func CheckHTTPStatus(ctx context.Context, httpClient HTTPClient, method string, 
 
 	req, err := http.NewRequestWithContext(ctx, method, url, nil)
 	if err != nil {
-		return fmt.Errorf("build request: %v", err)
+		return fmt.Errorf("build request: %w", err)
 	}
 
 	if cfg.configureRequest != nil {
@@ -34,7 +34,7 @@ func CheckHTTPStatus(ctx context.Context, httpClient HTTPClient, method string, 
 
 	resp, err := httpClient.Do(req)
 	if err != nil {
-		return fmt.Errorf("healthcheck request: %v", err)
+		return fmt.Errorf("healthcheck request: %w", err)
 	}
 
 	defer func() { _ = resp.Body.Close() }()
