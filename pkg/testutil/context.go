@@ -16,7 +16,7 @@ func Context() context.Context {
 }
 
 // ContextWithLogObserver returns a context initialized with a NOP logger for testing.
-func ContextWithLogObserver(level zapcore.Level) (context.Context, *observer.ObservedLogs) {
+func ContextWithLogObserver(level zapcore.LevelEnabler) (context.Context, *observer.ObservedLogs) {
 	core, logs := observer.New(level)
 	l := zap.New(core)
 

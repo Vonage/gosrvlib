@@ -23,6 +23,7 @@ func CloseRows(ctx context.Context, rows *sql.Rows) {
 }
 
 // CloseStatement closes a prepared statement or log an error.
+// nolint:interfacer
 func CloseStatement(ctx context.Context, stmt *sql.Stmt) {
 	if stmt == nil {
 		return
