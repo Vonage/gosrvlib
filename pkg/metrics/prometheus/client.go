@@ -8,8 +8,6 @@ import (
 )
 
 const (
-	// collector names
-
 	// NameAPIRequests is the name of the collector that counts the total inbound http requests.
 	NameAPIRequests = "api_requests_total"
 
@@ -39,8 +37,6 @@ const (
 
 	// NameErrorCode is the name of the collector that counts the number of errors by task, operation and error code.
 	NameErrorCode = "error_code_total"
-
-	// labels
 
 	labelCode      = "code"
 	labelHandler   = "handler"

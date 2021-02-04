@@ -122,7 +122,7 @@ linters:
     - goconst              # Finds repeated strings that could be replaced by a constant [fast: true, auto-fix: false]
     - gocritic             # The most opinionated Go source code linter [fast: true, auto-fix: false]
     - gocyclo              # Computes and checks the cyclomatic complexity of functions [fast: true, auto-fix: false]
-#    - godot                # Check if comments end in a period [fast: true, auto-fix: true]
+    - godot                # Check if comments end in a period [fast: true, auto-fix: true]
     - godox                # Tool for detection of FIXME, TODO and other comment keywords [fast: true, auto-fix: false]
 #    - goerr113             # Golang linter to check the errors handling expressions [fast: true, auto-fix: false]
     - gofmt                # Gofmt checks whether code was gofmt-ed. By default this tool runs with -s option to check for code simplification [fast: true, auto-fix: true]

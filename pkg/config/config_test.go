@@ -229,6 +229,7 @@ func Test_loadLocalConfig(t *testing.T) {
 }
 
 func Test_validationError(t *testing.T) {
+	t.Parallel()
 	err := validationError("provider", "prefix", "var")
 	require.EqualError(t, err, "provider config provider requires PREFIX_VAR to be set")
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// nolint:tparallel
 func Test_defaultConfig(t *testing.T) {
 	cfg := defaultConfig()
 	require.NotNil(t, cfg)
