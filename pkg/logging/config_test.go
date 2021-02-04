@@ -8,7 +8,6 @@ import (
 
 func Test_defaultConfig(t *testing.T) {
 	t.Parallel()
-
 	cfg := defaultConfig()
 	require.NotNil(t, cfg)
 	require.NotEqual(t, 0, cfg.format)

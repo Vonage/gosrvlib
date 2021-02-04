@@ -14,6 +14,8 @@ import (
 )
 
 func TestRouterWithHandler(t *testing.T) {
+	t.Parallel()
+
 	rr := httptest.NewRecorder()
 	req, _ := http.NewRequestWithContext(Context(), http.MethodGet, "/test", nil)
 

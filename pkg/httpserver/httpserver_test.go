@@ -21,14 +21,17 @@ import (
 )
 
 func TestNopBinder(t *testing.T) {
+	t.Parallel()
 	require.NotNil(t, NopBinder())
 }
 
 func Test_nopBinder_BindHTTP(t *testing.T) {
+	t.Parallel()
 	require.Nil(t, NopBinder().BindHTTP(context.Background()))
 }
 
 func Test_defaultRouter(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name        string
 		method      string
@@ -89,6 +92,8 @@ func Test_defaultRouter(t *testing.T) {
 }
 
 func Test_defaultIndexHandler(t *testing.T) {
+	t.Parallel()
+
 	routes := []route.Route{
 		{
 			Method:      http.MethodGet,
@@ -119,6 +124,8 @@ func Test_defaultIndexHandler(t *testing.T) {
 }
 
 func Test_defaultIPHandler(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name    string
 		ipFunc  GetPublicIPFunc
@@ -165,6 +172,8 @@ func Test_defaultIPHandler(t *testing.T) {
 }
 
 func Test_defaultPingHandler(t *testing.T) {
+	t.Parallel()
+
 	rr := httptest.NewRecorder()
 	req, _ := http.NewRequestWithContext(testutil.Context(), http.MethodGet, "/", nil)
 	defaultPingHandler(rr, req)
@@ -178,6 +187,8 @@ func Test_defaultPingHandler(t *testing.T) {
 }
 
 func Test_defaultStatusHandler(t *testing.T) {
+	t.Parallel()
+
 	rr := httptest.NewRecorder()
 	req, _ := http.NewRequestWithContext(testutil.Context(), http.MethodGet, "/", nil)
 	defaultStatusHandler(rr, req)
@@ -191,6 +202,8 @@ func Test_defaultStatusHandler(t *testing.T) {
 }
 
 func Test_notImplementedHandler(t *testing.T) {
+	t.Parallel()
+
 	rr := httptest.NewRecorder()
 	req, _ := http.NewRequestWithContext(testutil.Context(), http.MethodGet, "/", nil)
 	notImplementedHandler(rr, req)
@@ -201,6 +214,8 @@ func Test_notImplementedHandler(t *testing.T) {
 
 // nolint:gocognit
 func TestStart(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name           string
 		opts           []Option
@@ -300,6 +315,8 @@ YlAqGKDZ+A+l
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			mockCtrl := gomock.NewController(t)
 			defer mockCtrl.Finish()
 

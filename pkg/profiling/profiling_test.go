@@ -14,6 +14,8 @@ import (
 var testHTTPClient = &http.Client{Timeout: 2 * time.Second}
 
 func TestPProfHandler(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name string
 		path string

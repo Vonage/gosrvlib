@@ -26,6 +26,8 @@ func TestHeaderOrDefault(t *testing.T) {
 }
 
 func TestPathParam(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name        string
 		mappedPath  string
@@ -50,6 +52,8 @@ func TestPathParam(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			r := testutil.RouterWithHandler(http.MethodGet, tt.mappedPath, func(w http.ResponseWriter, r *http.Request) {
 				val := PathParam(r, tt.paramName)
 				SendText(r.Context(), w, http.StatusOK, val)

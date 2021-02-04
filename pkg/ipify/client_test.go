@@ -12,6 +12,8 @@ import (
 )
 
 func TestNewClient(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name        string
 		opts        []ClientOption
@@ -67,6 +69,8 @@ func TestNewClient(t *testing.T) {
 }
 
 func TestClient_GetPublicIP(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name         string
 		getIPHandler http.HandlerFunc
@@ -134,6 +138,7 @@ func TestClient_GetPublicIP(t *testing.T) {
 }
 
 func TestClient_GetPublicIP_URLError(t *testing.T) {
+	t.Parallel()
 	c, err := NewClient()
 	require.NoError(t, err, "Client.GetPublicIP() create client unexpected error = %v", err)
 	c.apiURL = "\x007"

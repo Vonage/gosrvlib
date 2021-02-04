@@ -16,6 +16,8 @@ func TestError_Error(t *testing.T) {
 }
 
 func TestNew(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name    string
 		opts    []Option
@@ -75,6 +77,8 @@ func TestNew(t *testing.T) {
 }
 
 func TestValidator_ValidateStruct(t *testing.T) {
+	t.Parallel()
+
 	type subStruct struct {
 		URLField string `json:"sub_string" validate:"required,url"`
 		IntField int    `json:"sub_int" validate:"required,min=2"`

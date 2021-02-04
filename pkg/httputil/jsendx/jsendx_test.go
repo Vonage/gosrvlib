@@ -53,6 +53,8 @@ func TestSend(t *testing.T) {
 }
 
 func TestNewRouter(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name        string
 		method      string
@@ -119,6 +121,8 @@ func TestNewRouter(t *testing.T) {
 }
 
 func TestDefaultIndexHandler(t *testing.T) {
+	t.Parallel()
+
 	appInfo := &AppInfo{
 		ProgramName:    "Test",
 		ProgramVersion: "1.2.3",
@@ -155,6 +159,8 @@ func TestDefaultIndexHandler(t *testing.T) {
 }
 
 func TestDefaultIPHandler(t *testing.T) {
+	t.Parallel()
+
 	appInfo := &AppInfo{
 		ProgramName:    "Test",
 		ProgramVersion: "2.3.4",
@@ -209,6 +215,8 @@ func TestDefaultIPHandler(t *testing.T) {
 }
 
 func TestDefaultPingHandler(t *testing.T) {
+	t.Parallel()
+
 	appInfo := &AppInfo{
 		ProgramName:    "Test",
 		ProgramVersion: "3.4.5",
@@ -231,6 +239,8 @@ func TestDefaultPingHandler(t *testing.T) {
 }
 
 func TestDefaultStatusHandler(t *testing.T) {
+	t.Parallel()
+
 	appInfo := &AppInfo{
 		ProgramName:    "Test",
 		ProgramVersion: "5.6.7",
@@ -254,6 +264,8 @@ func TestDefaultStatusHandler(t *testing.T) {
 }
 
 func TestHealthCheckResultWriter(t *testing.T) {
+	t.Parallel()
+
 	appInfo := &AppInfo{
 		ProgramName:    "Test",
 		ProgramVersion: "6.7.8",

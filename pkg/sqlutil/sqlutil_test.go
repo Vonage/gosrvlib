@@ -13,6 +13,8 @@ import (
 
 // nolint:gocognit
 func TestCloseRows(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name        string
 		setupMock   func(m sqlmock.Sqlmock)
@@ -89,6 +91,8 @@ func TestCloseRows(t *testing.T) {
 
 // nolint:gocognit
 func TestCloseStatement(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name      string
 		setupMock func(m sqlmock.Sqlmock)
@@ -125,6 +129,7 @@ func TestCloseStatement(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			db, mock, err := sqlmock.New()
 			require.NoError(t, err, "Unexpected error while creating sqlmock", err)
 			defer func() { _ = db.Close() }()
@@ -153,6 +158,8 @@ func TestCloseStatement(t *testing.T) {
 }
 
 func TestBuildInClauseInt(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name   string
 		field  string
@@ -190,6 +197,8 @@ func TestBuildInClauseInt(t *testing.T) {
 }
 
 func TestBuildInClauseString(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name   string
 		field  string

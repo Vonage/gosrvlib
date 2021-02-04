@@ -16,6 +16,7 @@ import (
 
 // nolint:gocognit
 func TestBootstrap(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		opts                    []Option
 		name                    string

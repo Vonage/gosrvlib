@@ -19,6 +19,8 @@ import (
 )
 
 func TestNewLogger(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name    string
 		opts    []Option
@@ -73,7 +75,6 @@ func TestNewLogger(t *testing.T) {
 
 func TestNopLogger(t *testing.T) {
 	t.Parallel()
-
 	require.Equal(t, zap.NewNop(), NopLogger())
 }
 
@@ -191,6 +192,8 @@ func (s *MemorySink) Close() error { return nil }
 func (s *MemorySink) Sync() error  { return nil }
 
 func TestLogDifferences(t *testing.T) {
+	t.Parallel()
+
 	// Create a sink instance, and register it with zap for the "memory" protocol.
 	sink := &MemorySink{new(bytes.Buffer)}
 	err := zap.RegisterSink("memory", func(*url.URL) (zap.Sink, error) {

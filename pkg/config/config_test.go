@@ -57,6 +57,7 @@ func (tc *testConfig) Validate() error {
 }
 
 func Test_configureConfigSearchPath(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name       string
 		configDir  string
@@ -85,7 +86,6 @@ func Test_configureConfigSearchPath(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -99,7 +99,29 @@ func Test_configureConfigSearchPath(t *testing.T) {
 	}
 }
 
+func mockViper(ctrl *gomock.Controller) *MockViper {
+	mock := NewMockViper(ctrl)
+	mock.EXPECT().SetDefault(keyRemoteConfigProvider, defaultRemoteConfigProvider)
+	mock.EXPECT().SetDefault(keyRemoteConfigEndpoint, defaultRemoteConfigEndpoint)
+	mock.EXPECT().SetDefault(keyRemoteConfigPath, defaultRemoteConfigPath)
+	mock.EXPECT().SetDefault(keyRemoteConfigSecretKeyring, defaultRemoteConfigSecretKeyring)
+	mock.EXPECT().SetDefault(keyLogFormat, defaultLogFormat)
+	mock.EXPECT().SetDefault(keyLogLevel, defaultLogLevel)
+	mock.EXPECT().SetDefault(keyLogAddress, defaultLogAddress)
+	mock.EXPECT().SetDefault(keyLogNetwork, defaultLogNetwork)
+	mock.EXPECT().SetDefault("alpha", "beta")
+	mock.EXPECT().SetConfigName(defaultConfigName)
+	mock.EXPECT().SetConfigType(defaultConfigType)
+	mock.EXPECT().AddConfigPath(gomock.Any()).AnyTimes()
+	mock.EXPECT().AutomaticEnv()
+	mock.EXPECT().SetEnvPrefix("test")
+	mock.EXPECT().BindEnv(gomock.Any()).AnyTimes()
+	return mock
+}
+
+// nolint:tparallel
 func Test_loadLocalConfig(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name           string
 		configContent  []byte
@@ -111,22 +133,7 @@ func Test_loadLocalConfig(t *testing.T) {
 		{
 			name: "fails with read config error",
 			setupViper: func(ctrl *gomock.Controller) Viper {
-				mock := NewMockViper(ctrl)
-				mock.EXPECT().SetDefault(keyRemoteConfigProvider, defaultRemoteConfigProvider)
-				mock.EXPECT().SetDefault(keyRemoteConfigEndpoint, defaultRemoteConfigEndpoint)
-				mock.EXPECT().SetDefault(keyRemoteConfigPath, defaultRemoteConfigPath)
-				mock.EXPECT().SetDefault(keyRemoteConfigSecretKeyring, defaultRemoteConfigSecretKeyring)
-				mock.EXPECT().SetDefault(keyLogFormat, defaultLogFormat)
-				mock.EXPECT().SetDefault(keyLogLevel, defaultLogLevel)
-				mock.EXPECT().SetDefault(keyLogAddress, defaultLogAddress)
-				mock.EXPECT().SetDefault(keyLogNetwork, defaultLogNetwork)
-				mock.EXPECT().SetDefault("alpha", "beta")
-				mock.EXPECT().SetConfigName(defaultConfigName)
-				mock.EXPECT().SetConfigType(defaultConfigType)
-				mock.EXPECT().AddConfigPath(gomock.Any()).AnyTimes()
-				mock.EXPECT().AutomaticEnv()
-				mock.EXPECT().SetEnvPrefix("test")
-				mock.EXPECT().BindEnv(gomock.Any()).AnyTimes()
+				mock := mockViper(ctrl)
 				mock.EXPECT().ReadInConfig().Return(fmt.Errorf("read config error"))
 				return mock
 			},
@@ -135,22 +142,7 @@ func Test_loadLocalConfig(t *testing.T) {
 		{
 			name: "fails with unmarshal error",
 			setupViper: func(ctrl *gomock.Controller) Viper {
-				mock := NewMockViper(ctrl)
-				mock.EXPECT().SetDefault(keyRemoteConfigProvider, defaultRemoteConfigProvider)
-				mock.EXPECT().SetDefault(keyRemoteConfigEndpoint, defaultRemoteConfigEndpoint)
-				mock.EXPECT().SetDefault(keyRemoteConfigPath, defaultRemoteConfigPath)
-				mock.EXPECT().SetDefault(keyRemoteConfigSecretKeyring, defaultRemoteConfigSecretKeyring)
-				mock.EXPECT().SetDefault(keyLogFormat, defaultLogFormat)
-				mock.EXPECT().SetDefault(keyLogLevel, defaultLogLevel)
-				mock.EXPECT().SetDefault(keyLogAddress, defaultLogAddress)
-				mock.EXPECT().SetDefault(keyLogNetwork, defaultLogNetwork)
-				mock.EXPECT().SetDefault("alpha", "beta")
-				mock.EXPECT().SetConfigName(defaultConfigName)
-				mock.EXPECT().SetConfigType(defaultConfigType)
-				mock.EXPECT().AddConfigPath(gomock.Any()).AnyTimes()
-				mock.EXPECT().AutomaticEnv()
-				mock.EXPECT().SetEnvPrefix("test")
-				mock.EXPECT().BindEnv(gomock.Any()).AnyTimes()
+				mock := mockViper(ctrl)
 				mock.EXPECT().ReadInConfig()
 				mock.EXPECT().Unmarshal(gomock.Any()).Return(fmt.Errorf("unmarshal error"))
 				return mock
@@ -160,22 +152,7 @@ func Test_loadLocalConfig(t *testing.T) {
 		{
 			name: "succeed",
 			setupViper: func(ctrl *gomock.Controller) Viper {
-				mock := NewMockViper(ctrl)
-				mock.EXPECT().SetDefault(keyRemoteConfigProvider, defaultRemoteConfigProvider)
-				mock.EXPECT().SetDefault(keyRemoteConfigEndpoint, defaultRemoteConfigEndpoint)
-				mock.EXPECT().SetDefault(keyRemoteConfigPath, defaultRemoteConfigPath)
-				mock.EXPECT().SetDefault(keyRemoteConfigSecretKeyring, defaultRemoteConfigSecretKeyring)
-				mock.EXPECT().SetDefault(keyLogFormat, defaultLogFormat)
-				mock.EXPECT().SetDefault(keyLogLevel, defaultLogLevel)
-				mock.EXPECT().SetDefault(keyLogAddress, defaultLogAddress)
-				mock.EXPECT().SetDefault(keyLogNetwork, defaultLogNetwork)
-				mock.EXPECT().SetDefault("alpha", "beta")
-				mock.EXPECT().SetConfigName(defaultConfigName)
-				mock.EXPECT().SetConfigType(defaultConfigType)
-				mock.EXPECT().AddConfigPath(gomock.Any()).AnyTimes()
-				mock.EXPECT().AutomaticEnv()
-				mock.EXPECT().SetEnvPrefix("test")
-				mock.EXPECT().BindEnv(gomock.Any()).AnyTimes()
+				mock := mockViper(ctrl)
 				mock.EXPECT().ReadInConfig()
 				mock.EXPECT().Unmarshal(gomock.Any())
 				return mock
@@ -228,7 +205,7 @@ func Test_loadLocalConfig(t *testing.T) {
 			var configDir string
 			var err error
 			if tt.configContent != nil {
-				configDir, err = ioutil.TempDir("", "test-parse-*")
+				configDir, err = ioutil.TempDir("", "test-loadLocalConfig-*")
 				require.NoError(t, err, "failed creating temp config dir: %v", err)
 				defer func() { _ = os.RemoveAll(configDir) }()
 
@@ -256,8 +233,9 @@ func Test_validationError(t *testing.T) {
 	require.EqualError(t, err, "provider config provider requires PREFIX_VAR to be set")
 }
 
-// nolint:gocognit
+// nolint:gocognit,tparallel
 func Test_loadRemoteConfig(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name              string
 		setupConfigSource func() *remoteSourceConfig
@@ -405,6 +383,7 @@ func Test_loadRemoteConfig(t *testing.T) {
 }
 
 func Test_loadFromEnvVarSource(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name              string
 		setupConfigSource func() *remoteSourceConfig
@@ -477,6 +456,7 @@ func Test_loadFromEnvVarSource(t *testing.T) {
 }
 
 func Test_loadFromRemoteSource(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name              string
 		setupConfigSource func() *remoteSourceConfig
@@ -584,7 +564,6 @@ func Test_loadFromRemoteSource(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -599,8 +578,9 @@ func Test_loadFromRemoteSource(t *testing.T) {
 	}
 }
 
-// nolint:gocognit
+// nolint:gocognit,tparallel
 func Test_loadConfig(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name             string
 		setupLocalViper  func(ctrl *gomock.Controller) Viper
@@ -832,22 +812,7 @@ func Test_loadConfig(t *testing.T) {
 		{
 			name: "fails loading local config",
 			setupLocalViper: func(ctrl *gomock.Controller) Viper {
-				mock := NewMockViper(ctrl)
-				mock.EXPECT().SetDefault(keyRemoteConfigProvider, defaultRemoteConfigProvider)
-				mock.EXPECT().SetDefault(keyRemoteConfigEndpoint, defaultRemoteConfigEndpoint)
-				mock.EXPECT().SetDefault(keyRemoteConfigPath, defaultRemoteConfigPath)
-				mock.EXPECT().SetDefault(keyRemoteConfigSecretKeyring, defaultRemoteConfigSecretKeyring)
-				mock.EXPECT().SetDefault(keyLogFormat, defaultLogFormat)
-				mock.EXPECT().SetDefault(keyLogLevel, defaultLogLevel)
-				mock.EXPECT().SetDefault(keyLogAddress, defaultLogAddress)
-				mock.EXPECT().SetDefault(keyLogNetwork, defaultLogNetwork)
-				mock.EXPECT().SetDefault("alpha", "beta")
-				mock.EXPECT().SetConfigName(defaultConfigName)
-				mock.EXPECT().SetConfigType(defaultConfigType)
-				mock.EXPECT().AddConfigPath(gomock.Any()).AnyTimes()
-				mock.EXPECT().AutomaticEnv()
-				mock.EXPECT().SetEnvPrefix("test")
-				mock.EXPECT().BindEnv(gomock.Any()).AnyTimes()
+				mock := mockViper(ctrl)
 				mock.EXPECT().ReadInConfig().Return(fmt.Errorf("read config error"))
 				return mock
 			},
@@ -1013,7 +978,7 @@ func Test_loadConfig(t *testing.T) {
 			var tmpConfigDir string
 			var err error
 			if tt.configContent != nil {
-				tmpConfigDir, err = ioutil.TempDir("", "test-parse-*")
+				tmpConfigDir, err = ioutil.TempDir("", "test-loadConfig-*")
 				require.NoError(t, err, "failed creating temp config dir: %v", err)
 				defer func() { _ = os.RemoveAll(tmpConfigDir) }()
 

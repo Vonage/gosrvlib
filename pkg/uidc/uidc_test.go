@@ -6,6 +6,7 @@ import (
 )
 
 func TestNewID64(t *testing.T) {
+	t.Parallel()
 	a := NewID64()
 	b := NewID64()
 	if a == b {
@@ -14,10 +15,12 @@ func TestNewID64(t *testing.T) {
 }
 
 func TestNewID64_Collision(t *testing.T) {
+	t.Parallel()
 	collisionTest(t, NewID64, 10, 100)
 }
 
 func TestNewID128(t *testing.T) {
+	t.Parallel()
 	a := NewID128()
 	b := NewID128()
 	if a == b {
@@ -26,12 +29,11 @@ func TestNewID128(t *testing.T) {
 }
 
 func TestNewID128_Collision(t *testing.T) {
+	t.Parallel()
 	collisionTest(t, NewID128, 100, 1000)
 }
 
 func collisionTest(t *testing.T, f func() string, concurrency, iterations int) {
-	t.Parallel()
-
 	total := concurrency * iterations
 
 	idCh := make(chan string, total)

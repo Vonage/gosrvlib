@@ -13,7 +13,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// nolint:tparallel
 func TestStatus_MarshalJSON(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name    string
 		status  Status

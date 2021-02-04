@@ -13,7 +13,6 @@ import (
 
 func TestWithRouter(t *testing.T) {
 	t.Parallel()
-
 	v := httprouter.New()
 	cfg := &config{}
 	err := WithRouter(v)(cfg)
@@ -23,7 +22,6 @@ func TestWithRouter(t *testing.T) {
 
 func TestWithServerAddr(t *testing.T) {
 	t.Parallel()
-
 	v := ":1234"
 	cfg := &config{}
 	err := WithServerAddr(v)(cfg)
@@ -33,7 +31,6 @@ func TestWithServerAddr(t *testing.T) {
 
 func TestWithServerReadTimeout(t *testing.T) {
 	t.Parallel()
-
 	v := 13 * time.Second
 	cfg := &config{}
 	err := WithServerReadTimeout(v)(cfg)
@@ -43,7 +40,6 @@ func TestWithServerReadTimeout(t *testing.T) {
 
 func TestWithServerWriteTimeout(t *testing.T) {
 	t.Parallel()
-
 	v := 17 * time.Second
 	cfg := &config{}
 	err := WithServerWriteTimeout(v)(cfg)
@@ -53,7 +49,6 @@ func TestWithServerWriteTimeout(t *testing.T) {
 
 func TestWithShutdownTimeout(t *testing.T) {
 	t.Parallel()
-
 	v := 19 * time.Second
 	cfg := &config{}
 	err := WithShutdownTimeout(v)(cfg)
@@ -62,6 +57,8 @@ func TestWithShutdownTimeout(t *testing.T) {
 }
 
 func TestWithTLSCertData(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		desc     string
 		certData []byte
@@ -129,7 +126,6 @@ YlAqGKDZ+A+l
 
 func TestWithInstrumentHandler(t *testing.T) {
 	t.Parallel()
-
 	v := func(path string, handler http.HandlerFunc) http.Handler { return handler }
 	cfg := &config{}
 	err := WithInstrumentHandler(v)(cfg)
@@ -139,7 +135,6 @@ func TestWithInstrumentHandler(t *testing.T) {
 
 func TestWithEnableDefaultRoutes(t *testing.T) {
 	t.Parallel()
-
 	cfg := &config{}
 	err := WithEnableDefaultRoutes(IndexRoute, MetricsRoute)(cfg)
 	require.NoError(t, err)
@@ -148,7 +143,6 @@ func TestWithEnableDefaultRoutes(t *testing.T) {
 
 func TestWithEnableAllDefaultRoutes(t *testing.T) {
 	t.Parallel()
-
 	cfg := &config{}
 	err := WithEnableAllDefaultRoutes()(cfg)
 	require.NoError(t, err)
@@ -157,7 +151,6 @@ func TestWithEnableAllDefaultRoutes(t *testing.T) {
 
 func TestWithIndexHandlerFunc(t *testing.T) {
 	t.Parallel()
-
 	v := func(routes []route.Route) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 			// mock function
@@ -171,7 +164,6 @@ func TestWithIndexHandlerFunc(t *testing.T) {
 
 func TestWithIPHandlerFunc(t *testing.T) {
 	t.Parallel()
-
 	v := func(_ http.ResponseWriter, _ *http.Request) {
 		// mock function
 	}
@@ -183,7 +175,6 @@ func TestWithIPHandlerFunc(t *testing.T) {
 
 func TestWithMetricsHandlerFunc(t *testing.T) {
 	t.Parallel()
-
 	v := func(_ http.ResponseWriter, _ *http.Request) {
 		// mock function
 	}
@@ -195,7 +186,6 @@ func TestWithMetricsHandlerFunc(t *testing.T) {
 
 func TestWithPingHandlerFunc(t *testing.T) {
 	t.Parallel()
-
 	v := func(_ http.ResponseWriter, _ *http.Request) {
 		// mock function
 	}
@@ -207,7 +197,6 @@ func TestWithPingHandlerFunc(t *testing.T) {
 
 func TestWithPProfHandlerFunc(t *testing.T) {
 	t.Parallel()
-
 	v := func(_ http.ResponseWriter, _ *http.Request) {
 		// mock function
 	}
@@ -219,7 +208,6 @@ func TestWithPProfHandlerFunc(t *testing.T) {
 
 func TestWithStatusHandlerFunc(t *testing.T) {
 	t.Parallel()
-
 	v := func(_ http.ResponseWriter, _ *http.Request) {
 		// mock function
 	}
@@ -231,7 +219,6 @@ func TestWithStatusHandlerFunc(t *testing.T) {
 
 func TestWithTraceIDHeaderName(t *testing.T) {
 	t.Parallel()
-
 	v := "X-Test-Header"
 	cfg := &config{}
 	err := WithTraceIDHeaderName(v)(cfg)

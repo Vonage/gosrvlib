@@ -70,6 +70,8 @@ func getTestCustomTagData() testCustomTagStruct {
 }
 
 func TestCustomTags(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name         string
 		fobj         func(obj testCustomTagStruct) testCustomTagStruct
@@ -172,9 +174,9 @@ func TestCustomTags(t *testing.T) {
 }
 
 func Test_hasDefaultValue_invalid(t *testing.T) {
+	t.Parallel()
 	var i interface{}
 	vi := reflect.ValueOf(i)
-	t.Parallel()
 	got := hasDefaultValue(vi, vi.Kind(), true)
 	require.True(t, got, "Expecting true value")
 }

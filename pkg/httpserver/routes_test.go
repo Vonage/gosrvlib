@@ -9,6 +9,8 @@ import (
 )
 
 func Test_newDefaultRoutes(t *testing.T) {
+	t.Parallel()
+
 	cfg := &config{
 		defaultEnabledRoutes: allDefaultRoutes,
 		metricsHandlerFunc:   func(w http.ResponseWriter, r *http.Request) {},
