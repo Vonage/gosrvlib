@@ -1,6 +1,7 @@
 package profiling
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -55,7 +56,9 @@ func TestPProfHandler(t *testing.T) {
 			ts := httptest.NewServer(r)
 			defer ts.Close()
 
-			req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s%s", ts.URL, tt.path), nil)
+			ctx := context.Background()
+
+			req, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("%s%s", ts.URL, tt.path), nil)
 			require.NoError(t, err, "unexpected error while creating request for path %q", tt.path)
 
 			resp, err := testHTTPClient.Do(req)

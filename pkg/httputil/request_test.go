@@ -1,6 +1,7 @@
 package httputil
 
 import (
+	"context"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -13,7 +14,9 @@ import (
 func TestHeaderOrDefault(t *testing.T) {
 	t.Parallel()
 
-	r, err := http.NewRequest(http.MethodGet, "/", nil)
+	ctx := context.Background()
+
+	r, err := http.NewRequestWithContext(ctx, http.MethodGet, "/", nil)
 	require.NoError(t, err)
 
 	r.Header.Add("set-header", "test")
@@ -59,8 +62,10 @@ func TestPathParam(t *testing.T) {
 				SendText(r.Context(), w, http.StatusOK, val)
 			})
 
+			ctx := context.Background()
+
 			rr := httptest.NewRecorder()
-			req, err := http.NewRequest(http.MethodGet, tt.requestPath, nil)
+			req, err := http.NewRequestWithContext(ctx, http.MethodGet, tt.requestPath, nil)
 			require.NoError(t, err)
 
 			r.ServeHTTP(rr, req)
@@ -78,10 +83,12 @@ func TestPathParam(t *testing.T) {
 func TestAddBasicAuth(t *testing.T) {
 	t.Parallel()
 
-	r, _ := http.NewRequest(http.MethodGet, "", nil)
+	ctx := context.Background()
+
+	r, _ := http.NewRequestWithContext(ctx, http.MethodGet, "", nil)
 	AddBasicAuth("key", "secret", r)
 
-	wanted, _ := http.NewRequest(http.MethodGet, "", nil)
+	wanted, _ := http.NewRequestWithContext(ctx, http.MethodGet, "", nil)
 	wanted.Header.Set("Authorization", "Basic a2V5OnNlY3JldA==")
 	require.Equal(t, r, wanted)
 }

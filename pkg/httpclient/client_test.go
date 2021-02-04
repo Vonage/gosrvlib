@@ -43,12 +43,14 @@ func TestDo(t *testing.T) {
 
 	client := New()
 
-	req, err := http.NewRequest(http.MethodGet, "/error", nil)
+	ctx := context.Background()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, "/error", nil)
 	require.NoError(t, err, "failed creating http request: %v", err)
 	_, err = client.Do(req)
 	require.Error(t, err, "client.Do with invalud URL: an error was expected")
 
-	req, err = http.NewRequest(http.MethodGet, server.URL, nil)
+	req, err = http.NewRequestWithContext(ctx, http.MethodGet, server.URL, nil)
 	require.NoError(t, err, "failed creating http request: %v", err)
 	resp, err := client.Do(req)
 	require.NoError(t, err, "client.Do(): unexpected error = %v", err)
@@ -57,7 +59,7 @@ func TestDo(t *testing.T) {
 	l, err := logging.NewLogger(logging.WithLevel(zapcore.DebugLevel))
 	require.NoError(t, err, "failed creating logger: %v", err)
 
-	ctx := logging.WithLogger(context.Background(), l)
+	ctx = logging.WithLogger(ctx, l)
 	req, err = http.NewRequestWithContext(ctx, http.MethodGet, server.URL, nil)
 	require.NoError(t, err, "failed creating http request with context: %v", err)
 
