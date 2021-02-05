@@ -11,9 +11,6 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-// LogFatal calls the default fatal logger.
-var LogFatal = zap.L().Fatal
-
 type ctxKey struct{}
 
 // Syncer is an interface to allow the testing of log syncing.
