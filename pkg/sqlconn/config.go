@@ -43,7 +43,6 @@ type config struct {
 	dsn                  string
 }
 
-// nolint:gocyclo
 func (c *config) validate() error {
 	if strings.TrimSpace(c.driver) == "" {
 		return fmt.Errorf("database driver must be set")
