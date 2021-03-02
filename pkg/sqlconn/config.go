@@ -101,7 +101,7 @@ func defaultQuoteID(s string) string {
 	parts := strings.Split(s, ".")
 
 	for k, v := range parts {
-		parts[k] = "`" + strings.ReplaceAll(v, "`", "``") + "`"
+		parts[k] = "`" + strings.ReplaceAll(escape(v), "`", "``") + "`"
 	}
 
 	return strings.Join(parts, ".")
@@ -113,5 +113,38 @@ func defaultQuoteValue(s string) string {
 		return s
 	}
 
-	return "'" + strings.ReplaceAll(s, "'", "''") + "'"
+	return "'" + strings.ReplaceAll(escape(s), "'", "''") + "'"
+}
+
+func escape(s string) string {
+	dest := make([]byte, 0, 2*len(s))
+
+	var escape byte
+
+	for i := 0; i < len(s); i++ {
+		c := s[i]
+
+		escape = 0
+
+		switch c {
+		case 0:
+			escape = '0'
+		case '\n':
+			escape = 'n'
+		case '\r':
+			escape = 'r'
+		case '\\':
+			escape = '\\'
+		case '\032':
+			escape = 'Z'
+		}
+
+		if escape != 0 {
+			dest = append(dest, '\\', escape)
+		} else {
+			dest = append(dest, c)
+		}
+	}
+
+	return string(dest)
 }

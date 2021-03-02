@@ -180,6 +180,11 @@ func Test_defaultQuoteID(t *testing.T) {
 			id:   "test```4",
 			want: "`test``````4`",
 		},
+		{
+			name: "special characters",
+			id:   "test" + string([]byte{'\'', '"', '`', 0, '\n', '\r', '\\', '\032'}),
+			want: "`test'\"``\\0\\n\\r\\\\\\Z`",
+		},
 	}
 
 	for _, tt := range tests {
@@ -226,6 +231,11 @@ func Test_defaultQuoteValue(t *testing.T) {
 			name: "escape multiple quotes",
 			val:  "test'''2",
 			want: "'test''''''2'",
+		},
+		{
+			name: "special characters",
+			val:  "test" + string([]byte{'\'', '"', '`', 0, '\n', '\r', '\\', '\032'}),
+			want: "'test''\"`\\0\\n\\r\\\\\\Z'",
 		},
 	}
 
