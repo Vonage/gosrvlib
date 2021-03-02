@@ -37,7 +37,6 @@ func defaultSQLUtil() *SQLUtil {
 	}
 }
 
-// nolint:gocyclo
 func (c *SQLUtil) validate() error {
 	if c.quoteIDFunc == nil {
 		return fmt.Errorf("the QuoteID function must be set")
