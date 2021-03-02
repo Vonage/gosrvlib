@@ -17,8 +17,6 @@ const (
 
 func defaultConfig(driver, dsn string) *config {
 	return &config{
-		quoteIDFunc:          defaultQuoteID,
-		quoteValueFunc:       defaultQuoteValue,
 		checkConnectionFunc:  checkConnection,
 		sqlOpenFunc:          sql.Open,
 		connectFunc:          connectWithBackoff,
@@ -33,8 +31,6 @@ func defaultConfig(driver, dsn string) *config {
 }
 
 type config struct {
-	quoteIDFunc          SQLQuoteFunc
-	quoteValueFunc       SQLQuoteFunc
 	checkConnectionFunc  CheckConnectionFunc
 	sqlOpenFunc          SQLOpenFunc
 	connectFunc          ConnectFunc
@@ -81,62 +77,5 @@ func (c *config) validate() error {
 		return fmt.Errorf("database pool max idle connections must be greater than 0")
 	}
 
-	if c.quoteIDFunc == nil {
-		return fmt.Errorf("the QuoteID function must be set")
-	}
-
-	if c.quoteValueFunc == nil {
-		return fmt.Errorf("the QuoteValue function must be set")
-	}
-
 	return nil
-}
-
-// defaultQuoteID is the QuoteID default function for mysql-like databases.
-func defaultQuoteID(s string) string {
-	if s == "" {
-		return s
-	}
-
-	parts := strings.Split(s, ".")
-
-	for k, v := range parts {
-		parts[k] = "`" + strings.ReplaceAll(escape(v), "`", "``") + "`"
-	}
-
-	return strings.Join(parts, ".")
-}
-
-// defaultQuoteValue is the QuoteValue default function for mysql-like databases.
-func defaultQuoteValue(s string) string {
-	if s == "" {
-		return s
-	}
-
-	return "'" + strings.ReplaceAll(escape(s), "'", "''") + "'"
-}
-
-func escape(s string) string {
-	dest := make([]byte, 0, 2*len(s))
-
-	for i := 0; i < len(s); i++ {
-		c := s[i]
-
-		switch c {
-		case 0:
-			dest = append(dest, '\\', '0')
-		case '\n':
-			dest = append(dest, '\\', 'n')
-		case '\r':
-			dest = append(dest, '\\', 'r')
-		case '\\':
-			dest = append(dest, '\\', '\\')
-		case '\032':
-			dest = append(dest, '\\', 'Z')
-		default:
-			dest = append(dest, c)
-		}
-	}
-
-	return string(dest)
 }

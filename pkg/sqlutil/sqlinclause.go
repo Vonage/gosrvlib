@@ -1,4 +1,4 @@
-package sqlconn
+package sqlutil
 
 import (
 	"fmt"
@@ -12,36 +12,36 @@ const (
 )
 
 // BuildInClauseString prepares a SQL IN clause with the given list of string values.
-func (c *SQLConn) BuildInClauseString(field string, values []string) string {
+func (c *SQLUtil) BuildInClauseString(field string, values []string) string {
 	return c.composeInClause(sqlConditionIn, field, c.formatStrings(values))
 }
 
 // BuildNotInClauseString prepares a SQL NOT IN clause with the given list of string values.
-func (c *SQLConn) BuildNotInClauseString(field string, values []string) string {
+func (c *SQLUtil) BuildNotInClauseString(field string, values []string) string {
 	return c.composeInClause(sqlConditionNotIn, field, c.formatStrings(values))
 }
 
 // BuildInClauseInt prepares a SQL IN clause with the given list of integer values.
-func (c *SQLConn) BuildInClauseInt(field string, values []int) string {
+func (c *SQLUtil) BuildInClauseInt(field string, values []int) string {
 	return c.composeInClause(sqlConditionIn, field, formatInts(values))
 }
 
 // BuildNotInClauseInt prepares a SQL NOT IN clause with the given list of integer values.
-func (c *SQLConn) BuildNotInClauseInt(field string, values []int) string {
+func (c *SQLUtil) BuildNotInClauseInt(field string, values []int) string {
 	return c.composeInClause(sqlConditionNotIn, field, formatInts(values))
 }
 
 // BuildInClauseUint prepares a SQL IN clause with the given list of integer values.
-func (c *SQLConn) BuildInClauseUint(field string, values []uint64) string {
+func (c *SQLUtil) BuildInClauseUint(field string, values []uint64) string {
 	return c.composeInClause(sqlConditionIn, field, formatUints(values))
 }
 
 // BuildNotInClauseUint prepares a SQL NOT IN clause with the given list of integer values.
-func (c *SQLConn) BuildNotInClauseUint(field string, values []uint64) string {
+func (c *SQLUtil) BuildNotInClauseUint(field string, values []uint64) string {
 	return c.composeInClause(sqlConditionNotIn, field, formatUints(values))
 }
 
-func (c *SQLConn) composeInClause(condition string, field string, values []string) string {
+func (c *SQLUtil) composeInClause(condition string, field string, values []string) string {
 	if len(values) == 0 {
 		return ""
 	}
@@ -49,7 +49,7 @@ func (c *SQLConn) composeInClause(condition string, field string, values []strin
 	return fmt.Sprintf("%s %s (%s)", c.QuoteID(field), condition, strings.Join(values, ","))
 }
 
-func (c *SQLConn) formatStrings(values []string) []string {
+func (c *SQLUtil) formatStrings(values []string) []string {
 	items := make([]string, len(values))
 
 	for k, v := range values {

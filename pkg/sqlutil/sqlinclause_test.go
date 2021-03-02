@@ -1,4 +1,4 @@
-package sqlconn
+package sqlutil
 
 import (
 	"testing"
@@ -47,7 +47,7 @@ func TestBuildInClauseString(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			c := &SQLConn{cfg: defaultConfig("driver1", "dsn1")}
+			c := defaultSQLUtil()
 			got := c.BuildInClauseString(tt.field, tt.values)
 
 			require.Equal(t, tt.want, got)
@@ -96,7 +96,7 @@ func TestBuildNotInClauseString(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			c := &SQLConn{cfg: defaultConfig("driver2", "dsn2")}
+			c := defaultSQLUtil()
 			got := c.BuildNotInClauseString(tt.field, tt.values)
 
 			require.Equal(t, tt.want, got)
@@ -145,7 +145,7 @@ func TestBuildInClauseInt(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			c := &SQLConn{cfg: defaultConfig("driver3", "dsn3")}
+			c := defaultSQLUtil()
 			got := c.BuildInClauseInt(tt.field, tt.values)
 
 			require.Equal(t, tt.want, got)
@@ -194,7 +194,7 @@ func TestBuildNotInClauseInt(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			c := &SQLConn{cfg: defaultConfig("driver4", "dsn4")}
+			c := defaultSQLUtil()
 			got := c.BuildNotInClauseInt(tt.field, tt.values)
 
 			require.Equal(t, tt.want, got)
@@ -243,7 +243,7 @@ func TestBuildInClauseUint(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			c := &SQLConn{cfg: defaultConfig("driver5", "dsn5")}
+			c := defaultSQLUtil()
 			got := c.BuildInClauseUint(tt.field, tt.values)
 
 			require.Equal(t, tt.want, got)
@@ -292,7 +292,7 @@ func TestBuildNotInClauseUint(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			c := &SQLConn{cfg: defaultConfig("driver6", "dsn6")}
+			c := defaultSQLUtil()
 			got := c.BuildNotInClauseUint(tt.field, tt.values)
 
 			require.Equal(t, tt.want, got)

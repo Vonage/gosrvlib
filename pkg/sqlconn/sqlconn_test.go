@@ -382,27 +382,3 @@ func Test_parseConnectionURL(t *testing.T) {
 		})
 	}
 }
-
-func Test_QuoteID(t *testing.T) {
-	t.Parallel()
-
-	fn := func(s string) string { return "TEST" + s }
-	c := &SQLConn{cfg: &config{quoteIDFunc: fn}}
-	s := "5237"
-	got := c.QuoteID(s)
-	want := fn(s)
-
-	require.Equal(t, want, got, "QuoteID() got = %v, want %v", got, want)
-}
-
-func Test_QuoteValue(t *testing.T) {
-	t.Parallel()
-
-	fn := func(s string) string { return "TEST" + s }
-	c := &SQLConn{cfg: &config{quoteValueFunc: fn}}
-	s := "5237"
-	got := c.QuoteValue(s)
-	want := fn(s)
-
-	require.Equal(t, want, got, "QuoteValue() got = %v, want %v", got, want)
-}

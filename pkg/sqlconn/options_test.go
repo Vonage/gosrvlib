@@ -10,30 +10,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestWithQuoteIDFunc(t *testing.T) {
-	t.Parallel()
-
-	v := func(s string) string {
-		return s
-	}
-
-	cfg := &config{}
-	WithQuoteIDFunc(v)(cfg)
-	require.Equal(t, reflect.ValueOf(v).Pointer(), reflect.ValueOf(cfg.quoteIDFunc).Pointer())
-}
-
-func TestWithQuoteValueFunc(t *testing.T) {
-	t.Parallel()
-
-	v := func(s string) string {
-		return s
-	}
-
-	cfg := &config{}
-	WithQuoteValueFunc(v)(cfg)
-	require.Equal(t, reflect.ValueOf(v).Pointer(), reflect.ValueOf(cfg.quoteValueFunc).Pointer())
-}
-
 func TestWithConnectFunc(t *testing.T) {
 	t.Parallel()
 
