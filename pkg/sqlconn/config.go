@@ -119,29 +119,21 @@ func defaultQuoteValue(s string) string {
 func escape(s string) string {
 	dest := make([]byte, 0, 2*len(s))
 
-	var escape byte
-
 	for i := 0; i < len(s); i++ {
 		c := s[i]
 
-		escape = 0
-
 		switch c {
 		case 0:
-			escape = '0'
+			dest = append(dest, '\\', '0')
 		case '\n':
-			escape = 'n'
+			dest = append(dest, '\\', 'n')
 		case '\r':
-			escape = 'r'
+			dest = append(dest, '\\', 'r')
 		case '\\':
-			escape = '\\'
+			dest = append(dest, '\\', '\\')
 		case '\032':
-			escape = 'Z'
-		}
-
-		if escape != 0 {
-			dest = append(dest, '\\', escape)
-		} else {
+			dest = append(dest, '\\', 'Z')
+		default:
 			dest = append(dest, c)
 		}
 	}
