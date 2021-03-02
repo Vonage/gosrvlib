@@ -11,14 +11,25 @@ import (
 	"github.com/nexmoinc/gosrvlib/pkg/logging"
 )
 
-// ConnectFunc is the function called to perform the actual DB connection.
+// ConnectFunc is the type of function called to perform the actual DB connection.
 type ConnectFunc func(ctx context.Context, cfg *config) (*sql.DB, error)
 
-// CheckConnectionFunc is the function called to perform a DB connection check.
+// CheckConnectionFunc is the type of function called to perform a DB connection check.
 type CheckConnectionFunc func(ctx context.Context, db *sql.DB) error
 
-// SQLOpenFunc is the function called to open the DB. (Only for monkey patch testing).
+// SQLOpenFunc is the type of function called to open the DB. (Only for monkey patch testing).
 type SQLOpenFunc func(driverName, dataSourceName string) (*sql.DB, error)
+
+// SQLQuoteFunc is the type of function called to quote a string (ID or value).
+type SQLQuoteFunc func(s string) string
+
+// SQLConn is the structure that helps to manage a SQL DB connection.
+type SQLConn struct {
+	cfg    *config
+	ctx    context.Context
+	db     *sql.DB
+	dbLock sync.RWMutex
+}
 
 // Connect attempts to connect to a SQL database.
 func Connect(ctx context.Context, url string, opts ...Option) (*SQLConn, error) {
@@ -61,14 +72,6 @@ func Connect(ctx context.Context, url string, opts ...Option) (*SQLConn, error) 
 	return &c, nil
 }
 
-// SQLConn is the structure that helps to manage a SQL DB connection.
-type SQLConn struct {
-	cfg    *config
-	ctx    context.Context
-	db     *sql.DB
-	dbLock sync.RWMutex
-}
-
 // DB returns a database connection from the pool.
 func (c *SQLConn) DB() *sql.DB {
 	c.dbLock.RLock()
@@ -91,6 +94,17 @@ func (c *SQLConn) HealthCheck(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+// QuoteID quotes identifiers such as schema, table, or column names.
+func (c *SQLConn) QuoteID(s string) string {
+	return c.cfg.quoteIDFunc(s)
+}
+
+// QuoteValue quotes database string values.
+// The returned value will include all surrounding quotes.
+func (c *SQLConn) QuoteValue(s string) string {
+	return c.cfg.quoteValueFunc(s)
 }
 
 func (c *SQLConn) disconnect() {

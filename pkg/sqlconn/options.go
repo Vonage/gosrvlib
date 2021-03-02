@@ -7,6 +7,20 @@ import (
 // Option is a type alias for a function that configures the DB connector.
 type Option func(*config)
 
+// WithQuoteIDFunc replaces the default QuoteID function.
+func WithQuoteIDFunc(fn SQLQuoteFunc) Option {
+	return func(cfg *config) {
+		cfg.quoteIDFunc = fn
+	}
+}
+
+// WithQuoteValueFunc replaces the default QuoteValue function.
+func WithQuoteValueFunc(fn SQLQuoteFunc) Option {
+	return func(cfg *config) {
+		cfg.quoteValueFunc = fn
+	}
+}
+
 // WithConnectFunc replaces the default connection function.
 func WithConnectFunc(fn ConnectFunc) Option {
 	return func(cfg *config) {

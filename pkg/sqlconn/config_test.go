@@ -79,6 +79,24 @@ func Test_config_validate(t *testing.T) {
 			wantErr: true,
 		},
 		{
+			name: "fail with invalid quoteIDFunc function",
+			cfg: func() *config {
+				cfg := defaultConfig("sqldb", "user:pass@tcp(127.0.0.1:1234)/testdb")
+				cfg.quoteIDFunc = nil
+				return cfg
+			}(),
+			wantErr: true,
+		},
+		{
+			name: "fail with invalid quoteValueFunc function",
+			cfg: func() *config {
+				cfg := defaultConfig("sqldb", "user:pass@tcp(127.0.0.1:1234)/testdb")
+				cfg.quoteValueFunc = nil
+				return cfg
+			}(),
+			wantErr: true,
+		},
+		{
 			name: "succeed with no errors",
 			cfg: func() *config {
 				cfg := defaultConfig("sqldb", "user:pass@tcp(127.0.0.1:1234)/testdb")
@@ -87,6 +105,7 @@ func Test_config_validate(t *testing.T) {
 			wantErr: false,
 		},
 	}
+
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
@@ -106,6 +125,8 @@ func Test_defaultConfig(t *testing.T) {
 	require.NotNil(t, cfg)
 	require.Equal(t, "test_driver", cfg.driver)
 	require.Equal(t, "test_dsn", cfg.dsn)
+	require.NotNil(t, cfg.quoteIDFunc)
+	require.NotNil(t, cfg.quoteValueFunc)
 	require.NotNil(t, cfg.connectFunc)
 	require.NotNil(t, cfg.checkConnectionFunc)
 	require.NotNil(t, cfg.sqlOpenFunc)
@@ -114,4 +135,108 @@ func Test_defaultConfig(t *testing.T) {
 	require.Equal(t, defaultConnMaxIdle, cfg.connMaxIdle)
 	require.Equal(t, defaultConnMaxLifetime, cfg.connMaxLifetime)
 	require.Equal(t, defaultConnMaxOpen, cfg.connMaxOpen)
+}
+
+func Test_defaultQuoteID(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		id   string
+		want string
+	}{
+		{
+			name: "empty string",
+			id:   "",
+			want: "",
+		},
+		{
+			name: "single value",
+			id:   "test1",
+			want: "`test1`",
+		},
+		{
+			name: "two parts",
+			id:   "parent.child",
+			want: "`parent`.`child`",
+		},
+		{
+			name: "multiple parts",
+			id:   "parent.child.name",
+			want: "`parent`.`child`.`name`",
+		},
+		{
+			name: "multiple parts with space",
+			id:   "one two.three four",
+			want: "`one two`.`three four`",
+		},
+		{
+			name: "escape backtick",
+			id:   "test`4",
+			want: "`test``4`",
+		},
+		{
+			name: "escape multiple backtick",
+			id:   "test```4",
+			want: "`test``````4`",
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got := defaultQuoteID(tt.id)
+
+			require.Equal(t, tt.want, got, "QuoteID() got = %v, want %v", got, tt.want)
+		})
+	}
+}
+
+func Test_defaultQuoteValue(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		val  string
+		want string
+	}{
+		{
+			name: "empty string",
+			val:  "",
+			want: "",
+		},
+		{
+			name: "simple value",
+			val:  "test1",
+			want: "'test1'",
+		},
+		{
+			name: "value with spaces",
+			val:  "one two three",
+			want: "'one two three'",
+		},
+		{
+			name: "escape single quote",
+			val:  "test'2",
+			want: "'test''2'",
+		},
+		{
+			name: "escape multiple quotes",
+			val:  "test'''2",
+			want: "'test''''''2'",
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got := defaultQuoteValue(tt.val)
+
+			require.Equal(t, tt.want, got, "QuoteID() got = %v, want %v", got, tt.want)
+		})
+	}
 }

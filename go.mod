@@ -12,6 +12,8 @@ require (
 	github.com/fatih/color v1.10.0 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/go-playground/validator/v10 v10.4.1
+	github.com/go-sql-driver/mysql v1.5.0 // indirect
+	github.com/golang-sql/sqlexp v0.0.0-20170517235910-f1bb20e5a188 // indirect
 	github.com/golang/mock v1.5.0
 	github.com/hashicorp/consul/api v1.8.1 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect

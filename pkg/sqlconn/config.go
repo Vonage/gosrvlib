@@ -17,6 +17,8 @@ const (
 
 func defaultConfig(driver, dsn string) *config {
 	return &config{
+		quoteIDFunc:          defaultQuoteID,
+		quoteValueFunc:       defaultQuoteValue,
 		checkConnectionFunc:  checkConnection,
 		sqlOpenFunc:          sql.Open,
 		connectFunc:          connectWithBackoff,
@@ -31,6 +33,8 @@ func defaultConfig(driver, dsn string) *config {
 }
 
 type config struct {
+	quoteIDFunc          SQLQuoteFunc
+	quoteValueFunc       SQLQuoteFunc
 	checkConnectionFunc  CheckConnectionFunc
 	sqlOpenFunc          SQLOpenFunc
 	connectFunc          ConnectFunc
@@ -43,6 +47,7 @@ type config struct {
 	dsn                  string
 }
 
+// nolint:gocyclo
 func (c *config) validate() error {
 	if strings.TrimSpace(c.driver) == "" {
 		return fmt.Errorf("database driver must be set")
@@ -76,5 +81,37 @@ func (c *config) validate() error {
 		return fmt.Errorf("database pool max idle connections must be greater than 0")
 	}
 
+	if c.quoteIDFunc == nil {
+		return fmt.Errorf("the QuoteID function must be set")
+	}
+
+	if c.quoteValueFunc == nil {
+		return fmt.Errorf("the QuoteValue function must be set")
+	}
+
 	return nil
+}
+
+// defaultQuoteID is the QuoteID default function for mysql-like databases.
+func defaultQuoteID(s string) string {
+	if s == "" {
+		return s
+	}
+
+	parts := strings.Split(s, ".")
+
+	for k, v := range parts {
+		parts[k] = "`" + strings.ReplaceAll(v, "`", "``") + "`"
+	}
+
+	return strings.Join(parts, ".")
+}
+
+// defaultQuoteValue is the QuoteValue default function for mysql-like databases.
+func defaultQuoteValue(s string) string {
+	if s == "" {
+		return s
+	}
+
+	return "'" + strings.ReplaceAll(s, "'", "''") + "'"
 }
