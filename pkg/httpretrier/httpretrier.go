@@ -75,7 +75,7 @@ func (c *HTTPRetrier) Retry(do HTTPDoFn, req *http.Request) (*http.Response, err
 
 	for i := c.attempts; i > 1; i-- {
 		resp, err := do(req)
-		if c.check(resp.StatusCode) {
+		if !c.check(resp.StatusCode) {
 			return resp, err
 		}
 
