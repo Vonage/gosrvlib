@@ -1,4 +1,4 @@
-// Package httpretrier allow to retry HTTP requests based on HTTP status boolean conditions.
+// Package httpretrier allow to retry HTTP requests based on HTTP status code boolean conditions.
 package httpretrier
 
 import (
