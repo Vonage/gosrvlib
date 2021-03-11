@@ -32,9 +32,9 @@ func TestNew(t *testing.T) {
 			opts: []Option{
 				WithRetryIfFn(func(statusCode int, err error) bool { return true }),
 				WithAttempts(5),
-				WithDelay(601),
+				WithDelay(601 * time.Millisecond),
 				WithDelayFactor(1.3),
-				WithJitter(109),
+				WithJitter(109 * time.Millisecond),
 			},
 			wantErr: false,
 		},
@@ -191,7 +191,14 @@ func TestHTTPRetrier_Do(t *testing.T) {
 			r, err := http.NewRequestWithContext(ctx, http.MethodGet, "/", nil)
 			require.NoError(t, err)
 
-			retrier, err := New(mockHTTP)
+			opts := []Option{
+				WithAttempts(4),
+				WithDelay(10 * time.Millisecond),
+				WithDelayFactor(1.1),
+				WithJitter(5 * time.Millisecond),
+			}
+
+			retrier, err := New(mockHTTP, opts...)
 			require.NoError(t, err)
 
 			_, err = retrier.Do(r) // nolint:bodyclose
