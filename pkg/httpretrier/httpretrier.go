@@ -100,7 +100,17 @@ func defaultRetryIfFn(statusCode int, err error) bool {
 	}
 
 	switch statusCode {
-	case http.StatusNotFound, http.StatusRequestTimeout, http.StatusConflict, http.StatusMisdirectedRequest, http.StatusTooEarly, http.StatusTooManyRequests, http.StatusInternalServerError, http.StatusBadGateway, http.StatusServiceUnavailable, http.StatusGatewayTimeout, http.StatusInsufficientStorage:
+	case http.StatusNotFound,
+		http.StatusRequestTimeout,
+		http.StatusConflict,
+		http.StatusMisdirectedRequest,
+		http.StatusTooEarly,
+		http.StatusTooManyRequests,
+		http.StatusInternalServerError,
+		http.StatusBadGateway,
+		http.StatusServiceUnavailable,
+		http.StatusGatewayTimeout,
+		http.StatusInsufficientStorage:
 		return true
 	}
 
@@ -144,13 +154,8 @@ func (c *HTTPRetrier) run(r *http.Request) bool {
 		logging.Close(r.Context(), c.doResponse.Body, "error while closing response body")
 	}
 
-	if !c.retryIfFn(c.doResponse.StatusCode, c.doError) {
-		return true
-	}
-
 	c.remainingAttempts--
-
-	if c.remainingAttempts == 0 {
+	if c.remainingAttempts == 0 || !c.retryIfFn(c.doResponse.StatusCode, c.doError) {
 		return true
 	}
 
