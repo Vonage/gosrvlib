@@ -207,3 +207,13 @@ func TestHTTPRetrier_Do(t *testing.T) {
 		})
 	}
 }
+
+func TestHTTPRetrier_setTimer(t *testing.T) {
+	c := &HTTPRetrier{
+		timer: time.NewTimer(1 * time.Millisecond),
+	}
+
+	time.Sleep(2 * time.Millisecond)
+	c.setTimer(2 * time.Millisecond)
+	<-c.timer.C
+}
