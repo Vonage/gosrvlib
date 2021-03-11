@@ -34,19 +34,20 @@ type HTTPClient interface {
 
 // HTTPRetrier represents an instance of the HTTP retrier.
 type HTTPRetrier struct {
-	nextDelay   float64
-	delayFactor float64
-	delay       time.Duration
-	jitter      time.Duration
-	attempts    uint
-	retryIfFn   RetryIfFn
-	httpClient  HTTPClient
-	timer       *time.Timer
-	resetTimer  chan time.Duration
-	ctx         context.Context
-	cancel      context.CancelFunc
-	doResponse  *http.Response
-	doError     error
+	nextDelay         float64
+	delayFactor       float64
+	delay             time.Duration
+	jitter            time.Duration
+	attempts          uint
+	remainingAttempts uint
+	retryIfFn         RetryIfFn
+	httpClient        HTTPClient
+	timer             *time.Timer
+	resetTimer        chan time.Duration
+	ctx               context.Context
+	cancel            context.CancelFunc
+	doResponse        *http.Response
+	doError           error
 }
 
 func defaultHTTPRetrier() *HTTPRetrier {
@@ -70,15 +71,17 @@ func New(httpClient HTTPClient, opts ...Option) (*HTTPRetrier, error) {
 		}
 	}
 
-	c.nextDelay = float64(c.delay)
 	c.httpClient = httpClient
-	c.ctx, c.cancel = context.WithCancel(context.Background())
 
 	return c, nil
 }
 
 // Do attempts to run the request according to the retry rules.
 func (c *HTTPRetrier) Do(r *http.Request) (*http.Response, error) {
+	c.nextDelay = float64(c.delay)
+	c.remainingAttempts = c.attempts
+	c.ctx, c.cancel = context.WithCancel(context.Background())
+
 	go c.retry(r)
 
 	// initialize the timer to kick off the first run
@@ -145,9 +148,9 @@ func (c *HTTPRetrier) run(r *http.Request) bool {
 		return true
 	}
 
-	c.attempts--
+	c.remainingAttempts--
 
-	if c.attempts == 0 {
+	if c.remainingAttempts == 0 {
 		return true
 	}
 
