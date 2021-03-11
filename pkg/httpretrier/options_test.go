@@ -2,6 +2,7 @@ package httpretrier
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -41,11 +42,11 @@ func TestWithAttempts(t *testing.T) {
 func TestWithDelay(t *testing.T) {
 	t.Parallel()
 
-	var v int64
+	var v time.Duration
 
 	c := defaultHTTPRetrier()
 
-	v = 503
+	v = 503 * time.Millisecond
 	err := WithDelay(v)(c)
 	require.NoError(t, err)
 	require.Equal(t, v, c.delay)
@@ -75,11 +76,11 @@ func TestWithDelayFactor(t *testing.T) {
 func TestWithJitter(t *testing.T) {
 	t.Parallel()
 
-	var v int64
+	var v time.Duration
 
 	c := defaultHTTPRetrier()
 
-	v = 131
+	v = 131 * time.Millisecond
 	err := WithJitter(v)(c)
 	require.NoError(t, err)
 	require.Equal(t, v, c.jitter)

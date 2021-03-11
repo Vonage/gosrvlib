@@ -2,38 +2,51 @@
 package httpretrier
 
 import (
+	"context"
 	"math/rand"
 	"net/http"
 	"time"
+
+	"github.com/nexmoinc/gosrvlib/pkg/logging"
 )
 
 const (
 	// DefaultAttempts is the default maximum number of retry attempts.
-	DefaultAttempts = 3
+	DefaultAttempts = 4
 
-	// DefaultDelay is the default base delay amount in milliseconds.
-	DefaultDelay = 500
+	// DefaultDelay is the delay to apply after the first failed attempt.
+	DefaultDelay = 1 * time.Second
 
 	// DefaultDelayFactor is the default multiplication factor to get the successive delay value.
 	DefaultDelayFactor = 2
 
-	// DefaultJitter is the maximum random Jitter between retries in milliseconds.
-	DefaultJitter = 100
+	// DefaultJitter is the maximum random Jitter time between retries.
+	DefaultJitter = 100 * time.Millisecond
 )
 
 // RetryIfFn is the signature of the function used to decide when retry.
 type RetryIfFn func(statusCode int, err error) bool
 
-// HTTPDoFn is the signature of the http.Do function to be retried.
-type HTTPDoFn func(req *http.Request) (*http.Response, error)
+// HTTPClient contains the function to perform the actual HTTP request.
+type HTTPClient interface {
+	Do(*http.Request) (*http.Response, error)
+}
 
 // HTTPRetrier represents an instance of the HTTP retrier.
 type HTTPRetrier struct {
+	nextDelay   float64
 	delayFactor float64
-	delay       int64
-	jitter      int64
+	delay       time.Duration
+	jitter      time.Duration
 	attempts    uint
 	retryIfFn   RetryIfFn
+	httpClient  HTTPClient
+	timer       *time.Timer
+	resetTimer  chan time.Duration
+	ctx         context.Context
+	cancel      context.CancelFunc
+	doResponse  *http.Response
+	doError     error
 }
 
 func defaultHTTPRetrier() *HTTPRetrier {
@@ -43,11 +56,12 @@ func defaultHTTPRetrier() *HTTPRetrier {
 		delayFactor: DefaultDelayFactor,
 		jitter:      DefaultJitter,
 		retryIfFn:   defaultRetryIfFn,
+		resetTimer:  make(chan time.Duration, 1),
 	}
 }
 
 // New creates a new instance.
-func New(opts ...Option) (*HTTPRetrier, error) {
+func New(httpClient HTTPClient, opts ...Option) (*HTTPRetrier, error) {
 	c := defaultHTTPRetrier()
 
 	for _, applyOpt := range opts {
@@ -56,36 +70,89 @@ func New(opts ...Option) (*HTTPRetrier, error) {
 		}
 	}
 
+	c.nextDelay = float64(c.delay)
+	c.httpClient = httpClient
+	c.ctx, c.cancel = context.WithCancel(context.Background())
+
 	return c, nil
 }
 
-// Retry execute the Do function and retry in case of error.
-func (c *HTTPRetrier) Retry(do HTTPDoFn, req *http.Request) (*http.Response, error) {
-	delay := float64(c.delay)
+// Do attempts to run the request according to the retry rules.
+func (c *HTTPRetrier) Do(r *http.Request) (*http.Response, error) {
+	go c.retry(r)
 
-	for i := c.attempts; i > 1; i-- {
-		resp, err := do(req)
-		if !c.retryIfFn(resp.StatusCode, err) {
-			return resp, err
-		}
+	// initialize the timer to kick off the first run
+	c.timer = time.NewTimer(1 * time.Nanosecond)
 
-		delay *= c.delayFactor
+	// wait for completion
+	<-c.ctx.Done()
 
-		time.Sleep(time.Duration(int64(delay)+rand.Int63n(c.jitter)) * time.Millisecond) // nolint:gosec
-	}
-
-	return do(req)
+	return c.doResponse, c.doError
 }
 
+// defaultRetryIfFn is the default function to check the retry condition.
 func defaultRetryIfFn(statusCode int, err error) bool {
 	if err != nil {
-		return false
+		return true
 	}
 
 	switch statusCode {
 	case http.StatusNotFound, http.StatusRequestTimeout, http.StatusConflict, http.StatusMisdirectedRequest, http.StatusTooEarly, http.StatusTooManyRequests, http.StatusInternalServerError, http.StatusBadGateway, http.StatusServiceUnavailable, http.StatusGatewayTimeout, http.StatusInsufficientStorage:
 		return true
 	}
+
+	return false
+}
+
+func (c *HTTPRetrier) setTimer(d time.Duration) {
+	if !c.timer.Stop() {
+		// make sure to drain timer channel before reset
+		select {
+		case <-c.timer.C:
+		default:
+		}
+	}
+
+	c.timer.Reset(d)
+}
+
+func (c *HTTPRetrier) retry(r *http.Request) {
+	defer c.cancel()
+
+	for {
+		select {
+		case <-c.ctx.Done():
+			return
+		case <-r.Context().Done():
+			return
+		case d := <-c.resetTimer:
+			c.setTimer(d)
+		case <-c.timer.C:
+			if c.run(r) {
+				return
+			}
+		}
+	}
+}
+
+func (c *HTTPRetrier) run(r *http.Request) bool {
+	c.doResponse, c.doError = c.httpClient.Do(r) // nolint:bodyclose
+	if c.doError == nil {
+		logging.Close(r.Context(), c.doResponse.Body, "error while closing response body")
+	}
+
+	if !c.retryIfFn(c.doResponse.StatusCode, c.doError) {
+		return true
+	}
+
+	c.attempts--
+
+	if c.attempts == 0 {
+		return true
+	}
+
+	c.resetTimer <- time.Duration(int64(c.nextDelay)+rand.Int63n(int64(c.jitter))) * time.Millisecond // nolint:gosec
+	c.nextDelay *= c.delayFactor
 
 	return false
 }

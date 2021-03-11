@@ -2,6 +2,7 @@ package httpretrier
 
 import (
 	"fmt"
+	"time"
 )
 
 // Option is the interface that allows to set the options.
@@ -33,12 +34,10 @@ func WithAttempts(attempts uint) Option {
 	}
 }
 
-// WithDelay set the base delay in millisecond.
-// The base delay is always multiplied by the delay factor.
-// If the base delay is 500 milliseconds and the delay factor is 2, then the second attempt will happen after one second (2 * 500 = 1000 milliseconds).
-func WithDelay(delay int64) Option {
+// WithDelay set the delay after the first failed attempt.
+func WithDelay(delay time.Duration) Option {
 	return func(r *HTTPRetrier) error {
-		if delay < 1 {
+		if int64(delay) < 1 {
 			return fmt.Errorf("delay must be a greater than zero")
 		}
 
@@ -50,7 +49,7 @@ func WithDelay(delay int64) Option {
 
 // WithDelayFactor set the multiplication factor to get the successive delay value.
 // A delay factor greater than 1 means an exponential delay increase.
-// if the delay factor is 2 and the base delay is 1, then the delays will be: [2, 4, 8, ...].
+// if the delay factor is 2 and the first delay is 1, then the delays will be: [1, 2, 4, 8, ...].
 func WithDelayFactor(delayFactor float64) Option {
 	return func(r *HTTPRetrier) error {
 		if delayFactor < 1 {
@@ -63,11 +62,11 @@ func WithDelayFactor(delayFactor float64) Option {
 	}
 }
 
-// WithJitter sets the maximum random Jitter in milliseconds between retries.
+// WithJitter sets the maximum random Jitter time between retries.
 // This is useful to avoid the Thundering herd problem (https://en.wikipedia.org/wiki/Thundering_herd_problem).
-func WithJitter(jitter int64) Option {
+func WithJitter(jitter time.Duration) Option {
 	return func(r *HTTPRetrier) error {
-		if jitter < 1 {
+		if int64(jitter) < 1 {
 			return fmt.Errorf("jitter must be a greater than zero")
 		}
 
