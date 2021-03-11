@@ -82,5 +82,10 @@ func defaultRetryIfFn(statusCode int, err error) bool {
 		return false
 	}
 
-	return statusCode >= 500
+	switch statusCode {
+	case http.StatusNotFound, http.StatusRequestTimeout, http.StatusConflict, http.StatusMisdirectedRequest, http.StatusTooEarly, http.StatusTooManyRequests, http.StatusInternalServerError, http.StatusBadGateway, http.StatusServiceUnavailable, http.StatusGatewayTimeout, http.StatusInsufficientStorage:
+		return true
+	}
+
+	return false
 }
