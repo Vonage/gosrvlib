@@ -193,9 +193,9 @@ func TestHTTPRetrier_Do(t *testing.T) {
 
 			opts := []Option{
 				WithAttempts(4),
-				WithDelay(10 * time.Millisecond),
-				WithDelayFactor(1.1),
-				WithJitter(5 * time.Millisecond),
+				WithDelay(100 * time.Millisecond),
+				WithDelayFactor(1.2),
+				WithJitter(50 * time.Millisecond),
 			}
 
 			retrier, err := New(mockHTTP, opts...)
