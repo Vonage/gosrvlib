@@ -22,7 +22,7 @@ const (
 )
 
 // RetryIfFn is the signature of the function used to decide when retry.
-type RetryIfFn func(statusCode int) bool
+type RetryIfFn func(statusCode int, err error) bool
 
 // HTTPDoFn is the signature of the http.Do function to be retried.
 type HTTPDoFn func(req *http.Request) (*http.Response, error)
@@ -65,7 +65,7 @@ func (c *HTTPRetrier) Retry(do HTTPDoFn, req *http.Request) (*http.Response, err
 
 	for i := c.attempts; i > 1; i-- {
 		resp, err := do(req)
-		if !c.retryIfFn(resp.StatusCode) {
+		if !c.retryIfFn(resp.StatusCode, err) {
 			return resp, err
 		}
 
@@ -77,6 +77,10 @@ func (c *HTTPRetrier) Retry(do HTTPDoFn, req *http.Request) (*http.Response, err
 	return do(req)
 }
 
-func defaultRetryIfFn(statusCode int) bool {
+func defaultRetryIfFn(statusCode int, err error) bool {
+	if err != nil {
+		return false
+	}
+
 	return statusCode >= 500
 }
