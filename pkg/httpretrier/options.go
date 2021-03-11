@@ -7,14 +7,14 @@ import (
 // Option is the interface that allows to set the options.
 type Option func(c *HTTPRetrier) error
 
-// WithStatusConditions set the boolean conditions for the HTTP status.
-func WithStatusConditions(conditions []ORGroup) Option {
+// WithRetryIfFn set the function used to decide when retry.
+func WithRetryIfFn(retryIfFn RetryIfFn) Option {
 	return func(r *HTTPRetrier) error {
-		if len(conditions) == 0 {
-			return fmt.Errorf("at least one condition must be specified")
+		if retryIfFn == nil {
+			return fmt.Errorf("the retry function is required")
 		}
 
-		r.conditions = conditions
+		r.retryIfFn = retryIfFn
 
 		return nil
 	}
