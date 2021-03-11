@@ -84,9 +84,6 @@ func (c *HTTPRetrier) Do(r *http.Request) (*http.Response, error) {
 
 	go c.retry(r)
 
-	// initialize the timer to kick off the first run
-	c.timer = time.NewTimer(1 * time.Nanosecond)
-
 	// wait for completion
 	<-c.ctx.Done()
 
@@ -131,6 +128,8 @@ func (c *HTTPRetrier) setTimer(d time.Duration) {
 
 func (c *HTTPRetrier) retry(r *http.Request) {
 	defer c.cancel()
+
+	c.timer = time.NewTimer(1 * time.Nanosecond)
 
 	for {
 		select {
