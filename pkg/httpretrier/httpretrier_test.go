@@ -39,16 +39,16 @@ func TestNew(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "succeeds with RetryIfForWriteRequestsFn",
+			name: "succeeds with RetryIfForWriteRequests",
 			opts: []Option{
-				WithRetryIfFn(RetryIfForWriteRequestsFn),
+				WithRetryIfFn(RetryIfForWriteRequests),
 			},
 			wantErr: false,
 		},
 		{
-			name: "succeeds with RetryIfForReadRequestsFn",
+			name: "succeeds with RetryIfForReadRequests",
 			opts: []Option{
-				WithRetryIfFn(RetryIfForReadRequestsFn),
+				WithRetryIfFn(RetryIfForReadRequests),
 			},
 			wantErr: false,
 		},
@@ -74,7 +74,7 @@ func TestNew(t *testing.T) {
 	}
 }
 
-func Test_defaultRetryIfFn(t *testing.T) {
+func Test_defaultRetryIf(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -98,13 +98,13 @@ func Test_defaultRetryIfFn(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			got := defaultRetryIfFn(nil, tt.err)
+			got := defaultRetryIf(nil, tt.err)
 			require.Equal(t, tt.want, got)
 		})
 	}
 }
 
-func TestRetryIfForWriteRequestsFn(t *testing.T) {
+func TestRetryIfForWriteRequests(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -155,13 +155,13 @@ func TestRetryIfForWriteRequestsFn(t *testing.T) {
 				StatusCode: tt.status,
 				Body:       io.NopCloser(bytes.NewReader([]byte{})),
 			}
-			got := RetryIfForWriteRequestsFn(response, tt.err)
+			got := RetryIfForWriteRequests(response, tt.err)
 			require.Equal(t, tt.want, got)
 		})
 	}
 }
 
-func TestRetryIfForReadRequestsFn(t *testing.T) {
+func TestRetryIfForReadRequests(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -260,7 +260,7 @@ func TestRetryIfForReadRequestsFn(t *testing.T) {
 				StatusCode: tt.status,
 				Body:       io.NopCloser(bytes.NewReader([]byte{})),
 			}
-			got := RetryIfForReadRequestsFn(response, tt.err)
+			got := RetryIfForReadRequests(response, tt.err)
 			require.Equal(t, tt.want, got)
 		})
 	}
@@ -359,7 +359,7 @@ func TestHTTPRetrier_Do(t *testing.T) {
 			require.NoError(t, err)
 
 			opts := []Option{
-				WithRetryIfFn(RetryIfForReadRequestsFn),
+				WithRetryIfFn(RetryIfForReadRequests),
 				WithAttempts(4),
 				WithDelay(100 * time.Millisecond),
 				WithDelayFactor(1.2),

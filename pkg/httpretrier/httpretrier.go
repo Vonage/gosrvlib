@@ -56,7 +56,7 @@ func defaultHTTPRetrier() *HTTPRetrier {
 		delay:       DefaultDelay,
 		delayFactor: DefaultDelayFactor,
 		jitter:      DefaultJitter,
-		retryIfFn:   defaultRetryIfFn,
+		retryIfFn:   defaultRetryIf,
 		resetTimer:  make(chan time.Duration, 1),
 	}
 }
@@ -90,14 +90,14 @@ func (c *HTTPRetrier) Do(r *http.Request) (*http.Response, error) {
 	return c.doResponse, c.doError
 }
 
-// defaultRetryIfFn is the default function to check the retry condition.
-func defaultRetryIfFn(r *http.Response, err error) bool {
+// defaultRetryIf is the default function to check the retry condition.
+func defaultRetryIf(r *http.Response, err error) bool {
 	return err != nil
 }
 
-// RetryIfForWriteRequestsFn is a retry check function used for write requests
+// RetryIfForWriteRequests is a retry check function used for write requests
 // (e.g. PUT/PATCH/POST requests that can modify the remote state).
-func RetryIfForWriteRequestsFn(r *http.Response, err error) bool {
+func RetryIfForWriteRequests(r *http.Response, err error) bool {
 	if err != nil {
 		return true
 	}
@@ -113,9 +113,9 @@ func RetryIfForWriteRequestsFn(r *http.Response, err error) bool {
 	return false
 }
 
-// RetryIfForReadRequestsFn is a retry check function used for read requests
+// RetryIfForReadRequests is a retry check function used for read requests
 // (e.g. GET requests that are guaranteed to not modify the remote state).
-func RetryIfForReadRequestsFn(r *http.Response, err error) bool {
+func RetryIfForReadRequests(r *http.Response, err error) bool {
 	if err != nil {
 		return true
 	}
