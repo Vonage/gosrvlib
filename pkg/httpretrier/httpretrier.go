@@ -92,6 +92,30 @@ func (c *HTTPRetrier) Do(r *http.Request) (*http.Response, error) {
 
 // defaultRetryIfFn is the default function to check the retry condition.
 func defaultRetryIfFn(r *http.Response, err error) bool {
+	return err != nil
+}
+
+// RetryIfForWriteRequestsFn is a retry check function used for write requests
+// (e.g. PUT/PATCH/POST requests that can modify the remote state).
+func RetryIfForWriteRequestsFn(r *http.Response, err error) bool {
+	if err != nil {
+		return true
+	}
+
+	switch r.StatusCode {
+	case
+		http.StatusTooManyRequests,    // 429
+		http.StatusBadGateway,         // 502
+		http.StatusServiceUnavailable: // 503
+		return true
+	}
+
+	return false
+}
+
+// RetryIfForReadRequestsFn is a retry check function used for read requests
+// (e.g. GET requests that are guaranteed to not modify the remote state).
+func RetryIfForReadRequestsFn(r *http.Response, err error) bool {
 	if err != nil {
 		return true
 	}
