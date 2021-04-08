@@ -23,7 +23,11 @@ var (
 )
 
 const (
-	sqlGetLock     = "SELECT COALESCE(GET_LOCK(?, ?), -1)"
+	resLockError    = -1
+	resLockTimeout  = 0
+	resLockAcquired = 1
+
+	sqlGetLock     = "SELECT COALESCE(GET_LOCK(?, ?), ?)"
 	sqlReleaseLock = "DO RELEASE_LOCK(?)"
 )
 
@@ -44,10 +48,9 @@ func (l *MySQLLock) Acquire(ctx context.Context, key string, timeout time.Durati
 		return nil, fmt.Errorf("get db connection: %w", err)
 	}
 
-	row := conn.QueryRowContext(ctx, sqlGetLock, key, int(timeout.Seconds()))
+	row := conn.QueryRowContext(ctx, sqlGetLock, key, int(timeout.Seconds()), resLockError)
 
 	var res int
-
 	if err = row.Scan(&res); err != nil {
 		return nil, fmt.Errorf("scan acquire lock result: %w", err)
 	}
@@ -64,10 +67,10 @@ func (l *MySQLLock) Acquire(ctx context.Context, key string, timeout time.Durati
 	}
 
 	switch res {
-	case 0:
-		return nil, ErrTimeout
-	case 1:
+	case resLockAcquired:
 		return releaseFunc, nil
+	case resLockTimeout:
+		return nil, ErrTimeout
 	default:
 		return nil, ErrFailed
 	}

@@ -24,7 +24,7 @@ func TestDB_Acquire(t *testing.T) {
 			name: "success",
 			setupMocks: func(mock sqlmock.Sqlmock) {
 				mock.ExpectQuery(sqlGetLock).
-					WithArgs("key", 2).
+					WithArgs("key", 2, resLockError).
 					WillReturnRows(sqlmock.NewRows([]string{"result"}).AddRow(1))
 
 				mock.ExpectExec(sqlReleaseLock).
