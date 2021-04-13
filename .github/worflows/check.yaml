@@ -1,9 +1,6 @@
 name: check
 
-on:
-  push:
-    branches:
-      - ossapi-996-gh-actions
+on: push
 
 jobs:
   lint-action:
