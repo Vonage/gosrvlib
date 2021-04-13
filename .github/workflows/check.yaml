@@ -21,7 +21,7 @@ jobs:
         uses: actions/setup-go@v2
         with:
           go-version: ${{ env.GO_VERSION }}
-      - name: run golanci-lint
+      - name: run linter
         run: |
           GOPATH=$(go env GOPATH) make mod deps linter
 
@@ -54,7 +54,7 @@ jobs:
         uses: actions/setup-go@v2
         with:
           go-version: ${{ env.GO_VERSION }}
-      - name: run golanci-lint
+      - name: run linter
         run: |
           cd examples/service && make mod deps linter GOPATH=$(go env GOPATH)
 
@@ -94,7 +94,7 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
-      - name: run unit tests
+      - name: run integration tests
         run: |
           echo ${GITHUB_RUN_NUMBER} > RELEASE
           cd examples/service && make mod deps generate build docker dockertest GOPATH=$(go env GOPATH)
