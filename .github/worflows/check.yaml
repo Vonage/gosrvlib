@@ -1,0 +1,46 @@
+name: check
+
+on: push
+
+jobs:
+#  lint:
+#    runs-on: ubuntu-20.04
+#    steps:
+#      - name: checkout repository
+#        uses: actions/checkout@v2
+#      - name: configure environment
+#        uses: c-py/action-dotenv-to-setenv@v2
+#        with:
+#          env-file: .github/workflows/.env
+#      - name: setup go build environment
+#        uses: actions/setup-go@v2
+#        with:
+#          go-version: ${{ env.GO_VERSION }}
+#      - name: run golanci-lint
+#        uses: golangci/golangci-lint-action@v2
+#        with:
+#          version: ${{ env.GOLANGCI_LINT_VERSION }}
+
+  test:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v2
+      - name: configure environment
+        uses: c-py/action-dotenv-to-setenv@v2
+        with:
+          env-file: .github/workflows/.env
+      - name: setup go build environment
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ env.GO_VERSION }}
+      - name: dependency cache
+        uses: actions/cache@v2
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: run unit tests
+        run: |
+          make test
