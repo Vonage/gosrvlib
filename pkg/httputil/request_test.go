@@ -194,7 +194,7 @@ func TestQueryUintOrDefault(t *testing.T) {
 			wantResp: defaultVal,
 		},
 		{
-			name: "get defautl value because of negative input",
+			name: "get default value because of negative input",
 			args: args{
 				q:   url.Values{"test-key": []string{"-47629"}},
 				key: "test-key",
