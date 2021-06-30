@@ -67,7 +67,7 @@ func MapStringsToUint8(enum map[string]int, s []string) (v uint8, err error) {
 	}
 
 	if len(errStrings) > 0 {
-		err = fmt.Errorf("unknown string values: %v", errStrings)
+		err = fmt.Errorf("unknown string values: %q", errStrings)
 	}
 
 	return v, err
