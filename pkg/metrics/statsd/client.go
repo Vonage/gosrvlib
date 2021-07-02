@@ -3,10 +3,11 @@ package statsd
 import (
 	"fmt"
 	"net/http"
-	"net/http/httputil"
+	stdhttputil "net/http/httputil"
 	"strconv"
 	"time"
 
+	"github.com/nexmoinc/gosrvlib/pkg/httputil"
 	"github.com/tecnickcom/statsd/v2"
 )
 
@@ -88,15 +89,15 @@ func (c *Client) InstrumentHandler(path string, handler http.HandlerFunc) http.H
 		c.statsd.Increment(labelInboundPath + labelIn)
 		defer c.statsd.Increment(labelInboundPath + labelOut)
 
-		reqDump, _ := httputil.DumpRequest(r, true)
+		reqDump, _ := stdhttputil.DumpRequest(r, true)
 		reqSize := len(reqDump)
-		rw := &responseWriterSizer{ResponseWriter: w}
+		rw := httputil.NewResponseWriterWrapper(w)
 
 		defer func() {
-			labelStatus := labelInboundPath + strconv.Itoa(rw.status) + labelSeparator
+			labelStatus := labelInboundPath + strconv.Itoa(rw.Status()) + labelSeparator
 			c.statsd.Increment(labelStatus + labelCount)
 			c.statsd.Gauge(labelStatus+labelRequestSize, reqSize)
-			c.statsd.Gauge(labelStatus+labelResponseSize, rw.size)
+			c.statsd.Gauge(labelStatus+labelResponseSize, rw.Size())
 			t.Send(labelStatus + labelTime)
 		}()
 
@@ -147,28 +148,6 @@ func (c *Client) IncErrorCounter(task, operation, code string) {
 func (c *Client) Close() error {
 	c.statsd.Close()
 	return nil
-}
-
-type responseWriterSizer struct {
-	http.ResponseWriter
-	size   int
-	status int
-}
-
-func (c *responseWriterSizer) Header() http.Header {
-	return c.ResponseWriter.Header()
-}
-
-func (c *responseWriterSizer) Write(b []byte) (int, error) {
-	n, err := c.ResponseWriter.Write(b)
-	c.size += n
-
-	return n, err // nolint:wrapcheck
-}
-
-func (c *responseWriterSizer) WriteHeader(code int) {
-	c.status = code
-	c.ResponseWriter.WriteHeader(code)
 }
 
 type roundTripperFunc func(req *http.Request) (*http.Response, error)

@@ -7,59 +7,59 @@ import (
 	"net/http"
 )
 
-// NewWrapResponseWriter wraps an http.ResponseWriter with an enhanced proxy.
-func NewWrapResponseWriter(w http.ResponseWriter) WrapResponseWriter {
-	return &wrapResponseWriter{ResponseWriter: w}
+// NewResponseWriterWrapper wraps an http.ResponseWriter with an enhanced proxy.
+func NewResponseWriterWrapper(w http.ResponseWriter) ResponseWriterWrapper {
+	return &responseWriterWrapper{ResponseWriter: w}
 }
 
-// WrapResponseWriter is the interface defining the extendend functions of the proxy.
-type WrapResponseWriter interface {
+// ResponseWriterWrapper is the interface defining the extendend functions of the proxy.
+type ResponseWriterWrapper interface {
 	http.ResponseWriter
 
-	// StatusCode returns the HTTP status of the request.
-	StatusCode() int
+	// Size returns the total number of bytes sent to the client.
+	Size() int
 
-	// BytesCount returns the total number of bytes sent to the client.
-	BytesCount() int
+	// Status returns the HTTP status of the request.
+	Status() int
 
 	// Tee sets a writer that will contain a copy of the bytes written to the response writer.
 	Tee(io.Writer)
 }
 
-type wrapResponseWriter struct {
+type responseWriterWrapper struct {
 	http.ResponseWriter
-	bytesCount    int
 	headerWritten bool
-	statusCode    int
+	size          int
+	status        int
 	tee           io.Writer
 }
 
-func (b *wrapResponseWriter) BytesCount() int {
-	return b.bytesCount
+func (b *responseWriterWrapper) Size() int {
+	return b.size
 }
 
-func (b *wrapResponseWriter) Flush() {
+func (b *responseWriterWrapper) Flush() {
 	b.headerWritten = true
 	fl := b.ResponseWriter.(http.Flusher)
 	fl.Flush()
 }
 
 // nolint:wrapcheck
-func (b *wrapResponseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+func (b *responseWriterWrapper) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 	hj := b.ResponseWriter.(http.Hijacker)
 	return hj.Hijack()
 }
 
 // nolint:wrapcheck
-func (b *wrapResponseWriter) Push(target string, opts *http.PushOptions) error {
+func (b *responseWriterWrapper) Push(target string, opts *http.PushOptions) error {
 	return b.ResponseWriter.(http.Pusher).Push(target, opts)
 }
 
 // nolint:wrapcheck
-func (b *wrapResponseWriter) ReadFrom(r io.Reader) (int64, error) {
+func (b *responseWriterWrapper) ReadFrom(r io.Reader) (int64, error) {
 	if b.tee != nil {
 		n, err := io.Copy(b, r)
-		b.bytesCount += int(n)
+		b.size += int(n)
 
 		return n, err
 	}
@@ -70,20 +70,20 @@ func (b *wrapResponseWriter) ReadFrom(r io.Reader) (int64, error) {
 
 	n, err := rf.ReadFrom(r)
 
-	b.bytesCount += int(n)
+	b.size += int(n)
 
 	return n, err
 }
 
-func (b *wrapResponseWriter) StatusCode() int {
-	return b.statusCode
+func (b *responseWriterWrapper) Status() int {
+	return b.status
 }
 
-func (b *wrapResponseWriter) Tee(w io.Writer) {
+func (b *responseWriterWrapper) Tee(w io.Writer) {
 	b.tee = w
 }
 
-func (b *wrapResponseWriter) Write(buf []byte) (int, error) {
+func (b *responseWriterWrapper) Write(buf []byte) (int, error) {
 	b.maybeWriteHeader()
 	n, err := b.ResponseWriter.Write(buf)
 
@@ -95,20 +95,20 @@ func (b *wrapResponseWriter) Write(buf []byte) (int, error) {
 		}
 	}
 
-	b.bytesCount += n
+	b.size += n
 
 	return n, err
 }
 
-func (b *wrapResponseWriter) WriteHeader(code int) {
+func (b *responseWriterWrapper) WriteHeader(code int) {
 	if !b.headerWritten {
-		b.statusCode = code
+		b.status = code
 		b.headerWritten = true
 		b.ResponseWriter.WriteHeader(code)
 	}
 }
 
-func (b *wrapResponseWriter) maybeWriteHeader() {
+func (b *responseWriterWrapper) maybeWriteHeader() {
 	if !b.headerWritten {
 		b.WriteHeader(http.StatusOK)
 	}
