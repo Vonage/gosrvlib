@@ -3,11 +3,11 @@ package statsd
 import (
 	"fmt"
 	"net/http"
-	stdhttputil "net/http/httputil"
+	"net/http/httputil"
 	"strconv"
 	"time"
 
-	"github.com/nexmoinc/gosrvlib/pkg/httputil"
+	libhttputil "github.com/nexmoinc/gosrvlib/pkg/httputil"
 	"github.com/tecnickcom/statsd/v2"
 )
 
@@ -89,9 +89,9 @@ func (c *Client) InstrumentHandler(path string, handler http.HandlerFunc) http.H
 		c.statsd.Increment(labelInboundPath + labelIn)
 		defer c.statsd.Increment(labelInboundPath + labelOut)
 
-		reqDump, _ := stdhttputil.DumpRequest(r, true)
+		reqDump, _ := httputil.DumpRequest(r, true)
 		reqSize := len(reqDump)
-		rw := httputil.NewResponseWriterWrapper(w)
+		rw := libhttputil.NewResponseWriterWrapper(w)
 
 		defer func() {
 			labelStatus := labelInboundPath + strconv.Itoa(rw.Status()) + labelSeparator
