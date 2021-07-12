@@ -66,11 +66,11 @@ func (c *config) validate() error {
 	}
 
 	if c.connMaxIdleTime < 1*time.Second {
-		return fmt.Errorf("database connect retry interval must be greater than 1s")
+		return fmt.Errorf("database connect retry interval must be at least 1 second")
 	}
 
 	if c.connMaxLifetime < 1*time.Second {
-		return fmt.Errorf("database connection max lifetime must be greater than 1s")
+		return fmt.Errorf("database connection max lifetime must be at least 1 second")
 	}
 
 	if c.connMaxOpenCount < 1 {
