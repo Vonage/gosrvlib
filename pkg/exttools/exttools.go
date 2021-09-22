@@ -1,9 +1,9 @@
-//go:build gotools
+//go:build exttools
 
-// Package gotools lists external build and test tools.
+// Package exttools lists external build and test tools.
 // These tools will appear in the `go.mod` file, but will not be a part of the build.
-// They will be also excluded from the binaries as the "gotools" tag is not used.
-package gotools
+// They will be also excluded from the binaries as the "exttools" tag is not used.
+package exttools
 
 import (
 	_ "github.com/golang/mock/mockgen"
