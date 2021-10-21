@@ -35,7 +35,7 @@ type Default struct{}
 
 // InstrumentDB wraps a sql.DB to collect metrics.
 func (c *Default) InstrumentDB(dbName string, db *sql.DB) {
-
+	// not implemented
 }
 
 // InstrumentHandler returns the input handler.
