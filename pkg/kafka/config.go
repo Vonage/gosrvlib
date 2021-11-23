@@ -5,18 +5,18 @@ import (
 )
 
 const (
-	defaultTimeout               = 5 * time.Second // default timeout
+	defaultTimeout               = 5 * time.Second // default timeoutMs
 	defaultAutoOffsetResetPolicy = "earliest"
 )
 
 func defaultConfig() *config {
 	return &config{
-		timeout:               defaultTimeout,
+		timeoutMs:             defaultTimeout.Milliseconds(),
 		autoOffsetResetPolicy: defaultAutoOffsetResetPolicy,
 	}
 }
 
 type config struct {
-	timeout               time.Duration
+	timeoutMs             int64
 	autoOffsetResetPolicy string
 }

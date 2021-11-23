@@ -20,10 +20,10 @@ func NewConsumer(urls, topics []string, groupId string, opts ...Option) (*Consum
 	}
 
 	consumer, err := kafka.NewConsumer(&kafka.ConfigMap{
-		"bootstrap.servers":  strings.Join(urls, ","),
-		"group.id":           groupId,
-		"auto.offset.reset":  cfg.autoOffsetResetPolicy,
-		"session.timeout.ms": cfg.timeout,
+		"bootstrap.servers":    strings.Join(urls, ","),
+		"group.id":             groupId,
+		"auto.offset.reset":    cfg.autoOffsetResetPolicy,
+		"session.timeoutMs.ms": cfg.timeoutMs,
 	})
 	if err != nil {
 		return nil, err

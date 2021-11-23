@@ -7,10 +7,10 @@ import (
 // Option is a type alias for a function that configures Kafka client.
 type Option func(*config)
 
-// WithTimeout sets the timeout.
+// WithTimeout sets the timeoutMs.
 func WithTimeout(t time.Duration) Option {
 	return func(cfg *config) {
-		cfg.timeout = t
+		cfg.timeoutMs = t.Milliseconds()
 	}
 }
 
