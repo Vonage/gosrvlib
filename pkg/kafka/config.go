@@ -6,7 +6,15 @@ import (
 
 const (
 	defaultTimeout               = 6 * time.Second // default timeout
-	defaultAutoOffsetResetPolicy = "earliest"
+	defaultAutoOffsetResetPolicy = OffsetEarliest
+)
+
+type Offset string
+
+const (
+	OffsetLatest   Offset = "latest"
+	OffsetEarliest Offset = "earliest"
+	OffsetNone     Offset = "none"
 )
 
 func defaultConfig() *config {
@@ -18,5 +26,5 @@ func defaultConfig() *config {
 
 type config struct {
 	timeout               time.Duration
-	autoOffsetResetPolicy string
+	autoOffsetResetPolicy Offset
 }

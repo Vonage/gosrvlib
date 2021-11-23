@@ -15,7 +15,7 @@ func WithTimeout(t time.Duration) Option {
 }
 
 // WithAutoOffsetResetPolicy sets respective parameter.
-func WithAutoOffsetResetPolicy(p string) Option {
+func WithAutoOffsetResetPolicy(p Offset) Option {
 	return func(cfg *config) {
 		cfg.autoOffsetResetPolicy = p
 	}
