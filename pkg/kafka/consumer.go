@@ -1,6 +1,7 @@
 package kafka
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
@@ -20,10 +21,10 @@ func NewConsumer(urls, topics []string, groupId string, opts ...Option) (*Consum
 	}
 
 	consumer, err := kafka.NewConsumer(&kafka.ConfigMap{
-		"bootstrap.servers":    strings.Join(urls, ","),
-		"group.id":             groupId,
-		"auto.offset.reset":    cfg.autoOffsetResetPolicy,
-		"session.timeoutMs.ms": cfg.timeoutMs,
+		"bootstrap.servers":  strings.Join(urls, ","),
+		"group.id":           groupId,
+		"auto.offset.reset":  cfg.autoOffsetResetPolicy,
+		"session.timeout.ms": fmt.Sprintf("%d", cfg.timeout.Milliseconds()),
 	})
 	if err != nil {
 		return nil, err
@@ -37,6 +38,10 @@ func NewConsumer(urls, topics []string, groupId string, opts ...Option) (*Consum
 		cfg:    cfg,
 		client: consumer,
 	}, nil
+}
+
+func (c *Consumer) Close() error {
+	return c.client.Close()
 }
 
 // ReadMessage reads one message from the Kafka; is blocked if no messages in the queue.
