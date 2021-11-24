@@ -1,12 +1,12 @@
 package kafka
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 )
 
+// Consumer represents a wrapper around kafka.Consumer.
 type Consumer struct {
 	cfg    *config
 	client *kafka.Consumer
@@ -24,7 +24,7 @@ func NewConsumer(urls, topics []string, groupId string, opts ...Option) (*Consum
 		"bootstrap.servers":  strings.Join(urls, ","),
 		"group.id":           groupId,
 		"auto.offset.reset":  string(cfg.autoOffsetResetPolicy),
-		"session.timeout.ms": fmt.Sprintf("%d", cfg.timeout.Milliseconds()),
+		"session.timeout.ms": int(cfg.timeout.Milliseconds()),
 	})
 	if err != nil {
 		return nil, err
@@ -40,6 +40,7 @@ func NewConsumer(urls, topics []string, groupId string, opts ...Option) (*Consum
 	}, nil
 }
 
+// Close cleans up Consumer's internal resources.
 func (c *Consumer) Close() error {
 	return c.client.Close()
 }
