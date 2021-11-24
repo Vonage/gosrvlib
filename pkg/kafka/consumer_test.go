@@ -10,7 +10,8 @@ import (
 func TestConsumer(t *testing.T) {
 	t.Parallel()
 
-	testCases := map[string]struct {
+	testCases := []struct {
+		name                          string
 		urls                          []string
 		topics                        []string
 		groupID                       string
@@ -19,7 +20,8 @@ func TestConsumer(t *testing.T) {
 		expectedAutoOffsetResetPolicy Offset
 		expectErr                     bool
 	}{
-		"success": {
+		{
+			name:    "success",
 			urls:    []string{"url1", "url2"},
 			topics:  []string{"topic1", "topic2"},
 			groupID: "one",
@@ -30,7 +32,8 @@ func TestConsumer(t *testing.T) {
 			expectedTimeout:               time.Second * 10,
 			expectedAutoOffsetResetPolicy: OffsetLatest,
 		},
-		"bad offset": {
+		{
+			name:    "bad offset",
 			urls:    []string{"url1", "url2"},
 			topics:  []string{"topic1", "topic2"},
 			groupID: "one",
@@ -39,7 +42,8 @@ func TestConsumer(t *testing.T) {
 			},
 			expectErr: true,
 		},
-		"empty topics": {
+		{
+			name:      "empty topics",
 			urls:      []string{"url1", "url2"},
 			topics:    nil,
 			groupID:   "one",
@@ -47,10 +51,10 @@ func TestConsumer(t *testing.T) {
 		},
 	}
 
-	for name, tt := range testCases {
+	for _, tt := range testCases {
 		tt := tt
 
-		t.Run(name, func(t *testing.T) {
+		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
 			consumer, err := NewConsumer(tt.urls, tt.topics, tt.groupID, tt.options...)
