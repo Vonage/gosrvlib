@@ -20,3 +20,10 @@ func WithAutoOffsetResetPolicy(p Offset) Option {
 		cfg.autoOffsetResetPolicy = p
 	}
 }
+
+// WithProduceChannelSize sets respective parameter.
+func WithProduceChannelSize(size int) Option {
+	return func(cfg *config) {
+		cfg.produceChannelSize = size
+	}
+}

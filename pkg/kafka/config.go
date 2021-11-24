@@ -14,16 +14,19 @@ const (
 
 	defaultTimeout               = 6 * time.Second
 	defaultAutoOffsetResetPolicy = OffsetEarliest
+	defaultProduceChannelSize    = 10_000
 )
 
 type config struct {
 	timeout               time.Duration
 	autoOffsetResetPolicy Offset
+	produceChannelSize    int
 }
 
 func defaultConfig() *config {
 	return &config{
 		timeout:               defaultTimeout,
 		autoOffsetResetPolicy: defaultAutoOffsetResetPolicy,
+		produceChannelSize:    defaultProduceChannelSize,
 	}
 }

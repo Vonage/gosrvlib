@@ -21,8 +21,9 @@ func NewProducer(urls []string, opts ...Option) (*Producer, error) {
 	}
 
 	producer, err := kafka.NewProducer(&kafka.ConfigMap{
-		"bootstrap.servers":   strings.Join(urls, ","),
-		"delivery.timeout.ms": int(cfg.timeout.Milliseconds()),
+		"bootstrap.servers":       strings.Join(urls, ","),
+		"delivery.timeout.ms":     int(cfg.timeout.Milliseconds()),
+		"go.produce.channel.size": cfg.produceChannelSize,
 	})
 	if err != nil {
 		return nil, err
