@@ -8,6 +8,8 @@ import (
 )
 
 func TestProducer(t *testing.T) {
+	t.Parallel()
+
 	var (
 		expectedTimeout            = time.Second * 10
 		expectedProduceChannelSize = 1_000

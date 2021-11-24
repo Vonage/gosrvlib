@@ -14,7 +14,7 @@ type Consumer struct {
 }
 
 // NewConsumer creates a new instance of Consumer.
-func NewConsumer(urls, topics []string, groupId string, opts ...Option) (*Consumer, error) {
+func NewConsumer(urls, topics []string, groupID string, opts ...Option) (*Consumer, error) {
 	cfg := defaultConfig()
 
 	for _, applyOpt := range opts {
@@ -23,7 +23,7 @@ func NewConsumer(urls, topics []string, groupId string, opts ...Option) (*Consum
 
 	consumer, err := kafka.NewConsumer(&kafka.ConfigMap{
 		"bootstrap.servers":  strings.Join(urls, ","),
-		"group.id":           groupId,
+		"group.id":           groupID,
 		"auto.offset.reset":  string(cfg.autoOffsetResetPolicy),
 		"session.timeout.ms": int(cfg.timeout.Milliseconds()),
 	})

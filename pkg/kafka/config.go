@@ -8,9 +8,12 @@ import (
 type Offset string
 
 const (
-	OffsetLatest   Offset = "latest"
+	// OffsetLatest automatically reset the offset to the latest offset.
+	OffsetLatest Offset = "latest"
+	// OffsetEarliest automatically reset the offset to the earliest offset.
 	OffsetEarliest Offset = "earliest"
-	OffsetNone     Offset = "none"
+	// OffsetNone throw an error to the consumer if no previous offset is found for the consumer's group.
+	OffsetNone Offset = "none"
 
 	defaultTimeout               = 6 * time.Second
 	defaultAutoOffsetResetPolicy = OffsetEarliest

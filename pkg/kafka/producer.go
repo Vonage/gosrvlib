@@ -1,6 +1,7 @@
 package kafka
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
@@ -26,7 +27,7 @@ func NewProducer(urls []string, opts ...Option) (*Producer, error) {
 		"go.produce.channel.size": cfg.produceChannelSize,
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create new kafka producer: %w", err)
 	}
 
 	return &Producer{
@@ -42,7 +43,7 @@ func (p *Producer) Close() {
 
 // ProduceMessage sends a message to Kafka topic.
 func (p *Producer) ProduceMessage(topic string, msg []byte) error {
-	return p.client.Produce(
+	err := p.client.Produce(
 		&kafka.Message{
 			TopicPartition: kafka.TopicPartition{
 				Topic:     &topic,
@@ -52,4 +53,9 @@ func (p *Producer) ProduceMessage(topic string, msg []byte) error {
 		},
 		nil,
 	)
+	if err != nil {
+		return fmt.Errorf("failed to create new kafka consumer: %w", err)
+	}
+
+	return nil
 }
