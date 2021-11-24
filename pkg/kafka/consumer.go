@@ -1,6 +1,7 @@
 package kafka
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
@@ -27,11 +28,11 @@ func NewConsumer(urls, topics []string, groupId string, opts ...Option) (*Consum
 		"session.timeout.ms": int(cfg.timeout.Milliseconds()),
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create new kafka consumer: %w", err)
 	}
 
 	if err := consumer.SubscribeTopics(topics, nil); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to subscribe kafka topic: %w", err)
 	}
 
 	return &Consumer{
@@ -42,14 +43,15 @@ func NewConsumer(urls, topics []string, groupId string, opts ...Option) (*Consum
 
 // Close cleans up Consumer's internal resources.
 func (c *Consumer) Close() error {
-	return c.client.Close()
+	return c.client.Close() // nolint: wrapcheck
 }
 
 // ReadMessage reads one message from the Kafka; is blocked if no messages in the queue.
 func (c *Consumer) ReadMessage() ([]byte, error) {
 	msg, err := c.client.ReadMessage(-1)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to read kafka message: %w", err)
 	}
+
 	return msg.Value, nil
 }
