@@ -31,6 +31,7 @@ func TestConsumer(t *testing.T) {
 			},
 			expectedTimeout:               time.Second * 10,
 			expectedAutoOffsetResetPolicy: OffsetLatest,
+			expectErr:                     false,
 		},
 		{
 			name:    "bad offset",
@@ -62,10 +63,17 @@ func TestConsumer(t *testing.T) {
 			if tt.expectErr {
 				require.Error(t, err)
 			} else {
-				require.NotNil(t, consumer)
 				require.Nil(t, err)
-				require.Equal(t, tt.expectedTimeout, consumer.cfg.timeout)
-				require.Equal(t, tt.expectedAutoOffsetResetPolicy, consumer.cfg.autoOffsetResetPolicy)
+				require.NotNil(t, consumer, "consumer is nil")
+
+				timeout, err := consumer.cfg.ConfigMap.Get("session.timeout.ms", 0)
+				require.Nil(t, err)
+				require.Equal(t, int(tt.expectedTimeout.Milliseconds()), timeout)
+
+				offset, err := consumer.cfg.ConfigMap.Get("auto.offset.reset", string(OffsetNone))
+				require.Nil(t, err)
+				require.Equal(t, string(tt.expectedAutoOffsetResetPolicy), offset)
+
 				require.Nil(t, consumer.Close())
 			}
 		})

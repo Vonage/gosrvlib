@@ -2,6 +2,8 @@ package kafka
 
 import (
 	"time"
+
+	"github.com/confluentinc/confluent-kafka-go/kafka"
 )
 
 // Offset points to where Kafka should start to read messages from.
@@ -14,22 +16,17 @@ const (
 	OffsetEarliest Offset = "earliest"
 	// OffsetNone throw an error to the consumer if no previous offset is found for the consumer's group.
 	OffsetNone Offset = "none"
-
-	defaultTimeout               = 6 * time.Second
-	defaultAutoOffsetResetPolicy = OffsetEarliest
-	defaultProduceChannelSize    = 10_000
 )
 
 type config struct {
-	timeout               time.Duration
-	autoOffsetResetPolicy Offset
-	produceChannelSize    int
+	*kafka.ConfigMap
 }
 
 func defaultConfig() *config {
 	return &config{
-		timeout:               defaultTimeout,
-		autoOffsetResetPolicy: defaultAutoOffsetResetPolicy,
-		produceChannelSize:    defaultProduceChannelSize,
+		&kafka.ConfigMap{
+			"auto.offset.reset":  string(OffsetEarliest),
+			"session.timeout.ms": int((6 * time.Second).Milliseconds()),
+		},
 	}
 }

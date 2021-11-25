@@ -28,6 +28,18 @@ func TestProducer(t *testing.T) {
 			expectedTimeout:            time.Second * 10,
 			expectedProduceChannelSize: 1_000,
 		},
+		{
+			name: "bad param",
+			urls: []string{"url1", "url2"},
+			options: []Option{
+				WithTimeout(time.Second * 10),
+				WithProduceChannelSize(1_000),
+				WithConfigParameter("badkey", 99),
+			},
+			expectedTimeout:            time.Second * 10,
+			expectedProduceChannelSize: 1_000,
+			expectErr:                  true,
+		},
 	}
 
 	for _, tt := range testCases {
@@ -43,8 +55,15 @@ func TestProducer(t *testing.T) {
 			} else {
 				require.NotNil(t, producer)
 				require.Nil(t, err)
-				require.Equal(t, tt.expectedTimeout, producer.cfg.timeout)
-				require.Equal(t, tt.expectedProduceChannelSize, producer.cfg.produceChannelSize)
+
+				timeout, err := producer.cfg.ConfigMap.Get("session.timeout.ms", 0)
+				require.Nil(t, err)
+				require.Equal(t, int(tt.expectedTimeout.Milliseconds()), timeout)
+
+				offset, err := producer.cfg.ConfigMap.Get("go.produce.channel.size", 0)
+				require.Nil(t, err)
+				require.Equal(t, tt.expectedProduceChannelSize, offset)
+
 				producer.Close()
 			}
 		})

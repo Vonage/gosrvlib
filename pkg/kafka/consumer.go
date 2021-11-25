@@ -21,12 +21,10 @@ func NewConsumer(urls, topics []string, groupID string, opts ...Option) (*Consum
 		applyOpt(cfg)
 	}
 
-	consumer, err := kafka.NewConsumer(&kafka.ConfigMap{
-		"bootstrap.servers":  strings.Join(urls, ","),
-		"group.id":           groupID,
-		"auto.offset.reset":  string(cfg.autoOffsetResetPolicy),
-		"session.timeout.ms": int(cfg.timeout.Milliseconds()),
-	})
+	_ = cfg.ConfigMap.SetKey("bootstrap.servers", strings.Join(urls, ","))
+	_ = cfg.ConfigMap.SetKey("group.id", groupID)
+
+	consumer, err := kafka.NewConsumer(cfg.ConfigMap)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create new kafka consumer: %w", err)
 	}
@@ -35,10 +33,7 @@ func NewConsumer(urls, topics []string, groupID string, opts ...Option) (*Consum
 		return nil, fmt.Errorf("failed to subscribe kafka topic: %w", err)
 	}
 
-	return &Consumer{
-		cfg:    cfg,
-		client: consumer,
-	}, nil
+	return &Consumer{cfg: cfg, client: consumer}, nil
 }
 
 // Close cleans up Consumer's internal resources.
@@ -53,5 +48,5 @@ func (c *Consumer) ReadMessage() ([]byte, error) {
 		return nil, fmt.Errorf("failed to read kafka message: %w", err)
 	}
 
-	return msg.Value, nil
+	return msg.Value, err
 }
