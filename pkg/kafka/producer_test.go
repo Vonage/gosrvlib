@@ -23,7 +23,7 @@ func TestProducer(t *testing.T) {
 			name: "success",
 			urls: []string{"url1", "url2"},
 			options: []Option{
-				WithTimeout(time.Second * 10),
+				WithSessionTimeout(time.Second * 10),
 				WithProduceChannelSize(1_000),
 			},
 			expectedTimeout:            time.Second * 10,
@@ -33,7 +33,7 @@ func TestProducer(t *testing.T) {
 			name: "bad param",
 			urls: []string{"url1", "url2"},
 			options: []Option{
-				WithTimeout(time.Second * 10),
+				WithSessionTimeout(time.Second * 10),
 				WithProduceChannelSize(1_000),
 				WithConfigParameter("badkey", 99),
 			},

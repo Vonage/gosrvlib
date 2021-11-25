@@ -27,7 +27,7 @@ func TestConsumer(t *testing.T) {
 			topics:  []string{"topic1", "topic2"},
 			groupID: "one",
 			options: []Option{
-				WithTimeout(time.Second * 10),
+				WithSessionTimeout(time.Second * 10),
 				WithAutoOffsetResetPolicy(OffsetLatest),
 			},
 			expectedTimeout:               time.Second * 10,
