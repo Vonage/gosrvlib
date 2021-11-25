@@ -7,10 +7,15 @@ import (
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 )
 
+type producerClient interface {
+	Produce(msg *kafka.Message, deliveryChan chan kafka.Event) error
+	Close()
+}
+
 // Producer represents a wrapper around kafka.Producer.
 type Producer struct {
 	cfg    *config
-	client *kafka.Producer
+	client producerClient
 }
 
 // NewProducer creates a new instance of Producer.
@@ -38,8 +43,7 @@ func (p *Producer) Close() {
 
 // ProduceMessage sends a message to Kafka topic.
 func (p *Producer) ProduceMessage(topic string, msg []byte) error {
-	// nolint: wrapcheck
-	return p.client.Produce(
+	err := p.client.Produce(
 		&kafka.Message{
 			TopicPartition: kafka.TopicPartition{
 				Topic:     &topic,
@@ -49,4 +53,9 @@ func (p *Producer) ProduceMessage(topic string, msg []byte) error {
 		},
 		nil,
 	)
+	if err != nil {
+		return fmt.Errorf("failed to send a kafka message: %w", err)
+	}
+
+	return nil
 }

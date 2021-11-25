@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/stretchr/testify/require"
 )
 
@@ -70,12 +71,24 @@ func TestProducer(t *testing.T) {
 	}
 }
 
+type mockProducerClient struct{}
+
+func (m mockProducerClient) Produce(_ *kafka.Message, _ chan kafka.Event) error {
+	return nil
+}
+
+func (m mockProducerClient) Close() {}
+
 func TestProduceMessageError(t *testing.T) {
 	t.Parallel()
 
-	consumer, err := NewProducer([]string{"url"})
+	producer, err := NewProducer([]string{"url"})
 	require.Nil(t, err, "NewProducer() unexpected error = %v", err)
 
-	err = consumer.ProduceMessage("", nil)
+	err = producer.ProduceMessage("", nil)
 	require.Error(t, err)
+
+	producer.client = mockProducerClient{}
+	err = producer.ProduceMessage("", nil)
+	require.NoError(t, err)
 }

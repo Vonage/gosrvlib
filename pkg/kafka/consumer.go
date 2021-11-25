@@ -3,14 +3,20 @@ package kafka
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 )
 
+type consumerClient interface {
+	ReadMessage(duration time.Duration) (*kafka.Message, error)
+	Close() error
+}
+
 // Consumer represents a wrapper around kafka.Consumer.
 type Consumer struct {
 	cfg    *config
-	client *kafka.Consumer
+	client consumerClient
 }
 
 // NewConsumer creates a new instance of Consumer.
@@ -26,7 +32,7 @@ func NewConsumer(urls, topics []string, groupID string, opts ...Option) (*Consum
 
 	consumer, err := kafka.NewConsumer(cfg.ConfigMap)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create new kafka consumer: %w", err)
+		return nil, fmt.Errorf("failed to create new kafka consumerClient: %w", err)
 	}
 
 	if err := consumer.SubscribeTopics(topics, nil); err != nil {
@@ -48,5 +54,5 @@ func (c *Consumer) ReadMessage() ([]byte, error) {
 		return nil, fmt.Errorf("failed to read kafka message: %w", err)
 	}
 
-	return msg.Value, err // nolint: wrapcheck
+	return msg.Value, nil
 }

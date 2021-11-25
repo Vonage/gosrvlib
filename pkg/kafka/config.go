@@ -14,7 +14,7 @@ const (
 	OffsetLatest Offset = "latest"
 	// OffsetEarliest automatically reset the offset to the earliest offset.
 	OffsetEarliest Offset = "earliest"
-	// OffsetNone throw an error to the consumer if no previous offset is found for the consumer's group.
+	// OffsetNone throw an error to the consumerClient if no previous offset is found for the consumerClient's group.
 	OffsetNone Offset = "none"
 )
 

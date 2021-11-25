@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/stretchr/testify/require"
 )
 
@@ -64,7 +65,7 @@ func TestConsumer(t *testing.T) {
 				require.Error(t, err)
 			} else {
 				require.Nil(t, err)
-				require.NotNil(t, consumer, "consumer is nil")
+				require.NotNil(t, consumer, "consumerClient is nil")
 
 				timeout, err := consumer.cfg.ConfigMap.Get("session.timeout.ms", 0)
 				require.Nil(t, err)
@@ -80,6 +81,16 @@ func TestConsumer(t *testing.T) {
 	}
 }
 
+type mockConsumerClient struct{}
+
+func (m mockConsumerClient) ReadMessage(_ time.Duration) (*kafka.Message, error) {
+	return &kafka.Message{Value: []byte{1}}, nil
+}
+
+func (m mockConsumerClient) Close() error {
+	return nil
+}
+
 func TestConsumerReadMessage(t *testing.T) {
 	t.Parallel()
 
@@ -93,4 +104,9 @@ func TestConsumerReadMessage(t *testing.T) {
 	msg, err := consumer.ReadMessage()
 	require.Error(t, err)
 	require.Nil(t, msg)
+
+	consumer.client = mockConsumerClient{}
+	msg, err = consumer.ReadMessage()
+	require.NoError(t, err)
+	require.NotNil(t, msg)
 }
