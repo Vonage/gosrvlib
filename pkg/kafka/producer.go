@@ -54,7 +54,7 @@ func (p *Producer) ProduceMessage(topic string, msg []byte) error {
 		nil,
 	)
 	if err != nil {
-		return fmt.Errorf("failed to create new kafka consumer: %w", err)
+		return fmt.Errorf("failed to send kafka message: %w", err)
 	}
 
 	return nil
