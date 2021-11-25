@@ -48,5 +48,5 @@ func (c *Consumer) ReadMessage() ([]byte, error) {
 		return nil, fmt.Errorf("failed to read kafka message: %w", err)
 	}
 
-	return msg.Value, err
+	return msg.Value, err // nolint: wrapcheck
 }

@@ -38,6 +38,7 @@ func (p *Producer) Close() {
 
 // ProduceMessage sends a message to Kafka topic.
 func (p *Producer) ProduceMessage(topic string, msg []byte) error {
+	// nolint: wrapcheck
 	return p.client.Produce(
 		&kafka.Message{
 			TopicPartition: kafka.TopicPartition{
