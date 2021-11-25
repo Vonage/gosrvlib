@@ -27,7 +27,7 @@ type Option func(*config)
 // * producer: https://docs.confluent.io/platform/current/installation/configuration/producer-configs.html
 func WithConfigParameter(key string, val kafka.ConfigValue) Option {
 	return func(c *config) {
-		_ = c.ConfigMap.SetKey(key, val) // it never returns an error
+		_ = c.configMap.SetKey(key, val) // it never returns an error
 	}
 }
 

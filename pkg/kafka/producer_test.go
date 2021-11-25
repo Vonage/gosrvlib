@@ -57,11 +57,11 @@ func TestProducer(t *testing.T) {
 				require.NotNil(t, producer)
 				require.Nil(t, err)
 
-				timeout, err := producer.cfg.ConfigMap.Get("session.timeout.ms", 0)
+				timeout, err := producer.cfg.configMap.Get("session.timeout.ms", 0)
 				require.Nil(t, err)
 				require.Equal(t, int(tt.expectedTimeout.Milliseconds()), timeout)
 
-				offset, err := producer.cfg.ConfigMap.Get("go.produce.channel.size", 0)
+				offset, err := producer.cfg.configMap.Get("go.produce.channel.size", 0)
 				require.Nil(t, err)
 				require.Equal(t, tt.expectedProduceChannelSize, offset)
 

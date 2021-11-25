@@ -26,9 +26,9 @@ func NewProducer(urls []string, opts ...Option) (*Producer, error) {
 		applyOpt(cfg)
 	}
 
-	_ = cfg.ConfigMap.SetKey("bootstrap.servers", strings.Join(urls, ","))
+	_ = cfg.configMap.SetKey("bootstrap.servers", strings.Join(urls, ","))
 
-	producer, err := kafka.NewProducer(cfg.ConfigMap)
+	producer, err := kafka.NewProducer(cfg.configMap)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create new kafka producer: %w", err)
 	}

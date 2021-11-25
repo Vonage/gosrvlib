@@ -5,11 +5,11 @@ import (
 )
 
 type config struct {
-	*kafka.ConfigMap
+	configMap *kafka.ConfigMap
 }
 
 func defaultConfig() *config {
 	return &config{
-		&kafka.ConfigMap{},
+		configMap: &kafka.ConfigMap{},
 	}
 }

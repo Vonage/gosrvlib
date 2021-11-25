@@ -27,10 +27,10 @@ func NewConsumer(urls, topics []string, groupID string, opts ...Option) (*Consum
 		applyOpt(cfg)
 	}
 
-	_ = cfg.ConfigMap.SetKey("bootstrap.servers", strings.Join(urls, ","))
-	_ = cfg.ConfigMap.SetKey("group.id", groupID)
+	_ = cfg.configMap.SetKey("bootstrap.servers", strings.Join(urls, ","))
+	_ = cfg.configMap.SetKey("group.id", groupID)
 
-	consumer, err := kafka.NewConsumer(cfg.ConfigMap)
+	consumer, err := kafka.NewConsumer(cfg.configMap)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create new kafka consumerClient: %w", err)
 	}
