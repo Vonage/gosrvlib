@@ -9,10 +9,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_loadTableEnumCache(t *testing.T) {
+func TestNew(t *testing.T) {
 	t.Parallel()
 
-	query := "SELECT `id`, `name` FROM `test_table`"
+	table := "test_table"
+	query := "SELECT `id`, `name` FROM `" + table + "`"
+	queries := EnumTableQuery{
+		table: query,
+	}
 
 	tests := []struct {
 		name      string
@@ -97,13 +101,13 @@ func Test_loadTableEnumCache(t *testing.T) {
 				tt.setupMock(mock)
 			}
 
-			ec, err := loadTableEnumCache(testutil.Context(), mockDB, query)
+			cache, err := New(testutil.Context(), mockDB, queries)
 
 			if tt.wantErr {
 				require.Error(t, err, "an error was expected")
 			} else {
-				require.NotNil(t, ec, "the cache should not be nil")
-				id, err := ec.ID("bravo")
+				require.NotNil(t, cache, "the cache should not be nil")
+				id, err := cache[table].ID("bravo")
 				require.NoError(t, err)
 				require.Equal(t, 2, id)
 			}
