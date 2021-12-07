@@ -4,8 +4,8 @@
 # @link        https://github.com/nexmoinc/gosrvlib
 # ------------------------------------------------------------------------------
 
-# Use bash as shell (Note: Ubuntu now uses dash which doesn't support PIPESTATUS).
 SHELL=/bin/bash
+.SHELLFLAGS=-o pipefail -c
 
 # CVS path (path to the parent dir containing the project)
 CVSPATH=github.com/nexmoinc
@@ -130,7 +130,7 @@ dbuild: dockerdev
 # Get the test dependencies
 .PHONY: deps
 deps: ensuretarget
-	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(BINUTIL) v1.41.1
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(BINUTIL) v1.43.0
 	$(GO) install github.com/rakyll/gotest
 	$(GO) install github.com/jstemmer/go-junit-report
 	$(GO) install github.com/golang/mock/mockgen
@@ -175,7 +175,7 @@ linter:
 # Download dependencies
 .PHONY: mod
 mod:
-	$(GO) mod download
+	$(GO) mod download all
 
 # Update dependencies
 .PHONY: modupdate
@@ -217,7 +217,7 @@ tag:
 test: ensuretarget
 	@echo -e "\n\n>>> START: Unit Tests <<<\n\n"
 	$(GOTEST) \
-	-count=1 \
+	-shuffle=on \
 	-tags=unit,benchmark \
 	-covermode=atomic \
 	-bench=. \

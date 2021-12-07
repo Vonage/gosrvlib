@@ -266,14 +266,18 @@ func TestRetryIfForReadRequests(t *testing.T) {
 	}
 }
 
+// nolint:gocognit
 func TestHTTPRetrier_Do(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name                  string
 		setupMocks            func(mock *MockHTTPClient)
 		ctxTimeout            time.Duration
 		body                  io.Reader
-		wantErr               bool
 		wantRemainingAttempts uint
+		wantErr               bool
+		requestBodyError      bool
 	}{
 		{
 			name: "success at first attempt",
@@ -348,11 +352,19 @@ func TestHTTPRetrier_Do(t *testing.T) {
 			ctxTimeout:            100 * time.Millisecond,
 			wantRemainingAttempts: 3,
 		},
+		{
+			name:                  "request body error",
+			requestBodyError:      true,
+			ctxTimeout:            100 * time.Millisecond,
+			wantRemainingAttempts: DefaultAttempts,
+		},
 	}
 
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -372,6 +384,10 @@ func TestHTTPRetrier_Do(t *testing.T) {
 			r, err := http.NewRequestWithContext(ctx, http.MethodGet, "/", tt.body)
 			require.NoError(t, err)
 
+			if tt.requestBodyError {
+				r.GetBody = func() (io.ReadCloser, error) { return nil, fmt.Errorf("ERROR") }
+			}
+
 			opts := []Option{
 				WithRetryIfFn(RetryIfForReadRequests),
 				WithAttempts(4),
@@ -383,7 +399,10 @@ func TestHTTPRetrier_Do(t *testing.T) {
 			retrier, err := New(mockHTTP, opts...)
 			require.NoError(t, err)
 
-			_, err = retrier.Do(r) // nolint:bodyclose
+			resp, err := retrier.Do(r)
+			if err != nil {
+				_ = resp.Body.Close()
+			}
 			require.Equal(t, tt.wantErr, err != nil, "Do() error = %v, wantErr %v", err, tt.wantErr)
 			require.Equal(t, tt.wantRemainingAttempts, retrier.remainingAttempts, "Do() remainingAttempts = %v, wantRemainingAttempts %v", err, tt.wantErr)
 		})
@@ -391,6 +410,8 @@ func TestHTTPRetrier_Do(t *testing.T) {
 }
 
 func TestHTTPRetrier_setTimer(t *testing.T) {
+	t.Parallel()
+
 	c := &HTTPRetrier{
 		timer: time.NewTimer(1 * time.Millisecond),
 	}

@@ -1,6 +1,7 @@
 package httpclient
 
 import (
+	"context"
 	"net/http"
 	"net/http/httputil"
 	"time"
@@ -24,7 +25,8 @@ type Client struct {
 func defaultClient() *Client {
 	return &Client{
 		client: &http.Client{
-			Timeout: 1 * time.Minute,
+			Timeout:   1 * time.Minute,
+			Transport: http.DefaultTransport,
 		},
 		traceIDHeaderName: traceid.DefaultHeader,
 		component:         "-",
@@ -46,7 +48,9 @@ func New(opts ...Option) *Client {
 // Do performs the HTTP request with added trace ID, logging and metrics.
 func (c *Client) Do(r *http.Request) (resp *http.Response, err error) {
 	start := time.Now()
-	ctx := r.Context()
+
+	ctx, cancel := context.WithTimeout(r.Context(), c.client.Timeout)
+	defer cancel()
 
 	l := logging.WithComponent(ctx, c.component)
 	debug := l.Check(zap.DebugLevel, "debug") != nil
@@ -89,8 +93,6 @@ func (c *Client) Do(r *http.Request) (resp *http.Response, err error) {
 	if err != nil {
 		return nil, err // nolint:wrapcheck
 	}
-
-	defer logging.Close(ctx, resp.Body, "error while closing response body")
 
 	if debug {
 		respDump, _ := httputil.DumpResponse(resp, true)
