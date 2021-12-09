@@ -5,53 +5,88 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
 var (
-	ErrObjectNotFound = errors.New("s3 object not found")
+	ErrResourceNotFound = errors.New("resource not found")
 )
 
 // S3Client is a wrapper for the S3 client in the AWS SDK.
 type S3Client struct {
-	s3 *s3.Client
+	s3         *s3.Client
+	bucketName string
 }
 
 // NewS3Client creates a new instance of the S3 client wrapper.
-func NewS3Client(ctx context.Context, opts ...Option) (*S3Client, error) {
+func NewS3Client(ctx context.Context, bucketName string, opts ...Option) (*S3Client, error) {
 	cfg, err := loadConfig(ctx, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("configure S3 client: %w", err)
 	}
 
 	return &S3Client{
-		s3: s3.NewFromConfig(cfg),
+		s3:         s3.NewFromConfig(cfg),
+		bucketName: bucketName,
 	}, nil
 }
 
+type Object struct {
+	bucket string
+	key    string
+	body   io.ReadCloser
+}
+
 // GetObject returns
-func (c *S3Client) GetObject(ctx context.Context, bucket, key string) (io.ReadCloser, error) {
+func (c *S3Client) GetObject(ctx context.Context, key string) (*Object, error) {
 	resp, err := c.s3.GetObject(ctx, &s3.GetObjectInput{
-		Bucket: aws.String(bucket),
+		Bucket: aws.String(c.bucketName),
 		Key:    aws.String(key),
 	})
+	if err != nil {
+		return nil, convertErr(err)
+	}
+
+	return &Object{bucket: c.bucketName, key: key, body: resp.Body}, nil
+}
+
+func (c *S3Client) PutObject(ctx context.Context, key string, reader io.Reader) error {
+	_, err := c.s3.PutObject(ctx, &s3.PutObjectInput{Bucket: aws.String(c.bucketName), Key: aws.String(key), Body: reader})
+	return err
+}
+
+func (c *S3Client) DeleteObject(ctx context.Context, key string) error {
+	_, err := c.s3.DeleteObject(ctx, &s3.DeleteObjectInput{Bucket: aws.String(c.bucketName), Key: aws.String(key)})
+	return err
+}
+
+func (c *S3Client) ListObjects(ctx context.Context, prefix string) ([]string, error) {
+	l, err := c.s3.ListObjectsV2(ctx, &s3.ListObjectsV2Input{Bucket: aws.String(c.bucketName), Prefix: aws.String(prefix)})
 	if err != nil {
 		return nil, err
 	}
 
-	return resp.Body, nil
+	var keysList = make([]string, 0, len(l.Contents))
+	for _, key := range l.Contents {
+		keysList = append(keysList, aws.ToString(key.Key))
+	}
+
+	return keysList, nil
 }
 
-func (c *S3Client) PutObject() {
+// TODO
+func convertErr(awsErr error) error {
+	switch {
+	case awsErr == nil:
+		return nil
 
-}
+	case strings.Contains(awsErr.Error(), "StatusCode: 404"):
+		return ErrResourceNotFound
 
-func (c *S3Client) DeleteObject() {
-
-}
-
-func (c *S3Client) ListObjects() {
-
+	default:
+		return fmt.Errorf("raw err from AWS: %w", awsErr)
+	}
 }

@@ -10,24 +10,24 @@ import (
 type Option func(*awsConfig)
 
 // WithEndpoint overrides the AWS endpoint for the service.
-func WithEndpoint(url string) Option {
+func WithEndpoint(url string, isImmutable bool) Option {
 	return func(cfg *awsConfig) {
 		cfg.endpointResolver = func(service, region string) (aws.Endpoint, error) {
 			return aws.Endpoint{
-				URL: url,
-				// HostnameImmutable: true,
+				URL:               url,
+				HostnameImmutable: isImmutable,
 			}, nil
 		}
 	}
 }
 
 // WithEndpointFromEnv overrides the AWS endpoint for the service reading it from the AWS_ENDPOINT environment variable.
-func WithEndpointFromEnv() Option {
+func WithEndpointFromEnv(isImmutable bool) Option {
 	return func(cfg *awsConfig) {
 		cfg.endpointResolver = func(service, region string) (aws.Endpoint, error) {
 			return aws.Endpoint{
-				URL: os.Getenv("AWS_ENDPOINT"),
-				// HostnameImmutable: true,
+				URL:               os.Getenv("AWS_ENDPOINT"),
+				HostnameImmutable: isImmutable,
 			}, nil
 		}
 	}
