@@ -20,20 +20,29 @@ import (
 )
 
 const (
-	numBitUint8 = 8
+	// NumBitUint8 number of bit in uint8.
+	NumBitUint8 = 8
+
+	// NumBitUint16 number of bit in uint16.
+	NumBitUint16 = 16
+
+	// NumBitUint32 number of bit in uint32.
+	NumBitUint32 = 32
+
+	// NumBitUint64 number of bit in uint64.
+	NumBitUint64 = 64
 )
 
-// MapUint8ToStrings converts a uint8 bitmap value into a string slice.
-func MapUint8ToStrings(enum map[int]string, v uint8) (s []string, err error) {
+func mapIntToStrings(enum map[int]string, v uint64, numBit int) (s []string, err error) {
 	if v == 0 {
 		return []string{}, nil
 	}
 
-	s = make([]string, 0, numBitUint8)
-	errBits := make([]int, 0, numBitUint8)
+	s = make([]string, 0, numBit)
+	errBits := make([]int, 0, numBit)
 
-	var i uint8 = 1
-	for bit := 1; bit <= numBitUint8; bit++ {
+	var i uint64 = 1
+	for bit := 1; bit <= numBit; bit++ {
 		if v&i == i {
 			name, ok := enum[int(i)]
 			if ok {
@@ -53,14 +62,33 @@ func MapUint8ToStrings(enum map[int]string, v uint8) (s []string, err error) {
 	return s, err
 }
 
-// MapStringsToUint8 converts a string slice into a uint8 bitmap value.
-func MapStringsToUint8(enum map[string]int, s []string) (v uint8, err error) {
-	errStrings := make([]string, 0, numBitUint8)
+// MapUint64ToStrings converts a uint64 bitmap value into a string slice.
+func MapUint64ToStrings(enum map[int]string, v uint64) ([]string, error) {
+	return mapIntToStrings(enum, v, NumBitUint64)
+}
+
+// MapUint32ToStrings converts a uint32 bitmap value into a string slice.
+func MapUint32ToStrings(enum map[int]string, v uint32) ([]string, error) {
+	return mapIntToStrings(enum, uint64(v), NumBitUint32)
+}
+
+// MapUint16ToStrings converts a uint16 bitmap value into a string slice.
+func MapUint16ToStrings(enum map[int]string, v uint16) ([]string, error) {
+	return mapIntToStrings(enum, uint64(v), NumBitUint16)
+}
+
+// MapUint8ToStrings converts a uint8 bitmap value into a string slice.
+func MapUint8ToStrings(enum map[int]string, v uint8) ([]string, error) {
+	return mapIntToStrings(enum, uint64(v), NumBitUint8)
+}
+
+func mapStringsToInt(enum map[string]int, s []string, numBit int) (v uint64, err error) {
+	errStrings := make([]string, 0, numBit)
 
 	for _, key := range s {
 		id, ok := enum[key]
 		if ok {
-			v |= uint8(id)
+			v |= uint64(id)
 		} else {
 			errStrings = append(errStrings, key)
 		}
@@ -71,4 +99,27 @@ func MapStringsToUint8(enum map[string]int, s []string) (v uint8, err error) {
 	}
 
 	return v, err
+}
+
+// MapStringsToUint64 converts a string slice into a uint64 bitmap value.
+func MapStringsToUint64(enum map[string]int, s []string) (uint64, error) {
+	return mapStringsToInt(enum, s, NumBitUint64)
+}
+
+// MapStringsToUint32 converts a string slice into a uint32 bitmap value.
+func MapStringsToUint32(enum map[string]int, s []string) (uint32, error) {
+	v, err := mapStringsToInt(enum, s, NumBitUint32)
+	return uint32(v), err
+}
+
+// MapStringsToUint16 converts a string slice into a uint16 bitmap value.
+func MapStringsToUint16(enum map[string]int, s []string) (uint16, error) {
+	v, err := mapStringsToInt(enum, s, NumBitUint16)
+	return uint16(v), err
+}
+
+// MapStringsToUint8 converts a string slice into a uint8 bitmap value.
+func MapStringsToUint8(enum map[string]int, s []string) (uint8, error) {
+	v, err := mapStringsToInt(enum, s, NumBitUint8)
+	return uint8(v), err
 }
