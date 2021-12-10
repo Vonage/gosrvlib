@@ -83,50 +83,14 @@ func (ec *EnumCache) SortIDs() []int {
 	return sorted
 }
 
-// DecodeBinaryMapUint64 decodes a uint64 binary map into a list of string names.
+// DecodeBinaryMap decodes a int binary map into a list of string names.
 // The EnumCache must contain the mapping between the bit values and the names.
-func (ec *EnumCache) DecodeBinaryMapUint64(v uint64) (s []string, err error) {
-	return enumbitmap.MapUint64ToStrings(ec.name, v) // nolint:wrapcheck
+func (ec *EnumCache) DecodeBinaryMap(v int) (s []string, err error) {
+	return enumbitmap.BitMapToStrings(ec.name, v) // nolint:wrapcheck
 }
 
-// DecodeBinaryMapUint32 decodes a uint32 binary map into a list of string names.
+// EncodeBinaryMap encode a list of string names into a int binary map.
 // The EnumCache must contain the mapping between the bit values and the names.
-func (ec *EnumCache) DecodeBinaryMapUint32(v uint32) (s []string, err error) {
-	return enumbitmap.MapUint32ToStrings(ec.name, v) // nolint:wrapcheck
-}
-
-// DecodeBinaryMapUint16 decodes a uint16 binary map into a list of string names.
-// The EnumCache must contain the mapping between the bit values and the names.
-func (ec *EnumCache) DecodeBinaryMapUint16(v uint16) (s []string, err error) {
-	return enumbitmap.MapUint16ToStrings(ec.name, v) // nolint:wrapcheck
-}
-
-// DecodeBinaryMapUint8 decodes a uint8 binary map into a list of string names.
-// The EnumCache must contain the mapping between the bit values and the names.
-func (ec *EnumCache) DecodeBinaryMapUint8(v uint8) (s []string, err error) {
-	return enumbitmap.MapUint8ToStrings(ec.name, v) // nolint:wrapcheck
-}
-
-// EncodeBinaryMapUint64 encode a list of string names into a uint64 binary map.
-// The EnumCache must contain the mapping between the bit values and the names.
-func (ec *EnumCache) EncodeBinaryMapUint64(s []string) (v uint64, err error) {
-	return enumbitmap.MapStringsToUint64(ec.id, s) // nolint:wrapcheck
-}
-
-// EncodeBinaryMapUint32 encode a list of string names into a uint32 binary map.
-// The EnumCache must contain the mapping between the bit values and the names.
-func (ec *EnumCache) EncodeBinaryMapUint32(s []string) (v uint32, err error) {
-	return enumbitmap.MapStringsToUint32(ec.id, s) // nolint:wrapcheck
-}
-
-// EncodeBinaryMapUint16 encode a list of string names into a uint16 binary map.
-// The EnumCache must contain the mapping between the bit values and the names.
-func (ec *EnumCache) EncodeBinaryMapUint16(s []string) (v uint16, err error) {
-	return enumbitmap.MapStringsToUint16(ec.id, s) // nolint:wrapcheck
-}
-
-// EncodeBinaryMapUint8 encode a list of string names into a uint8 binary map.
-// The EnumCache must contain the mapping between the bit values and the names.
-func (ec *EnumCache) EncodeBinaryMapUint8(s []string) (v uint8, err error) {
-	return enumbitmap.MapStringsToUint8(ec.id, s) // nolint:wrapcheck
+func (ec *EnumCache) EncodeBinaryMap(s []string) (v int, err error) {
+	return enumbitmap.StringsToBitMap(ec.id, s) // nolint:wrapcheck
 }
