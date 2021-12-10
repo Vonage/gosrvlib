@@ -7,7 +7,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/stretchr/testify/require"
 )
 
@@ -106,6 +108,177 @@ func TestS3Client_GetObject(t *testing.T) {
 			require.NoError(t, err)
 
 			require.Equal(t, string(expectedBytes), string(gotBytes))
+		})
+	}
+}
+
+func TestS3Client_PutObject(t *testing.T) {
+	tests := []struct {
+		name    string
+		key     string
+		bucket  string
+		mock    S3
+		wantErr bool
+	}{
+		{
+			name:   "success",
+			key:    "k1",
+			bucket: "bucket",
+			mock: s3mock{putFn: func(ctx context.Context, params *s3.PutObjectInput, optFns ...func(*s3.Options)) (*s3.PutObjectOutput, error) {
+				return &s3.PutObjectOutput{}, nil
+			}},
+			wantErr: false,
+		},
+		{
+			name:   "error",
+			key:    "k1",
+			bucket: "bucket",
+			mock: s3mock{putFn: func(ctx context.Context, params *s3.PutObjectInput, optFns ...func(*s3.Options)) (*s3.PutObjectOutput, error) {
+				return nil, fmt.Errorf("some err")
+			}},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.TODO()
+
+			cli, err := NewS3Client(ctx, tt.bucket)
+			require.NoError(t, err)
+			require.NotNil(t, cli)
+
+			cli.s3 = tt.mock
+
+			err = cli.PutObject(ctx, tt.key, nil)
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
+		})
+	}
+}
+
+func TestS3Client_DeleteObject(t *testing.T) {
+	tests := []struct {
+		name    string
+		key     string
+		bucket  string
+		mock    S3
+		wantErr bool
+	}{
+		{
+			name:   "success",
+			key:    "k1",
+			bucket: "bucket",
+			mock: s3mock{delFn: func(ctx context.Context, params *s3.DeleteObjectInput, optFns ...func(*s3.Options)) (*s3.DeleteObjectOutput, error) {
+				return &s3.DeleteObjectOutput{}, nil
+			}},
+			wantErr: false,
+		},
+		{
+			name:   "error",
+			key:    "k1",
+			bucket: "bucket",
+			mock: s3mock{delFn: func(ctx context.Context, params *s3.DeleteObjectInput, optFns ...func(*s3.Options)) (*s3.DeleteObjectOutput, error) {
+				return nil, fmt.Errorf("some err")
+			}},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.TODO()
+
+			cli, err := NewS3Client(ctx, tt.bucket)
+			require.NoError(t, err)
+			require.NotNil(t, cli)
+
+			cli.s3 = tt.mock
+
+			err = cli.DeleteObject(ctx, tt.key)
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
+		})
+	}
+}
+
+func TestS3Client_ListObject(t *testing.T) {
+	tests := []struct {
+		name    string
+		prefix  string
+		bucket  string
+		mock    S3
+		want    []string
+		wantErr bool
+	}{
+		{
+			name:   "success - all",
+			prefix: "",
+			bucket: "bucket",
+			mock: s3mock{listFn: func(ctx context.Context, params *s3.ListObjectsV2Input, optFns ...func(*s3.Options)) (*s3.ListObjectsV2Output, error) {
+				return &s3.ListObjectsV2Output{
+					Contents: []types.Object{
+						{Key: aws.String("key1")},
+						{Key: aws.String("another_key")},
+					},
+				}, nil
+			}},
+			want:    []string{"key1", "another_key"},
+			wantErr: false,
+		},
+		{
+			name:   "success - prefix",
+			prefix: "ke",
+			bucket: "bucket",
+			mock: s3mock{listFn: func(ctx context.Context, params *s3.ListObjectsV2Input, optFns ...func(*s3.Options)) (*s3.ListObjectsV2Output, error) {
+				return &s3.ListObjectsV2Output{
+					Contents: []types.Object{
+						{Key: aws.String("key1")},
+					},
+				}, nil
+			}},
+			want:    []string{"key1"},
+			wantErr: false,
+		},
+		{
+			name:   "error",
+			prefix: "k1",
+			bucket: "bucket",
+			mock: s3mock{listFn: func(ctx context.Context, params *s3.ListObjectsV2Input, optFns ...func(*s3.Options)) (*s3.ListObjectsV2Output, error) {
+				return nil, fmt.Errorf("some err")
+			}},
+			want:    nil,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.TODO()
+
+			cli, err := NewS3Client(ctx, tt.bucket)
+			require.NoError(t, err)
+			require.NotNil(t, cli)
+
+			cli.s3 = tt.mock
+
+			got, err := cli.ListObjects(ctx, tt.prefix)
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
+			require.NotNil(t, got)
+			require.Equal(t, tt.want, got)
 		})
 	}
 }
