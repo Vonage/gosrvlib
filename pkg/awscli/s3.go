@@ -15,9 +15,17 @@ var (
 	ErrResourceNotFound = errors.New("resource not found")
 )
 
+// S3 represents the mockable functions in the AWS SDK S3 client.
+type S3 interface {
+	GetObject(ctx context.Context, params *s3.GetObjectInput, optFns ...func(*s3.Options)) (*s3.GetObjectOutput, error)
+	ListObjectsV2(ctx context.Context, params *s3.ListObjectsV2Input, optFns ...func(*s3.Options)) (*s3.ListObjectsV2Output, error)
+	PutObject(ctx context.Context, params *s3.PutObjectInput, optFns ...func(*s3.Options)) (*s3.PutObjectOutput, error)
+	DeleteObject(ctx context.Context, params *s3.DeleteObjectInput, optFns ...func(*s3.Options)) (*s3.DeleteObjectOutput, error)
+}
+
 // S3Client is a wrapper for the S3 client in the AWS SDK.
 type S3Client struct {
-	s3         *s3.Client
+	s3         S3
 	bucketName string
 }
 
