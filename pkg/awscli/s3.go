@@ -59,13 +59,21 @@ func (c *S3Client) GetObject(ctx context.Context, key string) (*Object, error) {
 // PutObject uploads data from reader to S3 Bucket.
 func (c *S3Client) PutObject(ctx context.Context, key string, reader io.Reader) error {
 	_, err := c.s3.PutObject(ctx, &s3.PutObjectInput{Bucket: aws.String(c.bucketName), Key: aws.String(key), Body: reader})
-	return fmt.Errorf("s3client: %w", err)
+	if err != nil {
+		return fmt.Errorf("s3client: %w", err)
+	}
+
+	return nil
 }
 
 // DeleteObject deletes an object from S3 Bucket by key.
 func (c *S3Client) DeleteObject(ctx context.Context, key string) error {
 	_, err := c.s3.DeleteObject(ctx, &s3.DeleteObjectInput{Bucket: aws.String(c.bucketName), Key: aws.String(key)})
-	return fmt.Errorf("s3client: %w", err)
+	if err != nil {
+		return fmt.Errorf("s3client: %w", err)
+	}
+
+	return nil
 }
 
 // ListObjects search keys by prefix; returns all keys if prefix is empty string.
