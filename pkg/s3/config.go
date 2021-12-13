@@ -1,5 +1,4 @@
-// Package awscli provides a client for communication with AWS.
-package awscli
+package s3
 
 import (
 	"context"
@@ -11,6 +10,9 @@ import (
 type awsConfig struct {
 	endpointResolver aws.EndpointResolverFunc
 }
+
+// nolint: gochecknoglobals
+var awsLoadDefaultConfigFn = config.LoadDefaultConfig
 
 func loadConfig(ctx context.Context, opts ...Option) (aws.Config, error) {
 	cfg := awsConfig{}
@@ -25,5 +27,5 @@ func loadConfig(ctx context.Context, opts ...Option) (aws.Config, error) {
 		awsOpts = append(awsOpts, config.WithEndpointResolver(cfg.endpointResolver))
 	}
 
-	return config.LoadDefaultConfig(ctx, awsOpts...) // nolint: wrapcheck
+	return awsLoadDefaultConfigFn(ctx, awsOpts...)
 }

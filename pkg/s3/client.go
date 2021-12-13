@@ -1,4 +1,4 @@
-package awscli
+package s3
 
 import (
 	"context"
@@ -17,20 +17,20 @@ type S3 interface {
 	DeleteObject(ctx context.Context, params *s3.DeleteObjectInput, optFns ...func(*s3.Options)) (*s3.DeleteObjectOutput, error)
 }
 
-// S3Client is a wrapper for the S3 client in the AWS SDK.
-type S3Client struct {
+// Client is a wrapper for the S3 client in the AWS SDK.
+type Client struct {
 	s3         S3
 	bucketName string
 }
 
-// NewS3Client creates a new instance of the S3 client wrapper.
-func NewS3Client(ctx context.Context, bucketName string, opts ...Option) (*S3Client, error) {
+// New creates a new instance of the S3 client wrapper.
+func New(ctx context.Context, bucketName string, opts ...Option) (*Client, error) {
 	cfg, err := loadConfig(ctx, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("s3client: %w", err)
 	}
 
-	return &S3Client{
+	return &Client{
 		s3:         s3.NewFromConfig(cfg),
 		bucketName: bucketName,
 	}, nil
@@ -43,8 +43,8 @@ type Object struct {
 	body   io.ReadCloser
 }
 
-// GetObject returns *Object.
-func (c *S3Client) GetObject(ctx context.Context, key string) (*Object, error) {
+// Get returns *Object.
+func (c *Client) Get(ctx context.Context, key string) (*Object, error) {
 	resp, err := c.s3.GetObject(ctx, &s3.GetObjectInput{
 		Bucket: aws.String(c.bucketName),
 		Key:    aws.String(key),
@@ -56,8 +56,8 @@ func (c *S3Client) GetObject(ctx context.Context, key string) (*Object, error) {
 	return &Object{bucket: c.bucketName, key: key, body: resp.Body}, nil
 }
 
-// PutObject uploads data from reader to S3 Bucket.
-func (c *S3Client) PutObject(ctx context.Context, key string, reader io.Reader) error {
+// Put uploads data from reader to S3 Bucket.
+func (c *Client) Put(ctx context.Context, key string, reader io.Reader) error {
 	_, err := c.s3.PutObject(ctx, &s3.PutObjectInput{Bucket: aws.String(c.bucketName), Key: aws.String(key), Body: reader})
 	if err != nil {
 		return fmt.Errorf("s3client: %w", err)
@@ -66,8 +66,8 @@ func (c *S3Client) PutObject(ctx context.Context, key string, reader io.Reader) 
 	return nil
 }
 
-// DeleteObject deletes an object from S3 Bucket by key.
-func (c *S3Client) DeleteObject(ctx context.Context, key string) error {
+// Delete removes an object from S3 Bucket by key.
+func (c *Client) Delete(ctx context.Context, key string) error {
 	_, err := c.s3.DeleteObject(ctx, &s3.DeleteObjectInput{Bucket: aws.String(c.bucketName), Key: aws.String(key)})
 	if err != nil {
 		return fmt.Errorf("s3client: %w", err)
@@ -76,8 +76,8 @@ func (c *S3Client) DeleteObject(ctx context.Context, key string) error {
 	return nil
 }
 
-// ListObjects search keys by prefix; returns all keys if prefix is empty string.
-func (c *S3Client) ListObjects(ctx context.Context, prefix string) ([]string, error) {
+// ListKeys searches for keys by a provided prefix; returns all keys if prefix is empty string.
+func (c *Client) ListKeys(ctx context.Context, prefix string) ([]string, error) {
 	l, err := c.s3.ListObjectsV2(ctx, &s3.ListObjectsV2Input{Bucket: aws.String(c.bucketName), Prefix: aws.String(prefix)})
 	if err != nil {
 		return nil, fmt.Errorf("s3client: %w", err)

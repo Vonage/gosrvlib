@@ -1,4 +1,4 @@
-package awscli
+package s3
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/stretchr/testify/require"
@@ -16,11 +17,22 @@ import (
 func TestNewS3Client(t *testing.T) {
 	t.Parallel()
 
-	got, err := NewS3Client(context.TODO(), "name")
+	got, err := New(context.TODO(), "name")
 
 	require.NoError(t, err)
 	require.NotNil(t, got)
 	require.Equal(t, "name", got.bucketName)
+
+	awsLoadDefaultConfigFn = func(ctx context.Context, optFns ...func(*config.LoadOptions) error) (cfg aws.Config, err error) {
+		return aws.Config{}, fmt.Errorf("config err")
+	}
+	defer func() {
+		awsLoadDefaultConfigFn = config.LoadDefaultConfig
+	}()
+
+	got, err = New(context.TODO(), "name")
+	require.Error(t, err)
+	require.Nil(t, got)
 }
 
 type s3mock struct {
@@ -93,13 +105,13 @@ func TestS3Client_GetObject(t *testing.T) {
 			t.Parallel()
 
 			ctx := context.TODO()
-			cli, err := NewS3Client(ctx, tt.bucket)
+			cli, err := New(ctx, tt.bucket)
 			require.NoError(t, err)
 			require.NotNil(t, cli)
 
 			cli.s3 = tt.mock
 
-			got, err := cli.GetObject(ctx, tt.key)
+			got, err := cli.Get(ctx, tt.key)
 			if tt.wantErr {
 				require.Error(t, err)
 				return
@@ -155,13 +167,13 @@ func TestS3Client_PutObject(t *testing.T) {
 			t.Parallel()
 
 			ctx := context.TODO()
-			cli, err := NewS3Client(ctx, tt.bucket)
+			cli, err := New(ctx, tt.bucket)
 			require.NoError(t, err)
 			require.NotNil(t, cli)
 
 			cli.s3 = tt.mock
 
-			err = cli.PutObject(ctx, tt.key, nil)
+			err = cli.Put(ctx, tt.key, nil)
 			if tt.wantErr {
 				require.Error(t, err)
 				return
@@ -208,13 +220,13 @@ func TestS3Client_DeleteObject(t *testing.T) {
 			t.Parallel()
 
 			ctx := context.TODO()
-			cli, err := NewS3Client(ctx, tt.bucket)
+			cli, err := New(ctx, tt.bucket)
 			require.NoError(t, err)
 			require.NotNil(t, cli)
 
 			cli.s3 = tt.mock
 
-			err = cli.DeleteObject(ctx, tt.key)
+			err = cli.Delete(ctx, tt.key)
 			if tt.wantErr {
 				require.Error(t, err)
 				return
@@ -283,13 +295,13 @@ func TestS3Client_ListObject(t *testing.T) {
 			t.Parallel()
 
 			ctx := context.TODO()
-			cli, err := NewS3Client(ctx, tt.bucket)
+			cli, err := New(ctx, tt.bucket)
 			require.NoError(t, err)
 			require.NotNil(t, cli)
 
 			cli.s3 = tt.mock
 
-			got, err := cli.ListObjects(ctx, tt.prefix)
+			got, err := cli.ListKeys(ctx, tt.prefix)
 			if tt.wantErr {
 				require.Error(t, err)
 				return
