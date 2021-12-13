@@ -1,3 +1,4 @@
+// Package awscli provides a client for communication with AWS.
 package awscli
 
 import (
@@ -24,5 +25,5 @@ func loadConfig(ctx context.Context, opts ...Option) (aws.Config, error) {
 		awsOpts = append(awsOpts, config.WithEndpointResolver(cfg.endpointResolver))
 	}
 
-	return config.LoadDefaultConfig(ctx, awsOpts...)
+	return config.LoadDefaultConfig(ctx, awsOpts...) // nolint: wrapcheck
 }

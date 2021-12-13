@@ -14,7 +14,10 @@ import (
 )
 
 func TestNewS3Client(t *testing.T) {
+	t.Parallel()
+
 	got, err := NewS3Client(context.TODO(), "name")
+
 	require.NoError(t, err)
 	require.NotNil(t, got)
 	require.Equal(t, "name", got.bucketName)
@@ -44,6 +47,8 @@ func (s s3mock) DeleteObject(ctx context.Context, params *s3.DeleteObjectInput, 
 }
 
 func TestS3Client_GetObject(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name    string
 		key     string
@@ -83,9 +88,11 @@ func TestS3Client_GetObject(t *testing.T) {
 	}
 	for _, tt := range tests {
 		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			ctx := context.TODO()
 
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			ctx := context.TODO()
 			cli, err := NewS3Client(ctx, tt.bucket)
 			require.NoError(t, err)
 			require.NotNil(t, cli)
@@ -113,6 +120,8 @@ func TestS3Client_GetObject(t *testing.T) {
 }
 
 func TestS3Client_PutObject(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name    string
 		key     string
@@ -141,9 +150,11 @@ func TestS3Client_PutObject(t *testing.T) {
 	}
 	for _, tt := range tests {
 		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			ctx := context.TODO()
 
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			ctx := context.TODO()
 			cli, err := NewS3Client(ctx, tt.bucket)
 			require.NoError(t, err)
 			require.NotNil(t, cli)
@@ -162,6 +173,8 @@ func TestS3Client_PutObject(t *testing.T) {
 }
 
 func TestS3Client_DeleteObject(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name    string
 		key     string
@@ -190,9 +203,11 @@ func TestS3Client_DeleteObject(t *testing.T) {
 	}
 	for _, tt := range tests {
 		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			ctx := context.TODO()
 
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			ctx := context.TODO()
 			cli, err := NewS3Client(ctx, tt.bucket)
 			require.NoError(t, err)
 			require.NotNil(t, cli)
@@ -211,6 +226,8 @@ func TestS3Client_DeleteObject(t *testing.T) {
 }
 
 func TestS3Client_ListObject(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name    string
 		prefix  string
@@ -261,9 +278,11 @@ func TestS3Client_ListObject(t *testing.T) {
 	}
 	for _, tt := range tests {
 		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			ctx := context.TODO()
 
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			ctx := context.TODO()
 			cli, err := NewS3Client(ctx, tt.bucket)
 			require.NoError(t, err)
 			require.NotNil(t, cli)

@@ -1,8 +1,6 @@
 package awscli
 
 import (
-	"os"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 )
 
@@ -15,18 +13,6 @@ func WithEndpoint(url string, isImmutable bool) Option {
 		cfg.endpointResolver = func(service, region string) (aws.Endpoint, error) {
 			return aws.Endpoint{
 				URL:               url,
-				HostnameImmutable: isImmutable,
-			}, nil
-		}
-	}
-}
-
-// WithEndpointFromEnv overrides the AWS endpoint for the service reading it from the AWS_ENDPOINT environment variable.
-func WithEndpointFromEnv(isImmutable bool) Option {
-	return func(cfg *awsConfig) {
-		cfg.endpointResolver = func(service, region string) (aws.Endpoint, error) {
-			return aws.Endpoint{
-				URL:               os.Getenv("AWS_ENDPOINT"),
 				HostnameImmutable: isImmutable,
 			}, nil
 		}
