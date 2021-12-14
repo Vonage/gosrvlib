@@ -18,5 +18,5 @@ func loadConfig(ctx context.Context, opts ...Option) (aws.Config, error) {
 		apply(cfg)
 	}
 
-	return config.LoadDefaultConfig(ctx, cfg.awsOpts...)
+	return config.LoadDefaultConfig(ctx, cfg.awsOpts...) // nolint: wrapcheck
 }

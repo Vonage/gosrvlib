@@ -14,6 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// nolint: paralleltest
 func TestNew(t *testing.T) {
 	got, err := New(context.TODO(), "name")
 
