@@ -3,6 +3,7 @@ package httpretrier
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"math/rand"
 	"net/http"
@@ -83,6 +84,9 @@ func (c *HTTPRetrier) Do(r *http.Request) (*http.Response, error) {
 	c.nextDelay = float64(c.delay)
 	c.remainingAttempts = c.attempts
 	c.ctx, c.cancel = context.WithCancel(context.Background())
+
+	// initialize default error in case c.retry does not get enough time to be scheduled
+	c.doError = fmt.Errorf("context canceled")
 
 	go c.retry(r)
 

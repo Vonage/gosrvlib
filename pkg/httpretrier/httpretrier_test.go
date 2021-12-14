@@ -357,6 +357,7 @@ func TestHTTPRetrier_Do(t *testing.T) {
 			requestBodyError:      true,
 			ctxTimeout:            100 * time.Millisecond,
 			wantRemainingAttempts: DefaultAttempts,
+			wantErr:               true,
 		},
 	}
 
@@ -400,7 +401,7 @@ func TestHTTPRetrier_Do(t *testing.T) {
 			require.NoError(t, err)
 
 			resp, err := retrier.Do(r)
-			if err != nil {
+			if err != nil && resp != nil {
 				_ = resp.Body.Close()
 			}
 			require.Equal(t, tt.wantErr, err != nil, "Do() error = %v, wantErr %v", err, tt.wantErr)
