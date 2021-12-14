@@ -19,18 +19,18 @@ func Test_WithEndpoint(t *testing.T) {
 	}{
 		{
 			name:      "Immutable URL",
-			url:       "test",
+			url:       "test_a",
 			immutable: true,
 			want: &awsConfig{awsOpts: []func(*config.LoadOptions) error{
-				config.WithEndpointResolver(endpointResolver{url: "test", isImmutable: true})},
+				config.WithEndpointResolverWithOptions(endpointResolver{url: "test_a", isImmutable: true})},
 			},
 		},
 		{
 			name:      "Mutable URL",
-			url:       "test",
+			url:       "test_b",
 			immutable: false,
 			want: &awsConfig{awsOpts: []func(*config.LoadOptions) error{
-				config.WithEndpointResolver(endpointResolver{url: "test", isImmutable: false})},
+				config.WithEndpointResolverWithOptions(endpointResolver{url: "test_b", isImmutable: false})},
 			},
 		},
 	}
@@ -53,4 +53,18 @@ func Test_WithEndpoint(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_ResolveEndpoint(t *testing.T) {
+	t.Parallel()
+
+	er := &endpointResolver{
+		url:         "test_url",
+		isImmutable: true,
+	}
+
+	ep, err := er.ResolveEndpoint("", "", nil)
+	require.NoError(t, err)
+	require.Equal(t, er.url, ep.URL)
+	require.Equal(t, er.isImmutable, ep.HostnameImmutable)
 }

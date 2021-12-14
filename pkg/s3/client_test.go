@@ -16,7 +16,9 @@ import (
 
 // nolint: paralleltest
 func TestNew(t *testing.T) {
-	got, err := New(context.TODO(), "name")
+	opt := WithEndpoint("test", true)
+
+	got, err := New(context.TODO(), "name", opt)
 
 	require.NoError(t, err)
 	require.NotNil(t, got)
