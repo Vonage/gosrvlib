@@ -8,24 +8,15 @@ import (
 )
 
 type awsConfig struct {
-	endpointResolver aws.EndpointResolverFunc
+	awsOpts []func(*config.LoadOptions) error
 }
 
-// nolint: gochecknoglobals
-var awsLoadDefaultConfigFn = config.LoadDefaultConfig
-
 func loadConfig(ctx context.Context, opts ...Option) (aws.Config, error) {
-	cfg := awsConfig{}
+	cfg := &awsConfig{}
 
 	for _, apply := range opts {
-		apply(&cfg)
+		apply(cfg)
 	}
 
-	var awsOpts []func(*config.LoadOptions) error
-
-	if cfg.endpointResolver != nil {
-		awsOpts = append(awsOpts, config.WithEndpointResolver(cfg.endpointResolver))
-	}
-
-	return awsLoadDefaultConfigFn(ctx, awsOpts...)
+	return config.LoadDefaultConfig(ctx, cfg.awsOpts...)
 }

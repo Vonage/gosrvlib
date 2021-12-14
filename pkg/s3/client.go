@@ -27,7 +27,7 @@ type Client struct {
 func New(ctx context.Context, bucketName string, opts ...Option) (*Client, error) {
 	cfg, err := loadConfig(ctx, opts...)
 	if err != nil {
-		return nil, fmt.Errorf("s3client: %w", err)
+		return nil, fmt.Errorf("cannot create a new s3 client: %w", err)
 	}
 
 	return &Client{
@@ -50,7 +50,7 @@ func (c *Client) Get(ctx context.Context, key string) (*Object, error) {
 		Key:    aws.String(key),
 	})
 	if err != nil {
-		return nil, fmt.Errorf("s3client: %w", err)
+		return nil, fmt.Errorf("cannot get s3 object: %w", err)
 	}
 
 	return &Object{bucket: c.bucketName, key: key, body: resp.Body}, nil
@@ -60,7 +60,7 @@ func (c *Client) Get(ctx context.Context, key string) (*Object, error) {
 func (c *Client) Put(ctx context.Context, key string, reader io.Reader) error {
 	_, err := c.s3.PutObject(ctx, &s3.PutObjectInput{Bucket: aws.String(c.bucketName), Key: aws.String(key), Body: reader})
 	if err != nil {
-		return fmt.Errorf("s3client: %w", err)
+		return fmt.Errorf("cannot put s3 object: %w", err)
 	}
 
 	return nil
@@ -70,7 +70,7 @@ func (c *Client) Put(ctx context.Context, key string, reader io.Reader) error {
 func (c *Client) Delete(ctx context.Context, key string) error {
 	_, err := c.s3.DeleteObject(ctx, &s3.DeleteObjectInput{Bucket: aws.String(c.bucketName), Key: aws.String(key)})
 	if err != nil {
-		return fmt.Errorf("s3client: %w", err)
+		return fmt.Errorf("cannot delete s3 object: %w", err)
 	}
 
 	return nil
@@ -80,7 +80,7 @@ func (c *Client) Delete(ctx context.Context, key string) error {
 func (c *Client) ListKeys(ctx context.Context, prefix string) ([]string, error) {
 	l, err := c.s3.ListObjectsV2(ctx, &s3.ListObjectsV2Input{Bucket: aws.String(c.bucketName), Prefix: aws.String(prefix)})
 	if err != nil {
-		return nil, fmt.Errorf("s3client: %w", err)
+		return nil, fmt.Errorf("cannot list s3 keys: %w", err)
 	}
 
 	var keysList = make([]string, 0, len(l.Contents))

@@ -4,30 +4,33 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"os"
 	"strings"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/stretchr/testify/require"
 )
 
-func TestNewS3Client(t *testing.T) {
-	t.Parallel()
-
+func TestNew(t *testing.T) {
 	got, err := New(context.TODO(), "name")
 
 	require.NoError(t, err)
 	require.NotNil(t, got)
 	require.Equal(t, "name", got.bucketName)
 
-	awsLoadDefaultConfigFn = func(ctx context.Context, optFns ...func(*config.LoadOptions) error) (cfg aws.Config, err error) {
-		return aws.Config{}, fmt.Errorf("config err")
-	}
+	EnvKey := "AWS_ENABLE_ENDPOINT_DISCOVERY"
+	envValBeforeTest := os.Getenv(EnvKey)
+
+	// make AWS lib to return an error
+	err = os.Setenv(EnvKey, "ERROR")
+	require.NoError(t, err)
+
 	defer func() {
-		awsLoadDefaultConfigFn = config.LoadDefaultConfig
+		err = os.Setenv(EnvKey, envValBeforeTest)
+		require.NoError(t, err)
 	}()
 
 	got, err = New(context.TODO(), "name")
