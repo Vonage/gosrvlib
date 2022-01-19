@@ -1,10 +1,10 @@
 // Package stringkey creates a key from multiple strings.
-// NOTE: The key is based on a 64 bit hash and the input strings are trimmed and UTF8-normalized.
+// This package is intended to be used with few small strings.
+// The total number of input bytes should be reasonably small to be compatible with a 64 bit hash.
 package stringkey
 
 import (
 	"bytes"
-	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -28,7 +28,7 @@ type StringKey struct {
 }
 
 // New encode (hash) input strings into a uint64 key.
-func New(fields ...string) (*StringKey, error) {
+func New(fields ...string) *StringKey {
 	var b bytes.Buffer
 
 	for _, v := range fields {
@@ -36,14 +36,9 @@ func New(fields ...string) (*StringKey, error) {
 		b.WriteByte('\t') // separate input strings
 	}
 
-	utfTransformer := transform.Chain(norm.NFD, norm.NFC)
+	nb, _, _ := transform.Bytes(transform.Chain(norm.NFD, norm.NFC), b.Bytes())
 
-	nb, _, err := transform.Bytes(utfTransformer, b.Bytes())
-	if err != nil {
-		return nil, fmt.Errorf("unable to normalize the string: %w", err)
-	}
-
-	return &StringKey{key: farmhash64.FarmHash64(nb)}, nil
+	return &StringKey{key: farmhash64.FarmHash64(nb)}
 }
 
 // Key returns a uint64 key.
