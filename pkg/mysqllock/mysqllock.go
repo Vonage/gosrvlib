@@ -63,12 +63,11 @@ func (l *MySQLLock) Acquire(ctx context.Context, key string, timeout time.Durati
 	if res != resLockAcquired {
 		closeConnection(ctx, conn)
 
-		switch res {
-		case resLockTimeout:
+		if res == resLockTimeout {
 			return nil, ErrTimeout
-		default:
-			return nil, ErrFailed
 		}
+
+		return nil, ErrFailed
 	}
 
 	releaseCtx, cancelReleaseCtx := context.WithCancel(context.Background())
