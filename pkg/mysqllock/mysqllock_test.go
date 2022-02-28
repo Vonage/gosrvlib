@@ -131,9 +131,9 @@ func Test_keepConnectionAlive(t *testing.T) {
 					WillReturnRows(sqlmock.NewRows([]string{"result"}).AddRow(1))
 			},
 			ctxFunc: func() (context.Context, context.CancelFunc) {
-				return context.WithTimeout(context.Background(), 1*time.Second)
+				return context.WithTimeout(context.Background(), 100*time.Millisecond)
 			},
-			interval: 1 * time.Second,
+			interval: 100 * time.Millisecond,
 		},
 		{
 			name: "context done while executing SELECT 1 to keep the conn alive",
@@ -142,9 +142,9 @@ func Test_keepConnectionAlive(t *testing.T) {
 					WillReturnError(fmt.Errorf("can't SELECT 1 at this time"))
 			},
 			ctxFunc: func() (context.Context, context.CancelFunc) {
-				return context.WithTimeout(context.Background(), 2*time.Second)
+				return context.WithTimeout(context.Background(), 100*time.Millisecond)
 			},
-			interval: 1 * time.Second,
+			interval: 50 * time.Millisecond,
 		},
 		{
 			name: "successfully keeping the conn alive",
@@ -153,9 +153,9 @@ func Test_keepConnectionAlive(t *testing.T) {
 					WillReturnRows(sqlmock.NewRows([]string{"result"}).AddRow(1))
 			},
 			ctxFunc: func() (context.Context, context.CancelFunc) {
-				return context.WithTimeout(context.Background(), 2*time.Second)
+				return context.WithTimeout(context.Background(), 100*time.Millisecond)
 			},
-			interval: 1 * time.Second,
+			interval: 50 * time.Millisecond,
 		},
 		{
 			name: "context done before even getting a change of trying to keep the conn alive",
@@ -164,9 +164,9 @@ func Test_keepConnectionAlive(t *testing.T) {
 					WillReturnRows(sqlmock.NewRows([]string{"result"}).AddRow(1))
 			},
 			ctxFunc: func() (context.Context, context.CancelFunc) {
-				return context.WithTimeout(context.Background(), 1*time.Millisecond)
+				return context.WithTimeout(context.Background(), 100*time.Millisecond)
 			},
-			interval: 1 * time.Second,
+			interval: 50 * time.Millisecond,
 		},
 	}
 	for _, tt := range tests {
