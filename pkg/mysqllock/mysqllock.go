@@ -56,6 +56,7 @@ func (l *MySQLLock) Acquire(ctx context.Context, key string, timeout time.Durati
 
 	var res int
 	if err = row.Scan(&res); err != nil {
+		logging.Close(ctx, conn, "error closing lock connection")
 		return nil, fmt.Errorf("scan acquire lock result: %w", err)
 	}
 
@@ -79,9 +80,13 @@ func (l *MySQLLock) Acquire(ctx context.Context, key string, timeout time.Durati
 		return releaseFunc, nil
 	case resLockTimeout:
 		cancelReleaseCtx()
+		logging.Close(ctx, conn, "error closing lock connection")
+
 		return nil, ErrTimeout
 	default:
 		cancelReleaseCtx()
+		logging.Close(ctx, conn, "error closing lock connection")
+
 		return nil, ErrFailed
 	}
 }
