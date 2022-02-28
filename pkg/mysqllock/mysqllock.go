@@ -24,10 +24,10 @@ var (
 )
 
 const (
-	resLockError    = -1
-	resLockTimeout  = 0
-	resLockAcquired = 1
-	keepAliveInterval = 30*time.Second
+	resLockError      = -1
+	resLockTimeout    = 0
+	resLockAcquired   = 1
+	keepAliveInterval = 30 * time.Second
 
 	sqlGetLock     = "SELECT COALESCE(GET_LOCK(?, ?), ?)"
 	sqlReleaseLock = "DO RELEASE_LOCK(?)"

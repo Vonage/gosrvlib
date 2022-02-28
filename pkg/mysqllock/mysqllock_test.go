@@ -1,6 +1,7 @@
 package mysqllock
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -110,4 +111,89 @@ func TestDB_Acquire(t *testing.T) {
 			require.NoError(t, mock.ExpectationsWereMet(), "DB expectations not met")
 		})
 	}
+}
+
+type keepConnectionAliveTest struct {
+	name       string
+	setupMocks func(mock sqlmock.Sqlmock)
+	ctxFunc    func() (context.Context, context.CancelFunc)
+	interval   time.Duration
+}
+
+func Test_keepConnectionAlive(t *testing.T) {
+	t.Parallel()
+
+	tests := []keepConnectionAliveTest{
+		{
+			name: "context done while executing SELECT 1 to keep the conn alive",
+			setupMocks: func(mock sqlmock.Sqlmock) {
+				mock.ExpectQuery("SELECT 1").
+					WillReturnRows(sqlmock.NewRows([]string{"result"}).AddRow(1))
+			},
+			ctxFunc: func() (context.Context, context.CancelFunc) {
+				return context.WithTimeout(context.Background(), 1*time.Second)
+			},
+			interval: 1 * time.Second,
+		},
+		{
+			name: "context done while executing SELECT 1 to keep the conn alive",
+			setupMocks: func(mock sqlmock.Sqlmock) {
+				mock.ExpectQuery("SELECT 1").
+					WillReturnError(fmt.Errorf("can't SELECT 1 at this time"))
+			},
+			ctxFunc: func() (context.Context, context.CancelFunc) {
+				return context.WithTimeout(context.Background(), 2*time.Second)
+			},
+			interval: 1 * time.Second,
+		},
+		{
+			name: "successfully keeping the conn alive",
+			setupMocks: func(mock sqlmock.Sqlmock) {
+				mock.ExpectQuery("SELECT 1").
+					WillReturnRows(sqlmock.NewRows([]string{"result"}).AddRow(1))
+			},
+			ctxFunc: func() (context.Context, context.CancelFunc) {
+				return context.WithTimeout(context.Background(), 2*time.Second)
+			},
+			interval: 1 * time.Second,
+		},
+		{
+			name: "context done before even getting a change of trying to keep the conn alive",
+			setupMocks: func(mock sqlmock.Sqlmock) {
+				mock.ExpectQuery("SELECT 1").
+					WillReturnRows(sqlmock.NewRows([]string{"result"}).AddRow(1))
+			},
+			ctxFunc: func() (context.Context, context.CancelFunc) {
+				return context.WithTimeout(context.Background(), 1*time.Millisecond)
+			},
+			interval: 1 * time.Second,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			runKeepConnectionAlive(t, tt)
+		})
+	}
+}
+
+func runKeepConnectionAlive(t *testing.T, tt keepConnectionAliveTest) {
+	t.Helper()
+
+	mockDB, mock, _ := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
+	defer func() { _ = mockDB.Close() }()
+
+	if tt.setupMocks != nil {
+		tt.setupMocks(mock)
+	}
+
+	ctx, cancel := tt.ctxFunc()
+	defer cancel()
+
+	conn, err := mockDB.Conn(ctx)
+	require.NoError(t, err)
+
+	keepConnectionAlive(ctx, conn, tt.interval)
 }
