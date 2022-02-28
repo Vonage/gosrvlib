@@ -123,50 +123,55 @@ type keepConnectionAliveTest struct {
 func Test_keepConnectionAlive(t *testing.T) {
 	t.Parallel()
 
+	const (
+		intervalFullTime = 20 * time.Millisecond
+		intervalHalfTime = 10 * time.Millisecond
+	)
+
 	tests := []keepConnectionAliveTest{
 		{
-			name: "context done while executing SELECT 1 to keep the conn alive",
+			name: "context done while executing keep alive query",
 			setupMocks: func(mock sqlmock.Sqlmock) {
-				mock.ExpectQuery("SELECT 1").
+				mock.ExpectQuery(keepAliveSQLQuery).
 					WillReturnRows(sqlmock.NewRows([]string{"result"}).AddRow(1))
 			},
 			ctxFunc: func() (context.Context, context.CancelFunc) {
-				return context.WithTimeout(context.Background(), 100*time.Millisecond)
+				return context.WithTimeout(context.Background(), intervalFullTime)
 			},
-			interval: 100 * time.Millisecond,
+			interval: intervalFullTime,
 		},
 		{
-			name: "context done while executing SELECT 1 to keep the conn alive",
+			name: "error while executing keep alive query",
 			setupMocks: func(mock sqlmock.Sqlmock) {
-				mock.ExpectQuery("SELECT 1").
-					WillReturnError(fmt.Errorf("can't SELECT 1 at this time"))
+				mock.ExpectQuery(keepAliveSQLQuery).
+					WillReturnError(fmt.Errorf("can't execute keep alive query at this time"))
 			},
 			ctxFunc: func() (context.Context, context.CancelFunc) {
-				return context.WithTimeout(context.Background(), 100*time.Millisecond)
+				return context.WithTimeout(context.Background(), intervalFullTime)
 			},
-			interval: 50 * time.Millisecond,
+			interval: intervalHalfTime,
 		},
 		{
-			name: "successfully keeping the conn alive",
+			name: "successfully keeping the connection alive",
 			setupMocks: func(mock sqlmock.Sqlmock) {
-				mock.ExpectQuery("SELECT 1").
+				mock.ExpectQuery(keepAliveSQLQuery).
 					WillReturnRows(sqlmock.NewRows([]string{"result"}).AddRow(1))
 			},
 			ctxFunc: func() (context.Context, context.CancelFunc) {
-				return context.WithTimeout(context.Background(), 100*time.Millisecond)
+				return context.WithTimeout(context.Background(), intervalFullTime)
 			},
-			interval: 50 * time.Millisecond,
+			interval: intervalHalfTime,
 		},
 		{
-			name: "context done before even getting a change of trying to keep the conn alive",
+			name: "context done before even getting a change of trying to keep the connection alive",
 			setupMocks: func(mock sqlmock.Sqlmock) {
-				mock.ExpectQuery("SELECT 1").
+				mock.ExpectQuery(keepAliveSQLQuery).
 					WillReturnRows(sqlmock.NewRows([]string{"result"}).AddRow(1))
 			},
 			ctxFunc: func() (context.Context, context.CancelFunc) {
-				return context.WithTimeout(context.Background(), 100*time.Millisecond)
+				return context.WithTimeout(context.Background(), intervalFullTime)
 			},
-			interval: 50 * time.Millisecond,
+			interval: intervalHalfTime,
 		},
 	}
 	for _, tt := range tests {

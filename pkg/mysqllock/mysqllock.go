@@ -24,13 +24,15 @@ var (
 )
 
 const (
-	resLockError      = -1
-	resLockTimeout    = 0
-	resLockAcquired   = 1
-	keepAliveInterval = 30 * time.Second
+	resLockError    = -1
+	resLockTimeout  = 0
+	resLockAcquired = 1
 
 	sqlGetLock     = "SELECT COALESCE(GET_LOCK(?, ?), ?)"
 	sqlReleaseLock = "DO RELEASE_LOCK(?)"
+
+	keepAliveInterval = 30 * time.Second
+	keepAliveSQLQuery = "SELECT 1"
 )
 
 // MySQLLock represents a locker.
@@ -89,7 +91,7 @@ func keepConnectionAlive(ctx context.Context, conn *sql.Conn, interval time.Dura
 		select {
 		case <-time.After(interval):
 			// nolint:rowserrcheck
-			rows, err := conn.QueryContext(ctx, "SELECT 1")
+			rows, err := conn.QueryContext(ctx, keepAliveSQLQuery)
 			if err != nil {
 				logging.FromContext(ctx).Error("error while keeping mysqllock connection alive", zap.Error(err))
 				return
