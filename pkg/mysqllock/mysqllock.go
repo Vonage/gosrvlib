@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/nexmoinc/gosrvlib/pkg/logging"
+	"go.uber.org/zap"
 )
 
 // ReleaseFunc is an alias for a release lock function.
@@ -26,6 +27,7 @@ const (
 	resLockError    = -1
 	resLockTimeout  = 0
 	resLockAcquired = 1
+	keepAliveInterval = 30*time.Second
 
 	sqlGetLock     = "SELECT COALESCE(GET_LOCK(?, ?), ?)"
 	sqlReleaseLock = "DO RELEASE_LOCK(?)"
@@ -55,12 +57,14 @@ func (l *MySQLLock) Acquire(ctx context.Context, key string, timeout time.Durati
 		return nil, fmt.Errorf("scan acquire lock result: %w", err)
 	}
 
-	releaseFunc := func() error {
-		defer logging.Close(ctx, conn, "error closing lock connection")
+	releaseCtx, cancelReleaseCtx := context.WithCancel(context.Background())
+	releaseCtx = logging.WithLogger(releaseCtx, logging.FromContext(ctx))
 
-		// background context used to ensure that release lock is always executed
-		// nolint: contextcheck
-		if _, err := conn.ExecContext(context.Background(), sqlReleaseLock, key); err != nil {
+	releaseFunc := func() error {
+		defer logging.Close(releaseCtx, conn, "error closing lock connection")
+		defer cancelReleaseCtx()
+
+		if _, err := conn.ExecContext(releaseCtx, sqlReleaseLock, key); err != nil {
 			return fmt.Errorf("release lock: %w", err)
 		}
 
@@ -69,10 +73,31 @@ func (l *MySQLLock) Acquire(ctx context.Context, key string, timeout time.Durati
 
 	switch res {
 	case resLockAcquired:
+		go keepConnectionAlive(releaseCtx, conn, keepAliveInterval)
 		return releaseFunc, nil
 	case resLockTimeout:
+		cancelReleaseCtx()
 		return nil, ErrTimeout
 	default:
+		cancelReleaseCtx()
 		return nil, ErrFailed
+	}
+}
+
+func keepConnectionAlive(ctx context.Context, conn *sql.Conn, interval time.Duration) {
+	for {
+		select {
+		case <-time.After(interval):
+			// nolint:rowserrcheck
+			rows, err := conn.QueryContext(ctx, "SELECT 1")
+			if err != nil {
+				logging.FromContext(ctx).Error("error while keeping mysqllock connection alive", zap.Error(err))
+				return
+			}
+
+			logging.Close(ctx, rows, "failed closing SQL rows")
+		case <-ctx.Done():
+			return
+		}
 	}
 }
