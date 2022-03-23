@@ -7,12 +7,14 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 )
 
-type awsConfig struct {
+// Config contains the AWS configuration options.
+type Config struct {
 	awsOpts []func(*config.LoadOptions) error
 }
 
+// loadConfig loads the AWS configuration with the specified options.
 func loadConfig(ctx context.Context, opts ...Option) (aws.Config, error) {
-	cfg := &awsConfig{}
+	cfg := &Config{}
 
 	for _, apply := range opts {
 		apply(cfg)

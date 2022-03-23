@@ -15,13 +15,13 @@ func Test_WithEndpoint(t *testing.T) {
 		name      string
 		url       string
 		immutable bool
-		want      *awsConfig
+		want      *Config
 	}{
 		{
 			name:      "Immutable URL",
 			url:       "test_a",
 			immutable: true,
-			want: &awsConfig{awsOpts: []func(*config.LoadOptions) error{
+			want: &Config{awsOpts: []func(*config.LoadOptions) error{
 				config.WithEndpointResolverWithOptions(endpointResolver{url: "test_a", isImmutable: true})},
 			},
 		},
@@ -29,7 +29,7 @@ func Test_WithEndpoint(t *testing.T) {
 			name:      "Mutable URL",
 			url:       "test_b",
 			immutable: false,
-			want: &awsConfig{awsOpts: []func(*config.LoadOptions) error{
+			want: &Config{awsOpts: []func(*config.LoadOptions) error{
 				config.WithEndpointResolverWithOptions(endpointResolver{url: "test_b", isImmutable: false})},
 			},
 		},
@@ -41,7 +41,7 @@ func Test_WithEndpoint(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			cfg := &awsConfig{}
+			cfg := &Config{}
 			gotFn := WithEndpoint(tt.url, tt.immutable)
 
 			gotFn(cfg)
