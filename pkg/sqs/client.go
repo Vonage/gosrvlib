@@ -51,7 +51,7 @@ type Message struct {
 	// A unique identifier for the message.
 	MessageId string
 
-	ReceiptHandle string
+	deleteCB func(ctx context.Context) error
 }
 
 // Send delivers a message to the queue.
@@ -87,23 +87,26 @@ func (c *Client) Receive(ctx context.Context) ([]Message, error) {
 	for i, msg := range resp.Messages {
 		result[i].Body = aws.ToString(msg.Body)
 		result[i].MessageId = aws.ToString(msg.MessageId)
-		result[i].ReceiptHandle = aws.ToString(msg.ReceiptHandle)
+
+		result[i].deleteCB = func(ctx context.Context) error {
+			_, err := c.sqs.DeleteMessage(
+				ctx,
+				&sqs.DeleteMessageInput{
+					QueueUrl:      c.queueURL,
+					ReceiptHandle: msg.ReceiptHandle,
+				})
+			if err != nil {
+				return fmt.Errorf("cannot delete message from the queue: %w", err)
+			}
+
+			return nil
+		}
 	}
 
 	return result, nil
 }
 
 // Delete deletes a processed message from the queue.
-func (c *Client) Delete(ctx context.Context, receiptHandle string) error {
-	_, err := c.sqs.DeleteMessage(
-		ctx,
-		&sqs.DeleteMessageInput{
-			QueueUrl:      c.queueURL,
-			ReceiptHandle: aws.String(receiptHandle),
-		})
-	if err != nil {
-		return fmt.Errorf("cannot delete message from the queue: %w", err)
-	}
-
-	return nil
+func (c *Message) Delete(ctx context.Context) error {
+	return c.deleteCB(ctx)
 }
