@@ -87,23 +87,26 @@ func (c *Client) Receive(ctx context.Context) ([]Message, error) {
 	for i, msg := range resp.Messages {
 		result[i].Body = aws.ToString(msg.Body)
 		result[i].MessageId = aws.ToString(msg.MessageId)
-
 		result[i].deleteCB = func(ctx context.Context) error {
-			_, err := c.sqs.DeleteMessage(
-				ctx,
-				&sqs.DeleteMessageInput{
-					QueueUrl:      c.queueURL,
-					ReceiptHandle: msg.ReceiptHandle,
-				})
-			if err != nil {
-				return fmt.Errorf("cannot delete message from the queue: %w", err)
-			}
-
-			return nil
+			return c.delete(ctx, msg.ReceiptHandle)
 		}
 	}
 
 	return result, nil
+}
+
+func (c *Client) delete(ctx context.Context, receiptHandle *string) error {
+	_, err := c.sqs.DeleteMessage(
+		ctx,
+		&sqs.DeleteMessageInput{
+			QueueUrl:      c.queueURL,
+			ReceiptHandle: receiptHandle,
+		})
+	if err != nil {
+		return fmt.Errorf("cannot delete message from the queue: %w", err)
+	}
+
+	return nil
 }
 
 // Delete deletes a processed message from the queue.

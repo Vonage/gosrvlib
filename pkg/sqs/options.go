@@ -16,7 +16,10 @@ func withAWSOption(opt func(*config.LoadOptions) error) Option {
 
 // WithEndpoint overrides the AWS endpoint for the service.
 func WithEndpoint(url string, isImmutable bool) Option {
-	return withAWSOption(config.WithEndpointResolverWithOptions(endpointResolver{url: url, isImmutable: isImmutable}))
+	return withAWSOption(config.WithEndpointResolverWithOptions(&endpointResolver{
+		url:         url,
+		isImmutable: isImmutable,
+	}))
 }
 
 type endpointResolver struct {
@@ -24,6 +27,10 @@ type endpointResolver struct {
 	isImmutable bool
 }
 
-func (r endpointResolver) ResolveEndpoint(_, _ string, _ ...interface{}) (aws.Endpoint, error) {
-	return aws.Endpoint{URL: r.url, HostnameImmutable: r.isImmutable}, nil
+func (r endpointResolver) ResolveEndpoint(_, region string, _ ...interface{}) (aws.Endpoint, error) {
+	return aws.Endpoint{
+		SigningRegion:     region,
+		URL:               r.url,
+		HostnameImmutable: r.isImmutable,
+	}, nil
 }
