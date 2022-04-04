@@ -8,6 +8,16 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func Test_WithWaitTimeSeconds(t *testing.T) {
+	t.Parallel()
+
+	var v int32 = 17
+
+	conf := &cfg{}
+	WithWaitTimeSeconds(v)(conf)
+	require.Equal(t, v, conf.waitTimeSeconds)
+}
+
 func Test_WithEndpoint(t *testing.T) {
 	t.Parallel()
 

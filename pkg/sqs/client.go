@@ -38,9 +38,10 @@ func New(ctx context.Context, queueURL, msgGroupID string, opts ...Option) (*Cli
 	}
 
 	return &Client{
-		sqs:            sqs.NewFromConfig(cfg),
-		queueURL:       aws.String(queueURL),
-		messageGroupID: aws.String(msgGroupID),
+		sqs:             sqs.NewFromConfig(cfg.awsConfig),
+		queueURL:        aws.String(queueURL),
+		messageGroupID:  aws.String(msgGroupID),
+		waitTimeSeconds: cfg.waitTimeSeconds,
 	}, nil
 }
 

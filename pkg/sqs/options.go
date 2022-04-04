@@ -8,9 +8,10 @@ import (
 // Option is a type to allow setting custom client options.
 type Option func(*cfg)
 
-func withAWSOption(opt func(*config.LoadOptions) error) Option {
+// WithWaitTimeSeconds overrides the default duration (in seconds) for which the call waits for a message to arrive in the queue before returning.
+func WithWaitTimeSeconds(t int32) Option {
 	return func(c *cfg) {
-		c.awsOpts = append(c.awsOpts, opt)
+		c.waitTimeSeconds = t
 	}
 }
 
@@ -20,6 +21,12 @@ func WithEndpoint(url string, isImmutable bool) Option {
 		url:         url,
 		isImmutable: isImmutable,
 	}))
+}
+
+func withAWSOption(opt func(*config.LoadOptions) error) Option {
+	return func(c *cfg) {
+		c.awsOpts = append(c.awsOpts, opt)
+	}
 }
 
 type endpointResolver struct {

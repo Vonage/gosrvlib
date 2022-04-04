@@ -13,14 +13,21 @@ import (
 
 // nolint: paralleltest
 func TestNew(t *testing.T) {
-	opt := WithEndpoint("test", true)
+	var wt int32 = 23
 
-	got, err := New(context.TODO(), "test_queue_url_0", "TEST_MSG_GROUP_ID_0", opt)
+	got, err := New(
+		context.TODO(),
+		"test_queue_url_0",
+		"TEST_MSG_GROUP_ID_0",
+		WithEndpoint("test", true),
+		WithWaitTimeSeconds(wt),
+	)
 
 	require.NoError(t, err)
 	require.NotNil(t, got)
 	require.Equal(t, aws.String("test_queue_url_0"), got.queueURL)
 	require.Equal(t, aws.String("TEST_MSG_GROUP_ID_0"), got.messageGroupID)
+	require.Equal(t, wt, got.waitTimeSeconds)
 
 	// make AWS lib to return an error
 	t.Setenv("AWS_ENABLE_ENDPOINT_DISCOVERY", "ERROR")
