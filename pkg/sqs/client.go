@@ -58,8 +58,8 @@ type Message struct {
 	// can contain: JSON, XML, plain text.
 	Body string
 
-	// id is the identifier used to delete the message.
-	id *string
+	// receiptHandle is the identifier used to delete the message.
+	receiptHandle *string
 }
 
 // Send delivers a message to the queue.
@@ -99,8 +99,8 @@ func (c *Client) Receive(ctx context.Context) (*Message, error) {
 	}
 
 	return &Message{
-		Body: aws.ToString(resp.Messages[0].Body),
-		id:   resp.Messages[0].ReceiptHandle,
+		Body:          aws.ToString(resp.Messages[0].Body),
+		receiptHandle: resp.Messages[0].ReceiptHandle,
 	}, nil
 }
 
@@ -110,7 +110,7 @@ func (c *Client) Delete(ctx context.Context, msg *Message) error {
 		ctx,
 		&sqs.DeleteMessageInput{
 			QueueUrl:      c.queueURL,
-			ReceiptHandle: msg.id,
+			ReceiptHandle: msg.receiptHandle,
 		})
 	if err != nil {
 		return fmt.Errorf("cannot delete message from the queue: %w", err)
