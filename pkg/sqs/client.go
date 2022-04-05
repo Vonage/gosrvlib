@@ -79,6 +79,9 @@ func (c *Client) Send(ctx context.Context, message string) error {
 }
 
 // Receive retrieves a message from the queue.
+// This function will wait up to WaitTimeSeconds seconds for a message to be available, otherwise it will return an empty message.
+// Once retrieved, a message will not be visible for up to VisibilityTimeout seconds.
+// Once processed the message should be removed from the queue by calling the Delete method.
 func (c *Client) Receive(ctx context.Context) (*Message, error) {
 	resp, err := c.sqs.ReceiveMessage(
 		ctx,

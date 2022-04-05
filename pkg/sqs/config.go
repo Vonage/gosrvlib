@@ -13,7 +13,7 @@ const (
 	DefaultWaitTimeSeconds = 60
 
 	// DefaultVisibilityTimeout is the default duration (in seconds) that the received messages are hidden from subsequent retrieve requests after being retrieved by a ReceiveMessage request.
-	DefaultVisibilityTimeout = 300
+	DefaultVisibilityTimeout = 600
 )
 
 type cfg struct {
@@ -43,9 +43,11 @@ func loadConfig(ctx context.Context, opts ...Option) (*cfg, error) {
 
 	awsConfig, err := config.LoadDefaultConfig(ctx, c.awsOpts...)
 
-	if err == nil {
-		c.awsConfig = awsConfig
+	if err != nil {
+		return nil, fmt.Errorf("unable to load AWS options: %w", err)
 	}
 
-	return c, err // nolint: wrapcheck
+	c.awsConfig = awsConfig
+
+	return c, nil
 }
