@@ -8,9 +8,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// nolint: paralleltest
 func Test_loadConfig(t *testing.T) {
-	t.Parallel()
-
 	var (
 		wt  int32 = 13
 		vt  int32 = 17
@@ -51,6 +50,14 @@ func Test_loadConfig(t *testing.T) {
 		context.TODO(),
 		WithVisibilityTimeout(43201),
 	)
+
+	require.Error(t, err)
+	require.Nil(t, got)
+
+	// force aws config.LoadDefaultConfig to fail
+	t.Setenv("AWS_ENABLE_ENDPOINT_DISCOVERY", "ERROR")
+
+	got, err = loadConfig(context.TODO())
 
 	require.Error(t, err)
 	require.Nil(t, got)
