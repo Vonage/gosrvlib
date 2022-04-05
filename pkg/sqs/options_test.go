@@ -11,11 +11,21 @@ import (
 func Test_WithWaitTimeSeconds(t *testing.T) {
 	t.Parallel()
 
-	var v int32 = 17
+	var v int32 = 13
 
 	conf := &cfg{}
 	WithWaitTimeSeconds(v)(conf)
 	require.Equal(t, v, conf.waitTimeSeconds)
+}
+
+func Test_WithVisibilityTimeout(t *testing.T) {
+	t.Parallel()
+
+	var v int32 = 17
+
+	conf := &cfg{}
+	WithVisibilityTimeout(v)(conf)
+	require.Equal(t, v, conf.visibilityTimeout)
 }
 
 func Test_WithEndpoint(t *testing.T) {

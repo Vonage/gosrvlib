@@ -27,7 +27,14 @@ type Client struct {
 	messageGroupID *string
 
 	// waitTimeSeconds is the duration (in seconds) for which the call waits for a message to arrive in the queue before returning.
+	// If a message is available, the call returns soonerthan WaitTimeSeconds.
+	// If no messages are available and the wait time expires, the call returns successfully with an empty list of messages.
+	// The value of this parameter must be smaller than the HTTP response timeout.
 	waitTimeSeconds int32
+
+	// The duration (in seconds) that the received messages are hidden from subsequent retrieve requests after being retrieved by a ReceiveMessage request.
+	// Values range: 0 to 43200. Maximum: 12 hours.
+	visibilityTimeout int32
 }
 
 // New creates a new instance of the SQS client wrapper.
@@ -38,10 +45,11 @@ func New(ctx context.Context, queueURL, msgGroupID string, opts ...Option) (*Cli
 	}
 
 	return &Client{
-		sqs:             sqs.NewFromConfig(cfg.awsConfig),
-		queueURL:        aws.String(queueURL),
-		messageGroupID:  aws.String(msgGroupID),
-		waitTimeSeconds: cfg.waitTimeSeconds,
+		sqs:               sqs.NewFromConfig(cfg.awsConfig),
+		queueURL:          aws.String(queueURL),
+		messageGroupID:    aws.String(msgGroupID),
+		waitTimeSeconds:   cfg.waitTimeSeconds,
+		visibilityTimeout: cfg.visibilityTimeout,
 	}, nil
 }
 
@@ -75,8 +83,9 @@ func (c *Client) Receive(ctx context.Context) (*Message, error) {
 	resp, err := c.sqs.ReceiveMessage(
 		ctx,
 		&sqs.ReceiveMessageInput{
-			QueueUrl:        c.queueURL,
-			WaitTimeSeconds: c.waitTimeSeconds,
+			QueueUrl:          c.queueURL,
+			WaitTimeSeconds:   c.waitTimeSeconds,
+			VisibilityTimeout: c.visibilityTimeout,
 		})
 	if err != nil {
 		return nil, fmt.Errorf("cannot retrieve message from the queue: %w", err)
