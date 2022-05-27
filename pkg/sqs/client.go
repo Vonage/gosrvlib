@@ -16,6 +16,8 @@ type SQS interface {
 	SendMessage(ctx context.Context, params *sqs.SendMessageInput, optFns ...func(*sqs.Options)) (*sqs.SendMessageOutput, error)
 	ReceiveMessage(ctx context.Context, params *sqs.ReceiveMessageInput, optFns ...func(*sqs.Options)) (*sqs.ReceiveMessageOutput, error)
 	DeleteMessage(ctx context.Context, params *sqs.DeleteMessageInput, optFns ...func(*sqs.Options)) (*sqs.DeleteMessageOutput, error)
+	ListQueues(ctx context.Context, params *sqs.ListQueuesInput, optFns ...func(*sqs.Options)) (*sqs.ListQueuesOutput, error)
+	GetQueueUrl(ctx context.Context, params *sqs.GetQueueUrlInput, optFns ...func(*sqs.Options)) (*sqs.GetQueueUrlOutput, error)
 }
 
 // Client is a wrapper for the SQS client in the AWS SDK.
@@ -181,4 +183,18 @@ func (c *Client) ReceiveData(ctx context.Context, data interface{}) (string, err
 	err = MessageDecode(message.Body, data)
 
 	return message.ReceiptHandle, err
+}
+
+// ListQueues lists all available queues.
+func (c *Client) ListQueues(ctx context.Context) (*sqs.ListQueuesOutput, error) {
+	return c.sqs.ListQueues(ctx, &sqs.ListQueuesInput{
+		MaxResults: aws.Int32(1000),
+	})
+}
+
+// GetQueueURL returns the URL of an existing queue.
+func (c *Client) GetQueueURL(ctx context.Context) (*sqs.GetQueueUrlOutput, error) {
+	return c.sqs.GetQueueUrl(ctx, &sqs.GetQueueUrlInput{
+		QueueName: c.queueURL,
+	})
 }
