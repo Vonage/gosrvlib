@@ -20,7 +20,7 @@ func TestNew(t *testing.T) {
 
 	got, err := New(
 		context.TODO(),
-		"test_queue_url_0",
+		"https://test_queue.invalid/queue0.fifo",
 		"TEST_MSG_GROUP_ID_0",
 		WithEndpoint("test", true),
 		WithWaitTimeSeconds(wt),
@@ -29,10 +29,14 @@ func TestNew(t *testing.T) {
 
 	require.NoError(t, err)
 	require.NotNil(t, got)
-	require.Equal(t, aws.String("test_queue_url_0"), got.queueURL)
+	require.Equal(t, aws.String("https://test_queue.invalid/queue0.fifo"), got.queueURL)
 	require.Equal(t, aws.String("TEST_MSG_GROUP_ID_0"), got.messageGroupID)
 	require.Equal(t, wt, got.waitTimeSeconds)
 	require.Equal(t, vt, got.visibilityTimeout)
+
+	got, err = New(context.TODO(), "http://invalid-url.domain.invalid\u007F", "")
+	require.Error(t, err)
+	require.Nil(t, got)
 
 	// make AWS lib to return an error
 	t.Setenv("AWS_ENABLE_ENDPOINT_DISCOVERY", "ERROR")
@@ -96,7 +100,7 @@ func TestSend(t *testing.T) {
 			t.Parallel()
 
 			ctx := context.TODO()
-			cli, err := New(ctx, "test_queue_url_1", "TEST_MSG_GROUP_ID_1")
+			cli, err := New(ctx, "https://test_queue.invalid/queue1.fifo", "TEST_MSG_GROUP_ID_1")
 			require.NoError(t, err)
 			require.NotNil(t, cli)
 
@@ -165,7 +169,7 @@ func TestReceive(t *testing.T) {
 			t.Parallel()
 
 			ctx := context.TODO()
-			cli, err := New(ctx, "test_queue_url_2", "TEST_MSG_GROUP_ID_2")
+			cli, err := New(ctx, "https://test_queue.invalid/queue2.fifo", "TEST_MSG_GROUP_ID_2")
 			require.NoError(t, err)
 			require.NotNil(t, cli)
 
@@ -225,7 +229,7 @@ func TestDelete(t *testing.T) {
 			t.Parallel()
 
 			ctx := context.TODO()
-			cli, err := New(ctx, "test_queue_url_3", "TEST_MSG_GROUP_ID_3")
+			cli, err := New(ctx, "https://test_queue.invalid/queue3.fifo", "TEST_MSG_GROUP_ID_3")
 			require.NoError(t, err)
 			require.NotNil(t, cli)
 
@@ -319,7 +323,7 @@ func TestSendData(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.TODO()
-	cli, err := New(ctx, "test_queue_url_3", "TEST_MSG_GROUP_ID_3")
+	cli, err := New(ctx, "https://test_queue.invalid/queue4.fifo", "TEST_MSG_GROUP_ID_4")
 	require.NoError(t, err)
 	require.NotNil(t, cli)
 
@@ -381,7 +385,7 @@ func TestReceiveData(t *testing.T) {
 		{
 			name: "error",
 			mock: sqsmock{receiveFn: func(ctx context.Context, params *sqs.ReceiveMessageInput, optFns ...func(*sqs.Options)) (*sqs.ReceiveMessageOutput, error) {
-				return nil, fmt.Errorf("some err")
+				return nil, fmt.Errorf("error")
 			}},
 			want:    "",
 			wantErr: true,
@@ -410,7 +414,7 @@ func TestReceiveData(t *testing.T) {
 			t.Parallel()
 
 			ctx := context.TODO()
-			cli, err := New(ctx, "test_queue_url_4", "TEST_MSG_GROUP_ID_4")
+			cli, err := New(ctx, "https://test_queue.invalid/queue5.fifo", "TEST_MSG_GROUP_ID_5")
 			require.NoError(t, err)
 			require.NotNil(t, cli)
 
@@ -429,6 +433,65 @@ func TestReceiveData(t *testing.T) {
 			require.Equal(t, tt.want, got)
 			require.Equal(t, tt.data.Alpha, data.Alpha)
 			require.Equal(t, tt.data.Beta, data.Beta)
+		})
+	}
+}
+
+func TestHealthCheck(t *testing.T) {
+	t.Parallel()
+
+	queueURL := "https://test_queue.invalid/queue6.fifo"
+
+	tests := []struct {
+		name    string
+		mock    SQS
+		wantErr bool
+	}{
+		{
+			name: "success",
+			mock: sqsmock{listQueuesFn: func(ctx context.Context, params *sqs.ListQueuesInput, optFns ...func(*sqs.Options)) (*sqs.ListQueuesOutput, error) {
+				return &sqs.ListQueuesOutput{
+					QueueUrls: []string{queueURL},
+				}, nil
+			}},
+			wantErr: false,
+		},
+		{
+			name: "no queue",
+			mock: sqsmock{listQueuesFn: func(ctx context.Context, params *sqs.ListQueuesInput, optFns ...func(*sqs.Options)) (*sqs.ListQueuesOutput, error) {
+				return &sqs.ListQueuesOutput{}, nil
+			}},
+			wantErr: true,
+		},
+		{
+			name: "error",
+			mock: sqsmock{listQueuesFn: func(ctx context.Context, params *sqs.ListQueuesInput, optFns ...func(*sqs.Options)) (*sqs.ListQueuesOutput, error) {
+				return &sqs.ListQueuesOutput{}, fmt.Errorf("error")
+			}},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			ctx := context.TODO()
+			cli, err := New(ctx, queueURL, "TEST_MSG_GROUP_ID_6")
+			require.NoError(t, err)
+			require.NotNil(t, cli)
+
+			cli.sqs = tt.mock
+
+			err = cli.HealthCheck(ctx)
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
 		})
 	}
 }
