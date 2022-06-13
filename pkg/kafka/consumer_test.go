@@ -1,10 +1,10 @@
 package kafka
 
 import (
+	"context"
 	"testing"
-	"time"
 
-	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/segmentio/kafka-go"
 	"github.com/stretchr/testify/require"
 )
 
@@ -12,44 +12,19 @@ func TestConsumer(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
-		name                          string
-		urls                          []string
-		topics                        []string
-		groupID                       string
-		options                       []Option
-		expectedTimeout               time.Duration
-		expectedAutoOffsetResetPolicy Offset
-		expectErr                     bool
+		name      string
+		urls      []string
+		topic     string
+		groupID   string
+		options   []Option
+		expectErr bool
 	}{
 		{
-			name:    "success",
-			urls:    []string{"url1", "url2"},
-			topics:  []string{"topic1", "topic2"},
-			groupID: "one",
-			options: []Option{
-				WithSessionTimeout(time.Second * 10),
-				WithAutoOffsetResetPolicy(OffsetLatest),
-			},
-			expectedTimeout:               time.Second * 10,
-			expectedAutoOffsetResetPolicy: OffsetLatest,
-			expectErr:                     false,
-		},
-		{
-			name:    "bad offset",
-			urls:    []string{"url1", "url2"},
-			topics:  []string{"topic1", "topic2"},
-			groupID: "one",
-			options: []Option{
-				WithAutoOffsetResetPolicy("bad offset"),
-			},
-			expectErr: true,
-		},
-		{
-			name:      "empty topics",
+			name:      "success",
 			urls:      []string{"url1", "url2"},
-			topics:    nil,
+			topic:     "topic1",
 			groupID:   "one",
-			expectErr: true,
+			expectErr: false,
 		},
 	}
 
@@ -59,21 +34,13 @@ func TestConsumer(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			consumer, err := NewConsumer(tt.urls, tt.topics, tt.groupID, tt.options...)
+			consumer, err := NewConsumer(tt.urls, tt.topic, tt.groupID)
 
 			if tt.expectErr {
 				require.Error(t, err)
 			} else {
 				require.Nil(t, err)
 				require.NotNil(t, consumer, "consumerClient is nil")
-
-				timeout, err := consumer.cfg.configMap.Get("session.timeout.ms", 0)
-				require.Nil(t, err)
-				require.Equal(t, int(tt.expectedTimeout.Milliseconds()), timeout)
-
-				offset, err := consumer.cfg.configMap.Get("auto.offset.reset", string(OffsetNone))
-				require.Nil(t, err)
-				require.Equal(t, string(tt.expectedAutoOffsetResetPolicy), offset)
 
 				require.Nil(t, consumer.Close())
 			}
@@ -83,8 +50,8 @@ func TestConsumer(t *testing.T) {
 
 type mockConsumerClient struct{}
 
-func (m mockConsumerClient) ReadMessage(_ time.Duration) (*kafka.Message, error) {
-	return &kafka.Message{Value: []byte{1}}, nil
+func (m mockConsumerClient) ReadMessage(_ context.Context) (kafka.Message, error) {
+	return kafka.Message{Value: []byte{1}}, nil
 }
 
 func (m mockConsumerClient) Close() error {
@@ -96,17 +63,19 @@ func TestConsumerReadMessage(t *testing.T) {
 
 	consumer, err := NewConsumer(
 		[]string{"url1", "url2"},
-		[]string{"topic1", "topic2"},
+		"topic1",
 		"group1",
 	)
 	require.Nil(t, err, "NewConsumer() unexpected error = %v", err)
 
-	msg, err := consumer.ReadMessage()
+	ctx := context.TODO()
+
+	msg, err := consumer.ReadMessage(ctx)
 	require.Error(t, err)
 	require.Nil(t, msg)
 
 	consumer.client = mockConsumerClient{}
-	msg, err = consumer.ReadMessage()
+	msg, err = consumer.ReadMessage(ctx)
 	require.NoError(t, err)
 	require.NotNil(t, msg)
 }

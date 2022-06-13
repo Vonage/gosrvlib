@@ -1,10 +1,11 @@
 package kafka
 
 import (
+	"context"
 	"testing"
 	"time"
 
-	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/segmentio/kafka-go"
 	"github.com/stretchr/testify/require"
 )
 
@@ -14,6 +15,7 @@ func TestProducer(t *testing.T) {
 	testCases := []struct {
 		name                       string
 		urls                       []string
+		topic                      string
 		options                    []Option
 		expectedTimeout            time.Duration
 		expectedProduceChannelSize int
@@ -23,23 +25,9 @@ func TestProducer(t *testing.T) {
 			name: "success",
 			urls: []string{"url1", "url2"},
 			options: []Option{
-				WithSessionTimeout(time.Second * 10),
-				WithProduceChannelSize(1_000),
+				WithSessionTimeout(time.Second * 20),
 			},
-			expectedTimeout:            time.Second * 10,
-			expectedProduceChannelSize: 1_000,
-		},
-		{
-			name: "bad param",
-			urls: []string{"url1", "url2"},
-			options: []Option{
-				WithSessionTimeout(time.Second * 10),
-				WithProduceChannelSize(1_000),
-				WithConfigParameter("badkey", 99),
-			},
-			expectedTimeout:            time.Second * 10,
-			expectedProduceChannelSize: 1_000,
-			expectErr:                  true,
+			expectedTimeout: time.Second * 20,
 		},
 	}
 
@@ -49,7 +37,7 @@ func TestProducer(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			producer, err := NewProducer(tt.urls, tt.options...)
+			producer, err := NewProducer(tt.urls, tt.topic, tt.options...)
 
 			if tt.expectErr {
 				require.Error(t, err)
@@ -57,15 +45,10 @@ func TestProducer(t *testing.T) {
 				require.NotNil(t, producer)
 				require.Nil(t, err)
 
-				timeout, err := producer.cfg.configMap.Get("session.timeout.ms", 0)
-				require.Nil(t, err)
-				require.Equal(t, int(tt.expectedTimeout.Milliseconds()), timeout)
+				require.Equal(t, tt.expectedTimeout, producer.cfg.sessionTimeout)
 
-				offset, err := producer.cfg.configMap.Get("go.produce.channel.size", 0)
-				require.Nil(t, err)
-				require.Equal(t, tt.expectedProduceChannelSize, offset)
-
-				producer.Close()
+				err := producer.Close()
+				require.NoError(t, err)
 			}
 		})
 	}
@@ -73,22 +56,24 @@ func TestProducer(t *testing.T) {
 
 type mockProducerClient struct{}
 
-func (m mockProducerClient) Produce(_ *kafka.Message, _ chan kafka.Event) error {
+func (m mockProducerClient) WriteMessages(ctx context.Context, msg ...kafka.Message) error {
 	return nil
 }
 
-func (m mockProducerClient) Close() {}
+func (m mockProducerClient) Close() error {
+	return nil
+}
 
 func TestProduceMessageError(t *testing.T) {
 	t.Parallel()
 
-	producer, err := NewProducer([]string{"url"})
+	producer, err := NewProducer([]string{"url"}, "test")
 	require.Nil(t, err, "NewProducer() unexpected error = %v", err)
 
-	err = producer.ProduceMessage("", nil)
+	err = producer.ProduceMessage(context.TODO(), nil)
 	require.Error(t, err)
 
-	producer.client = mockProducerClient{}
-	err = producer.ProduceMessage("", nil)
+	producer.client = &mockProducerClient{}
+	err = producer.ProduceMessage(context.TODO(), nil)
 	require.NoError(t, err)
 }

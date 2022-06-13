@@ -1,15 +1,15 @@
 package kafka
 
 import (
+	"context"
 	"fmt"
-	"strings"
 
-	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/segmentio/kafka-go"
 )
 
 type producerClient interface {
-	Produce(msg *kafka.Message, deliveryChan chan kafka.Event) error
-	Close()
+	WriteMessages(ctx context.Context, msg ...kafka.Message) error
+	Close() error
 }
 
 // Producer represents a wrapper around kafka.Producer.
@@ -19,39 +19,34 @@ type Producer struct {
 }
 
 // NewProducer creates a new instance of Producer.
-func NewProducer(urls []string, opts ...Option) (*Producer, error) {
+func NewProducer(urls []string, topic string, opts ...Option) (*Producer, error) {
 	cfg := defaultConfig()
 
 	for _, applyOpt := range opts {
 		applyOpt(cfg)
 	}
 
-	_ = cfg.configMap.SetKey("bootstrap.servers", strings.Join(urls, ","))
-
-	producer, err := kafka.NewProducer(cfg.configMap)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create new kafka producer: %w", err)
+	producer := &kafka.Writer{
+		Addr:     kafka.TCP(urls...),
+		Topic:    topic,
+		Balancer: &kafka.Hash{},
 	}
 
 	return &Producer{cfg: cfg, client: producer}, nil
 }
 
 // Close cleans up Producer's internal resources.
-func (p *Producer) Close() {
-	p.client.Close()
+func (p *Producer) Close() error {
+	return p.client.Close() // nolint:wrapcheck
 }
 
 // ProduceMessage sends a message to Kafka topic.
-func (p *Producer) ProduceMessage(topic string, msg []byte) error {
-	err := p.client.Produce(
-		&kafka.Message{
-			TopicPartition: kafka.TopicPartition{
-				Topic:     &topic,
-				Partition: kafka.PartitionAny,
-			},
+func (p *Producer) ProduceMessage(ctx context.Context, msg []byte) error {
+	err := p.client.WriteMessages(
+		ctx,
+		kafka.Message{
 			Value: msg,
 		},
-		nil,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to send a kafka message: %w", err)
