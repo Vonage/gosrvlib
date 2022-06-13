@@ -26,26 +26,33 @@ func NewConsumer(urls []string, topic, groupID string, opts ...Option) (*Consume
 		applyOpt(cfg)
 	}
 
-	r := kafka.NewReader(kafka.ReaderConfig{
-		Brokers:        urls,
-		Topic:          topic,
-		GroupID:        groupID,
-		SessionTimeout: cfg.sessionTimeout,
-	})
+	r := kafka.NewReader(
+		kafka.ReaderConfig{
+			Brokers:        urls,
+			Topic:          topic,
+			GroupID:        groupID,
+			SessionTimeout: cfg.sessionTimeout,
+		},
+	)
 
 	return &Consumer{cfg: cfg, client: r}, nil
 }
 
 // Close cleans up Consumer's internal resources.
 func (c *Consumer) Close() error {
-	return c.client.Close() // nolint: wrapcheck
+	err := c.client.Close()
+	if err != nil {
+		return fmt.Errorf("failed to close the Kafka consumer: %w", err)
+	}
+
+	return nil
 }
 
-// ReadMessage reads one message from the Kafka; is blocked if no messages in the queue.
-func (c *Consumer) ReadMessage(ctx context.Context) ([]byte, error) {
+// Receive reads one message from the Kafka; blocks if there are no messages in the queue.
+func (c *Consumer) Receive(ctx context.Context) ([]byte, error) {
 	msg, err := c.client.ReadMessage(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read kafka message: %w", err)
+		return nil, fmt.Errorf("failed to read a message from Kafka: %w", err)
 	}
 
 	return msg.Value, nil

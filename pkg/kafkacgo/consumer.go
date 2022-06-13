@@ -47,8 +47,8 @@ func (c *Consumer) Close() error {
 	return c.client.Close() // nolint: wrapcheck
 }
 
-// ReadMessage reads one message from the Kafka; is blocked if no messages in the queue.
-func (c *Consumer) ReadMessage() ([]byte, error) {
+// Receive reads one message from the Kafka; is blocked if no messages in the queue.
+func (c *Consumer) Receive() ([]byte, error) {
 	msg, err := c.client.ReadMessage(-1)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read kafka message: %w", err)

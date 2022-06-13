@@ -2,29 +2,34 @@ package kafka
 
 import (
 	"context"
+	"fmt"
 	"testing"
+	"time"
 
 	"github.com/segmentio/kafka-go"
 	"github.com/stretchr/testify/require"
 )
 
-func TestConsumer(t *testing.T) {
+func Test_NewConsumer(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
-		name      string
-		urls      []string
-		topic     string
-		groupID   string
-		options   []Option
-		expectErr bool
+		name    string
+		urls    []string
+		topic   string
+		groupID string
+		options []Option
+		wantErr bool
 	}{
 		{
-			name:      "success",
-			urls:      []string{"url1", "url2"},
-			topic:     "topic1",
-			groupID:   "one",
-			expectErr: false,
+			name:    "success",
+			urls:    []string{"url1", "url2"},
+			topic:   "topic1",
+			groupID: "one",
+			options: []Option{
+				WithSessionTimeout(time.Millisecond * 10),
+			},
+			wantErr: false,
 		},
 	}
 
@@ -34,14 +39,14 @@ func TestConsumer(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			consumer, err := NewConsumer(tt.urls, tt.topic, tt.groupID)
+			consumer, err := NewConsumer(tt.urls, tt.topic, tt.groupID, tt.options...)
 
-			if tt.expectErr {
+			if tt.wantErr {
 				require.Error(t, err)
+				require.Nil(t, consumer)
 			} else {
-				require.Nil(t, err)
-				require.NotNil(t, consumer, "consumerClient is nil")
-
+				require.NoError(t, err)
+				require.NotNil(t, consumer)
 				require.Nil(t, consumer.Close())
 			}
 		})
@@ -58,24 +63,41 @@ func (m mockConsumerClient) Close() error {
 	return nil
 }
 
-func TestConsumerReadMessage(t *testing.T) {
+type mockConsumerClientError struct{}
+
+func (m mockConsumerClientError) ReadMessage(_ context.Context) (kafka.Message, error) {
+	return kafka.Message{}, fmt.Errorf("error Receive")
+}
+
+func (m mockConsumerClientError) Close() error {
+	return fmt.Errorf("error Close")
+}
+
+func Test_Consumer_Receive(t *testing.T) {
 	t.Parallel()
 
 	consumer, err := NewConsumer(
 		[]string{"url1", "url2"},
 		"topic1",
 		"group1",
+		WithSessionTimeout(time.Millisecond*10),
 	)
-	require.Nil(t, err, "NewConsumer() unexpected error = %v", err)
+
+	require.NoError(t, err)
+	require.NotNil(t, consumer)
 
 	ctx := context.TODO()
 
-	msg, err := consumer.ReadMessage(ctx)
+	consumer.client = mockConsumerClient{}
+	msg, err := consumer.Receive(ctx)
+	require.NoError(t, err)
+	require.NotNil(t, msg)
+
+	consumer.client = mockConsumerClientError{}
+	msg, err = consumer.Receive(ctx)
 	require.Error(t, err)
 	require.Nil(t, msg)
 
-	consumer.client = mockConsumerClient{}
-	msg, err = consumer.ReadMessage(ctx)
-	require.NoError(t, err)
-	require.NotNil(t, msg)
+	err = consumer.Close()
+	require.Error(t, err)
 }

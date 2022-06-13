@@ -1,6 +1,7 @@
 package kafkacgo
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -8,18 +9,18 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestConsumer(t *testing.T) {
+func Test_NewConsumer(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
-		name                          string
-		urls                          []string
-		topics                        []string
-		groupID                       string
-		options                       []Option
-		expectedTimeout               time.Duration
-		expectedAutoOffsetResetPolicy Offset
-		expectErr                     bool
+		name                     string
+		urls                     []string
+		topics                   []string
+		groupID                  string
+		options                  []Option
+		expTimeout               time.Duration
+		expAutoOffsetResetPolicy Offset
+		wantErr                  bool
 	}{
 		{
 			name:    "success",
@@ -27,12 +28,12 @@ func TestConsumer(t *testing.T) {
 			topics:  []string{"topic1", "topic2"},
 			groupID: "one",
 			options: []Option{
-				WithSessionTimeout(time.Second * 10),
+				WithSessionTimeout(time.Millisecond * 13),
 				WithAutoOffsetResetPolicy(OffsetLatest),
 			},
-			expectedTimeout:               time.Second * 10,
-			expectedAutoOffsetResetPolicy: OffsetLatest,
-			expectErr:                     false,
+			expTimeout:               time.Millisecond * 13,
+			expAutoOffsetResetPolicy: OffsetLatest,
+			wantErr:                  false,
 		},
 		{
 			name:    "bad offset",
@@ -42,14 +43,14 @@ func TestConsumer(t *testing.T) {
 			options: []Option{
 				WithAutoOffsetResetPolicy("bad offset"),
 			},
-			expectErr: true,
+			wantErr: true,
 		},
 		{
-			name:      "empty topics",
-			urls:      []string{"url1", "url2"},
-			topics:    nil,
-			groupID:   "one",
-			expectErr: true,
+			name:    "empty topics",
+			urls:    []string{"url1", "url2"},
+			topics:  nil,
+			groupID: "one",
+			wantErr: true,
 		},
 	}
 
@@ -61,19 +62,20 @@ func TestConsumer(t *testing.T) {
 
 			consumer, err := NewConsumer(tt.urls, tt.topics, tt.groupID, tt.options...)
 
-			if tt.expectErr {
+			if tt.wantErr {
 				require.Error(t, err)
+				require.Nil(t, consumer)
 			} else {
-				require.Nil(t, err)
-				require.NotNil(t, consumer, "consumerClient is nil")
+				require.NoError(t, err)
+				require.NotNil(t, consumer)
 
 				timeout, err := consumer.cfg.configMap.Get("session.timeout.ms", 0)
 				require.Nil(t, err)
-				require.Equal(t, int(tt.expectedTimeout.Milliseconds()), timeout)
+				require.Equal(t, int(tt.expTimeout.Milliseconds()), timeout)
 
 				offset, err := consumer.cfg.configMap.Get("auto.offset.reset", string(OffsetNone))
 				require.Nil(t, err)
-				require.Equal(t, string(tt.expectedAutoOffsetResetPolicy), offset)
+				require.Equal(t, string(tt.expAutoOffsetResetPolicy), offset)
 
 				require.Nil(t, consumer.Close())
 			}
@@ -91,7 +93,17 @@ func (m mockConsumerClient) Close() error {
 	return nil
 }
 
-func TestConsumerReadMessage(t *testing.T) {
+type mockConsumerClientError struct{}
+
+func (m mockConsumerClientError) ReadMessage(_ time.Duration) (*kafka.Message, error) {
+	return nil, fmt.Errorf("error ReadMessage")
+}
+
+func (m mockConsumerClientError) Close() error {
+	return fmt.Errorf("error Close")
+}
+
+func Test_Receive(t *testing.T) {
 	t.Parallel()
 
 	consumer, err := NewConsumer(
@@ -99,14 +111,20 @@ func TestConsumerReadMessage(t *testing.T) {
 		[]string{"topic1", "topic2"},
 		"group1",
 	)
-	require.Nil(t, err, "NewConsumer() unexpected error = %v", err)
 
-	msg, err := consumer.ReadMessage()
+	require.NoError(t, err)
+	require.NotNil(t, consumer)
+
+	consumer.client = mockConsumerClient{}
+	msg, err := consumer.Receive()
+	require.NoError(t, err)
+	require.NotNil(t, msg)
+
+	consumer.client = mockConsumerClientError{}
+	msg, err = consumer.Receive()
 	require.Error(t, err)
 	require.Nil(t, msg)
 
-	consumer.client = mockConsumerClient{}
-	msg, err = consumer.ReadMessage()
-	require.NoError(t, err)
-	require.NotNil(t, msg)
+	err = consumer.Close()
+	require.Error(t, err)
 }

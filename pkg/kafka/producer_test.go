@@ -2,6 +2,7 @@ package kafka
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -9,25 +10,25 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestProducer(t *testing.T) {
+func Test_NewProducer(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
-		name                       string
-		urls                       []string
-		topic                      string
-		options                    []Option
-		expectedTimeout            time.Duration
-		expectedProduceChannelSize int
-		expectErr                  bool
+		name                  string
+		urls                  []string
+		topic                 string
+		options               []Option
+		expTimeout            time.Duration
+		expProduceChannelSize int
+		wantErr               bool
 	}{
 		{
 			name: "success",
 			urls: []string{"url1", "url2"},
 			options: []Option{
-				WithSessionTimeout(time.Second * 20),
+				WithSessionTimeout(time.Millisecond * 17),
 			},
-			expectedTimeout: time.Second * 20,
+			expTimeout: time.Millisecond * 17,
 		},
 	}
 
@@ -39,13 +40,13 @@ func TestProducer(t *testing.T) {
 
 			producer, err := NewProducer(tt.urls, tt.topic, tt.options...)
 
-			if tt.expectErr {
+			if tt.wantErr {
 				require.Error(t, err)
+				require.Nil(t, producer)
 			} else {
+				require.NoError(t, err)
 				require.NotNil(t, producer)
-				require.Nil(t, err)
-
-				require.Equal(t, tt.expectedTimeout, producer.cfg.sessionTimeout)
+				require.Equal(t, tt.expTimeout, producer.cfg.sessionTimeout)
 
 				err := producer.Close()
 				require.NoError(t, err)
@@ -64,16 +65,32 @@ func (m mockProducerClient) Close() error {
 	return nil
 }
 
-func TestProduceMessageError(t *testing.T) {
+type mockProducerClientError struct{}
+
+func (m mockProducerClientError) WriteMessages(ctx context.Context, msg ...kafka.Message) error {
+	return fmt.Errorf("error WriteMessages")
+}
+
+func (m mockProducerClientError) Close() error {
+	return fmt.Errorf("error Close")
+}
+
+func TestSendError(t *testing.T) {
 	t.Parallel()
 
 	producer, err := NewProducer([]string{"url"}, "test")
-	require.Nil(t, err, "NewProducer() unexpected error = %v", err)
 
-	err = producer.ProduceMessage(context.TODO(), nil)
-	require.Error(t, err)
+	require.NoError(t, err)
+	require.NotNil(t, producer)
 
 	producer.client = &mockProducerClient{}
-	err = producer.ProduceMessage(context.TODO(), nil)
+	err = producer.Send(context.TODO(), nil)
 	require.NoError(t, err)
+
+	producer.client = &mockProducerClientError{}
+	err = producer.Send(context.TODO(), nil)
+	require.Error(t, err)
+
+	err = producer.Close()
+	require.Error(t, err)
 }

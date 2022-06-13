@@ -41,8 +41,8 @@ func (p *Producer) Close() {
 	p.client.Close()
 }
 
-// ProduceMessage sends a message to Kafka topic.
-func (p *Producer) ProduceMessage(topic string, msg []byte) error {
+// Send sends a message to Kafka topic.
+func (p *Producer) Send(topic string, msg []byte) error {
 	err := p.client.Produce(
 		&kafka.Message{
 			TopicPartition: kafka.TopicPartition{

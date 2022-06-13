@@ -37,11 +37,16 @@ func NewProducer(urls []string, topic string, opts ...Option) (*Producer, error)
 
 // Close cleans up Producer's internal resources.
 func (p *Producer) Close() error {
-	return p.client.Close() // nolint:wrapcheck
+	err := p.client.Close()
+	if err != nil {
+		return fmt.Errorf("failed to close the Kafka producer: %w", err)
+	}
+
+	return nil
 }
 
-// ProduceMessage sends a message to Kafka topic.
-func (p *Producer) ProduceMessage(ctx context.Context, msg []byte) error {
+// Send sends a message to Kafka topic.
+func (p *Producer) Send(ctx context.Context, msg []byte) error {
 	err := p.client.WriteMessages(
 		ctx,
 		kafka.Message{
@@ -49,7 +54,7 @@ func (p *Producer) ProduceMessage(ctx context.Context, msg []byte) error {
 		},
 	)
 	if err != nil {
-		return fmt.Errorf("failed to send a kafka message: %w", err)
+		return fmt.Errorf("failed to send a message to Kafka: %w", err)
 	}
 
 	return nil

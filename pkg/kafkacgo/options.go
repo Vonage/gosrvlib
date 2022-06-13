@@ -9,8 +9,10 @@ import (
 const (
 	// OffsetLatest automatically reset the offset to the latest offset.
 	OffsetLatest Offset = "latest"
+
 	// OffsetEarliest automatically reset the offset to the earliest offset.
 	OffsetEarliest Offset = "earliest"
+
 	// OffsetNone throw an error to the consumerClient if no previous offset is found for the consumerClient's group.
 	OffsetNone Offset = "none"
 )
