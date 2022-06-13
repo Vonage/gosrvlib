@@ -27,10 +27,10 @@ func NewConsumer(urls []string, topic, groupID string, opts ...Option) (*Consume
 	}
 
 	r := kafka.NewReader(kafka.ReaderConfig{
-		Brokers: urls,
-		Topic:   topic,
-		GroupID: groupID,
-		MaxWait: 1,
+		Brokers:        urls,
+		Topic:          topic,
+		GroupID:        groupID,
+		SessionTimeout: cfg.sessionTimeout,
 	})
 
 	return &Consumer{cfg: cfg, client: r}, nil
