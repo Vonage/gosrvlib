@@ -35,7 +35,7 @@ func NewConsumer(urls []string, topic, groupID string, opts ...Option) (*Consume
 	}
 
 	if err := params.Validate(); err != nil {
-		return nil, fmt.Errorf("validation error for ReaderConfig: %w", err)
+		return nil, fmt.Errorf("invalid parameters: %w", err)
 	}
 
 	return &Consumer{cfg: cfg, client: kafka.NewReader(params)}, nil

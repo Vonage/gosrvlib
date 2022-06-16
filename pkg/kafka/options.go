@@ -19,8 +19,9 @@ func WithSessionTimeout(t time.Duration) Option {
 	}
 }
 
-// WithStartOffsetBeginning tells Kafka consumer to read from the beginning of uncommitted offset; by default it'll read from the end.
-func WithStartOffsetBeginning() Option {
+// WithFirstOffset tells Kafka consumer to read from the beginning of uncommitted offset.
+// By default it will read from the end of the queue.
+func WithFirstOffset() Option {
 	return func(c *config) {
 		c.startOffset = kafka.FirstOffset
 	}

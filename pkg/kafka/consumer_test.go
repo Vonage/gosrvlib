@@ -28,7 +28,7 @@ func Test_NewConsumer(t *testing.T) {
 			groupID: "one",
 			options: []Option{
 				WithSessionTimeout(time.Millisecond * 10),
-				WithStartOffsetBeginning(),
+				WithFirstOffset(),
 			},
 			wantErr: false,
 		},
