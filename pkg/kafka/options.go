@@ -2,6 +2,8 @@ package kafka
 
 import (
 	"time"
+
+	"github.com/segmentio/kafka-go"
 )
 
 // Option is a type alias for a function that configures Kafka client.
@@ -14,5 +16,12 @@ type Option func(*config)
 func WithSessionTimeout(t time.Duration) Option {
 	return func(c *config) {
 		c.sessionTimeout = t
+	}
+}
+
+// WithStartOffsetBeginning tells Kafka consumer to read from the beginning of uncommitted offset; by default it'll read from the end.
+func WithStartOffsetBeginning() Option {
+	return func(c *config) {
+		c.startOffset = kafka.FirstOffset
 	}
 }
