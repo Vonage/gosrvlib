@@ -3,6 +3,7 @@ package retrier
 
 import (
 	"context"
+	"fmt"
 	"math/rand"
 	"time"
 )
@@ -81,11 +82,24 @@ func New(opts ...Option) (*Retrier, error) {
 func (r *Retrier) Run(ctx context.Context, task TaskFn) error {
 	r.nextDelay = float64(r.delay)
 	r.remainingAttempts = r.attempts
+
 	r.ctx, r.cancel = context.WithCancel(ctx)
+	defer r.cancel()
 
-	r.retry(task)
+	r.timer = time.NewTimer(1 * time.Nanosecond)
 
-	return r.taskError
+	for {
+		select {
+		case <-r.ctx.Done():
+			return fmt.Errorf("main context has been canceled: %w", r.ctx.Err())
+		case d := <-r.resetTimer:
+			r.setTimer(d)
+		case <-r.timer.C:
+			if r.exec(task) {
+				return r.taskError
+			}
+		}
+	}
 }
 
 func (r *Retrier) setTimer(d time.Duration) {
@@ -98,26 +112,6 @@ func (r *Retrier) setTimer(d time.Duration) {
 	}
 
 	r.timer.Reset(d)
-}
-
-func (r *Retrier) retry(task TaskFn) {
-	defer r.cancel()
-
-	r.timer = time.NewTimer(1 * time.Nanosecond)
-
-	for {
-		select {
-		case <-r.ctx.Done():
-			r.taskError = r.ctx.Err()
-			return
-		case d := <-r.resetTimer:
-			r.setTimer(d)
-		case <-r.timer.C:
-			if r.exec(task) {
-				return
-			}
-		}
-	}
 }
 
 func (r *Retrier) exec(task TaskFn) bool {
