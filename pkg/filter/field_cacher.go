@@ -2,9 +2,15 @@ package filter
 
 import "reflect"
 
+// pathByField stores reflectPath by field name.
+type pathByField map[string]reflectPath
+
+// fieldByType stores pathByField by struct type.
+type fieldByType map[string]pathByField
+
 // fieldCache caches reflectPath by type and field.
 type fieldCache struct {
-	cache map[string]map[string]reflectPath
+	cache fieldByType
 }
 
 // Get return the reflectPath from the cache for a field given its type and path, and true if it's found.
@@ -22,16 +28,16 @@ func (c *fieldCache) Set(t reflect.Type, fieldPath string, path reflectPath) {
 	fields[fieldPath] = path
 }
 
-func (c *fieldCache) getFieldsMap(t reflect.Type) map[string]reflectPath {
+func (c *fieldCache) getFieldsMap(t reflect.Type) pathByField {
 	if c.cache == nil {
-		c.cache = map[string]map[string]reflectPath{}
+		c.cache = make(fieldByType)
 	}
 
 	tKey := t.String()
 
 	fields, ok := c.cache[tKey]
 	if !ok {
-		fields = map[string]reflectPath{}
+		fields = make(pathByField)
 		c.cache[tKey] = fields
 	}
 
