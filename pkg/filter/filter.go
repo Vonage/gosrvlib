@@ -68,14 +68,10 @@ func (p *processor) Apply(rules [][]Rule, slicePtr interface{}) error {
 		return fmt.Errorf("slicePtr should be a slice pointer but is %s", vSlicePtr.Type())
 	}
 
-	err := p.filterSliceValue(vSlice, func(obj interface{}) (bool, error) {
+	matcher := func(obj interface{}) (bool, error) {
 		return p.evaluate(rules, obj)
-	})
-	if err != nil {
-		return err
 	}
-
-	return nil
+	return p.filterSliceValue(vSlice, matcher)
 }
 
 // filterSliceValue filters a slice passed as a reflect.Value, in place. It calls the matcher function to evaluate whether to keep each item or not.
