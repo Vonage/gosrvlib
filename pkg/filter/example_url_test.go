@@ -60,7 +60,6 @@ func ExampleNew_fromURL() {
 	// * WithJSONValues: We want to be lenient on the typing since we create the filter from JSON which handles a few types
 	// * WithFieldNameTag: to express the filter based on JSON tags and not the actual field names
 	f, err := New(
-		rules,
 		WithFieldNameTag("json"),
 	)
 	if err != nil {
@@ -93,7 +92,7 @@ func ExampleNew_fromURL() {
 	}
 
 	// Filters the list in place
-	err = f.Apply(&list)
+	err = f.Apply(rules, &list)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -71,17 +71,11 @@ func TestNew(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		rules   [][]Rule
 		opts    []Option
 		wantErr bool
 	}{
 		{
 			name: "success",
-			rules: [][]Rule{{{
-				Field: "Somefield",
-				Type:  "exact",
-				Value: "some value",
-			}}},
 			opts: []Option{
 				func(v *processor) error {
 					return nil
@@ -91,11 +85,6 @@ func TestNew(t *testing.T) {
 		},
 		{
 			name: "error - option error",
-			rules: [][]Rule{{{
-				Field: "Somefield",
-				Type:  "exact",
-				Value: "some value",
-			}}},
 			opts: []Option{
 				func(v *processor) error {
 					return errors.New("test error")
@@ -110,7 +99,7 @@ func TestNew(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			p, err := New(tt.rules, tt.opts...)
+			p, err := New(tt.opts...)
 
 			if tt.wantErr {
 				require.Error(t, err, "New() error = %v, wantErr %v", err, tt.wantErr)
@@ -158,7 +147,7 @@ func TestFilter_Apply(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		filter   [][]Rule
+		rules    [][]Rule
 		opts     []Option
 		elements interface{}
 		want     interface{}
@@ -178,7 +167,7 @@ func TestFilter_Apply(t *testing.T) {
 					},
 				},
 			},
-			filter: [][]Rule{{{
+			rules: [][]Rule{{{
 				Field: "Internal.StringField",
 				Type:  "exact",
 				Value: "value 1",
@@ -205,7 +194,7 @@ func TestFilter_Apply(t *testing.T) {
 					},
 				},
 			},
-			filter: [][]Rule{{{
+			rules: [][]Rule{{{
 				Field: "Internal.StringField",
 				Type:  "different",
 				Value: "value 1",
@@ -232,7 +221,7 @@ func TestFilter_Apply(t *testing.T) {
 					},
 				},
 			},
-			filter: [][]Rule{{{
+			rules: [][]Rule{{{
 				Field: "Internal.StringField",
 				Type:  "regexp",
 				Value: ".* 1",
@@ -255,7 +244,7 @@ func TestFilter_Apply(t *testing.T) {
 					IntField: 43,
 				},
 			},
-			filter: [][]Rule{{{
+			rules: [][]Rule{{{
 				Field: "IntField",
 				Type:  "exact",
 				Value: 42,
@@ -276,7 +265,7 @@ func TestFilter_Apply(t *testing.T) {
 					Float64Field: 43,
 				},
 			},
-			filter: [][]Rule{{{
+			rules: [][]Rule{{{
 				Field: "Float64Field",
 				Type:  "exact",
 				Value: 42,
@@ -297,7 +286,7 @@ func TestFilter_Apply(t *testing.T) {
 					StringPtrField: nil,
 				},
 			},
-			filter: [][]Rule{{{
+			rules: [][]Rule{{{
 				Field: "StringPtrField",
 				Type:  "exact",
 				Value: nil,
@@ -315,7 +304,7 @@ func TestFilter_Apply(t *testing.T) {
 					StringField: "value 1",
 				},
 			},
-			filter: [][]Rule{{{
+			rules: [][]Rule{{{
 				Field: "StringField",
 				Type:  "exact",
 				Value: 42,
@@ -329,7 +318,7 @@ func TestFilter_Apply(t *testing.T) {
 					IntField: 42,
 				},
 			},
-			filter: [][]Rule{{{
+			rules: [][]Rule{{{
 				Field: "IntField",
 				Type:  "regexp",
 				Value: "42",
@@ -350,7 +339,7 @@ func TestFilter_Apply(t *testing.T) {
 					},
 				},
 			},
-			filter: [][]Rule{{{
+			rules: [][]Rule{{{
 				Field: "Internal.StringField",
 				Type:  "exact",
 				Value: "value 1",
@@ -378,7 +367,7 @@ func TestFilter_Apply(t *testing.T) {
 				},
 			},
 			opts: []Option{WithFieldNameTag("json")},
-			filter: [][]Rule{{{
+			rules: [][]Rule{{{
 				Field: "internal.string_field",
 				Type:  "exact",
 				Value: "value 1",
@@ -405,7 +394,7 @@ func TestFilter_Apply(t *testing.T) {
 					},
 				},
 			},
-			filter: [][]Rule{{{
+			rules: [][]Rule{{{
 				Field: "StringField",
 				Type:  "exact",
 				Value: "value 1",
@@ -421,7 +410,7 @@ func TestFilter_Apply(t *testing.T) {
 		{
 			name:     "success - with root field selector",
 			elements: &[]int{41, 42, 43},
-			filter: [][]Rule{{{
+			rules: [][]Rule{{{
 				Field: "",
 				Type:  "exact",
 				Value: 42,
@@ -431,73 +420,73 @@ func TestFilter_Apply(t *testing.T) {
 		{
 			name:     "success - with empty AND filter",
 			elements: &[]int{41, 42, 43},
-			filter:   [][]Rule{},
+			rules:    [][]Rule{},
 			want:     &[]int{41, 42, 43},
 		},
 		{
 			name:     "success - with empty OR filter",
 			elements: &[]int{41, 42, 43},
-			filter:   [][]Rule{{}},
+			rules:    [][]Rule{{}},
 			want:     &[]int{},
 		},
 		{
 			name:     "combination - true AND true",
 			elements: &[]string{"a"},
-			filter:   [][]Rule{{trueRegex}, {trueRegex}},
+			rules:    [][]Rule{{trueRegex}, {trueRegex}},
 			want:     &[]string{"a"},
 		},
 		{
 			name:     "combination - true AND false",
 			elements: &[]string{"a"},
-			filter:   [][]Rule{{trueRegex}, {falseRegex}},
+			rules:    [][]Rule{{trueRegex}, {falseRegex}},
 			want:     &[]string{},
 		},
 		{
 			name:     "combination - false AND true",
 			elements: &[]string{"a"},
-			filter:   [][]Rule{{falseRegex}, {trueRegex}},
+			rules:    [][]Rule{{falseRegex}, {trueRegex}},
 			want:     &[]string{},
 		},
 		{
 			name:     "combination - false AND false",
 			elements: &[]string{"a"},
-			filter:   [][]Rule{{falseRegex}, {falseRegex}},
+			rules:    [][]Rule{{falseRegex}, {falseRegex}},
 			want:     &[]string{},
 		},
 		{
 			name:     "combination - true OR false",
 			elements: &[]string{"a"},
-			filter:   [][]Rule{{trueRegex, falseRegex}},
+			rules:    [][]Rule{{trueRegex, falseRegex}},
 			want:     &[]string{"a"},
 		},
 		{
 			name:     "combination - true OR true",
 			elements: &[]string{"a"},
-			filter:   [][]Rule{{trueRegex, trueRegex}},
+			rules:    [][]Rule{{trueRegex, trueRegex}},
 			want:     &[]string{"a"},
 		},
 		{
 			name:     "combination - false OR true",
 			elements: &[]string{"a"},
-			filter:   [][]Rule{{falseRegex, trueRegex}},
+			rules:    [][]Rule{{falseRegex, trueRegex}},
 			want:     &[]string{"a"},
 		},
 		{
 			name:     "combination - false OR false",
 			elements: &[]string{"a"},
-			filter:   [][]Rule{{falseRegex, falseRegex}},
+			rules:    [][]Rule{{falseRegex, falseRegex}},
 			want:     &[]string{},
 		},
 		{
 			name:     "combination - (false OR true) AND (true OR false)",
 			elements: &[]string{"a"},
-			filter:   [][]Rule{{falseRegex, trueRegex}, {trueRegex, falseRegex}},
+			rules:    [][]Rule{{falseRegex, trueRegex}, {trueRegex, falseRegex}},
 			want:     &[]string{"a"},
 		},
 		{
 			name:     "combination - (false OR true) AND (false OR false)",
 			elements: &[]string{"a"},
-			filter:   [][]Rule{{falseRegex, trueRegex}, {falseRegex, falseRegex}},
+			rules:    [][]Rule{{falseRegex, trueRegex}, {falseRegex, falseRegex}},
 			want:     &[]string{},
 		},
 		{
@@ -510,7 +499,7 @@ func TestFilter_Apply(t *testing.T) {
 				},
 			},
 			opts: []Option{WithFieldNameTag("json")},
-			filter: [][]Rule{{{
+			rules: [][]Rule{{{
 				Field: "internal.invalid_field",
 				Type:  "exact",
 				Value: "value 1",
@@ -520,7 +509,7 @@ func TestFilter_Apply(t *testing.T) {
 		{
 			name:     "error - not a pointer",
 			elements: 42,
-			filter: [][]Rule{{{
+			rules: [][]Rule{{{
 				Type: "exact",
 			}}},
 			wantErr: true,
@@ -528,7 +517,7 @@ func TestFilter_Apply(t *testing.T) {
 		{
 			name:     "error - not a slice",
 			elements: &simpleStruct{},
-			filter: [][]Rule{{{
+			rules: [][]Rule{{{
 				Type: "exact",
 			}}},
 			wantErr: true,
@@ -542,7 +531,7 @@ func TestFilter_Apply(t *testing.T) {
 					},
 				},
 			},
-			filter: [][]Rule{{{
+			rules: [][]Rule{{{
 				Field: "Internal.unexported",
 				Type:  "exact",
 				Value: "value 1",
@@ -554,7 +543,7 @@ func TestFilter_Apply(t *testing.T) {
 			elements: &[]interface{}{
 				nil,
 			},
-			filter: [][]Rule{{{
+			rules: [][]Rule{{{
 				Field: "Somefield",
 				Type:  "exact",
 				Value: "value 1",
@@ -570,7 +559,7 @@ func TestFilter_Apply(t *testing.T) {
 					},
 				},
 			},
-			filter: [][]Rule{{{
+			rules: [][]Rule{{{
 				Field: "Internal.InvalidField",
 				Type:  "exact",
 				Value: "value 1",
@@ -584,7 +573,7 @@ func TestFilter_Apply(t *testing.T) {
 					StringField: "value 1",
 				},
 			},
-			filter: [][]Rule{{{
+			rules: [][]Rule{{{
 				Field: "StringField.InvalidField",
 				Type:  "exact",
 				Value: "value 1",
@@ -598,7 +587,7 @@ func TestFilter_Apply(t *testing.T) {
 					StringField: "value 1",
 				},
 			},
-			filter: [][]Rule{{{
+			rules: [][]Rule{{{
 				Field: "StringField",
 				Type:  "regexp",
 				Value: "(",
@@ -612,7 +601,7 @@ func TestFilter_Apply(t *testing.T) {
 					StringField: "value 1",
 				},
 			},
-			filter: [][]Rule{{{
+			rules: [][]Rule{{{
 				Field: "StringField",
 				Type:  "regexp",
 				Value: 1,
@@ -626,7 +615,7 @@ func TestFilter_Apply(t *testing.T) {
 					StringField: "value 1",
 				},
 			},
-			filter: [][]Rule{{{
+			rules: [][]Rule{{{
 				Field: "StringField",
 				Type:  "invalid filter type",
 				Value: "value 1",
@@ -640,10 +629,10 @@ func TestFilter_Apply(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			f, err := New(tt.filter, tt.opts...)
+			f, err := New(tt.opts...)
 			require.NoError(t, err)
 
-			err = f.Apply(tt.elements)
+			err = f.Apply(tt.rules, tt.elements)
 
 			if tt.wantErr {
 				require.Error(t, err, "Apply() error = %v, wantErr %v", err, tt.wantErr)
@@ -667,10 +656,7 @@ func benchmarkFilterApply(b *testing.B, n int, json string, opts ...Option) {
 		StringField  string `json:"string_field"`
 	}
 
-	rules, err := ParseRules(json)
-	require.NoError(b, err)
-
-	filter, err := New(rules, opts...)
+	filter, err := New(opts...)
 	require.NoError(b, err)
 
 	data := make([]simpleStruct, n)
@@ -679,6 +665,9 @@ func benchmarkFilterApply(b *testing.B, n int, json string, opts ...Option) {
 			StringField: "hello world", // TODO use faker ?
 		}
 	}
+
+	rules, err := ParseRules(json)
+	require.NoError(b, err)
 
 	b.ResetTimer()
 
@@ -690,7 +679,7 @@ func benchmarkFilterApply(b *testing.B, n int, json string, opts ...Option) {
 
 		b.StartTimer()
 
-		err := filter.Apply(&dataCopy)
+		err := filter.Apply(rules, &dataCopy)
 		require.NoError(b, err)
 	}
 }

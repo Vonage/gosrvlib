@@ -12,9 +12,9 @@ import (
 
 // Processor is the interface to provide subtractive functions.
 type Processor interface {
-	// Apply filters the slice to remove elements not matching the defined filters.
+	// Apply filters the slice to remove elements not matching the defined rules.
 	// The slice parameter must be a pointer to a slice and is filtered *in place*.
-	Apply(slice interface{}) error
+	Apply(rules [][]Rule, slice interface{}) error
 }
 
 // GetFilter returns the "filter" query parameter from a *url.URL.
@@ -37,27 +37,24 @@ func ParseRules(s string) ([][]Rule, error) {
 // The first level of rules is matched with an AND operator and the second level with an OR.
 //
 // "[a,[b,c],d]" evaluates to "a AND (b OR c) AND d".
-func New(r [][]Rule, opts ...Option) (Processor, error) {
-	f := processor{
-		rules: r,
-	}
+func New(opts ...Option) (Processor, error) {
+	p := processor{}
 
 	for _, opt := range opts {
-		if err := opt(&f); err != nil {
+		if err := opt(&p); err != nil {
 			return nil, err
 		}
 	}
 
-	return &f, nil
+	return &p, nil
 }
 
 type processor struct {
-	rules  [][]Rule
 	fields fieldGetter
 }
 
-func (p *processor) Apply(slicePtr interface{}) error {
-	if len(p.rules) == 0 {
+func (p *processor) Apply(rules [][]Rule, slicePtr interface{}) error {
+	if len(rules) == 0 {
 		return nil
 	}
 
@@ -71,7 +68,9 @@ func (p *processor) Apply(slicePtr interface{}) error {
 		return fmt.Errorf("slicePtr should be a slice pointer but is %s", vSlicePtr.Type())
 	}
 
-	err := p.filterSliceValue(vSlice, p.evaluateValue)
+	err := p.filterSliceValue(vSlice, func(obj interface{}) (bool, error) {
+		return p.evaluate(rules, obj)
+	})
 	if err != nil {
 		return err
 	}
@@ -80,13 +79,17 @@ func (p *processor) Apply(slicePtr interface{}) error {
 }
 
 // filterSliceValue filters a slice passed as a reflect.Value, in place. It calls the matcher function to evaluate whether to keep each item or not.
-func (p *processor) filterSliceValue(slice reflect.Value, matcher func(reflect.Value) (bool, error)) error {
+func (p *processor) filterSliceValue(slice reflect.Value, matcher func(interface{}) (bool, error)) error {
 	n := 0
 
 	for i := 0; i < slice.Len(); i++ {
 		value := slice.Index(i)
 
-		match, err := matcher(value)
+		if !value.CanInterface() {
+			return fmt.Errorf("elements contained a %s which cannot be interfaced or set", value.Type())
+		}
+
+		match, err := matcher(value.Interface())
 		if err != nil {
 			return err
 		}
@@ -104,21 +107,13 @@ func (p *processor) filterSliceValue(slice reflect.Value, matcher func(reflect.V
 	return nil
 }
 
-func (p *processor) evaluateValue(value reflect.Value) (bool, error) {
-	if !value.CanInterface() {
-		return false, fmt.Errorf("elements contained a %s which cannot be interfaced or set", value.Type())
-	}
-
-	return p.evaluate(value.Interface())
-}
-
-func (p *processor) evaluate(obj interface{}) (bool, error) {
-	for i := range p.rules {
+func (p *processor) evaluate(rules [][]Rule, obj interface{}) (bool, error) {
+	for i := range rules {
 		orResult := false
 
-		for j := range p.rules[i] {
+		for j := range rules[i] {
 			// need a pointer to always use the same value and have some state (e.g. regexp)
-			rule := &p.rules[i][j]
+			rule := &rules[i][j]
 
 			value, err := p.fields.getFieldValue(rule.Field, obj)
 			if err != nil {
