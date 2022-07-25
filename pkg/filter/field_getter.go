@@ -71,22 +71,9 @@ func (r *fieldGetter) getFieldPath(fieldNames []string, t reflect.Type) (reflect
 
 	currentName := fieldNames[0]
 
-	var field reflect.StructField
-
-	if r.fieldTag == "" {
-		var ok bool
-
-		field, ok = t.FieldByName(currentName)
-		if !ok {
-			return nil, fmt.Errorf("struct %s does not have a field named %s", t, currentName)
-		}
-	} else {
-		var ok bool
-
-		field, ok = r.lookupFieldByTag(t, currentName)
-		if !ok {
-			return nil, fmt.Errorf("struct %s does not have a field with %s tag value of %s", t, r.fieldTag, currentName)
-		}
+	field, err := r.getStructField(t, currentName)
+	if err != nil {
+		return nil, err
 	}
 
 	fieldPath := field.Index
@@ -101,6 +88,24 @@ func (r *fieldGetter) getFieldPath(fieldNames []string, t reflect.Type) (reflect
 	}
 
 	return fieldPath, nil
+}
+
+func (r *fieldGetter) getStructField(t reflect.Type, name string) (reflect.StructField, error) {
+	if r.fieldTag == "" {
+		field, ok := t.FieldByName(name)
+		if !ok {
+			return reflect.StructField{}, fmt.Errorf("struct %s does not have a field named %s", t, name)
+		}
+
+		return field, nil
+	}
+
+	field, ok := r.lookupFieldByTag(t, name)
+	if !ok {
+		return reflect.StructField{}, fmt.Errorf("struct %s does not have a field with %s tag value of %s", t, r.fieldTag, name)
+	}
+
+	return field, nil
 }
 
 func (r *fieldGetter) lookupFieldByTag(t reflect.Type, tagValue string) (reflect.StructField, bool) {
