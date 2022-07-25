@@ -1,4 +1,4 @@
-// Package filter provides generic filtering capabilities for struct slices
+// Package filter provides generic filtering capabilities for struct slices.
 package filter
 
 import (
@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"net/url"
 	"reflect"
-
-	"github.com/pkg/errors"
 )
 
 // Processor is the interface to provide subtractive functions.
@@ -26,7 +24,7 @@ func GetFilter(u *url.URL) string {
 func ParseRules(s string) ([][]Rule, error) {
 	var r [][]Rule
 	if err := json.Unmarshal([]byte(s), &r); err != nil {
-		return nil, errors.Wrap(err, "unmarshal json rules")
+		return nil, fmt.Errorf("failed unmarshaling rules: %w", err)
 	}
 
 	return r, nil
@@ -111,7 +109,7 @@ func (p *processor) evaluate(rules [][]Rule, obj interface{}) (bool, error) {
 			// need a pointer to always use the same value and have some state (e.g. regexp)
 			rule := &rules[i][j]
 
-			value, err := p.fields.getFieldValue(rule.Field, obj)
+			value, err := p.fields.GetFieldValue(rule.Field, obj)
 			if err != nil {
 				return false, err
 			}

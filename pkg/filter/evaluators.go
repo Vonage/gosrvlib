@@ -4,15 +4,15 @@ import (
 	"fmt"
 	"reflect"
 	"regexp"
-
-	"github.com/pkg/errors"
 )
 
 const (
 	// TypeExact is a filter type that matches exactly the reference value.
 	TypeExact = "exact"
+
 	// TypeNotExact is a filter type that matches when the value is different from the reference value (opposite of TypeExact).
 	TypeNotExact = "different"
+
 	// TypeRegexp is a filter type that matches the value against a reference regular expression.
 	// The reference value must be a regular expression that can compile
 	// Works only with strings (anything else will evaluate to false).
@@ -30,7 +30,7 @@ func getRuleType(typeName string) (Evaluator, error) {
 	case TypeExact:
 		return &exact{}, nil
 	case TypeNotExact:
-		return &not{Internal: &exact{}}, nil
+		return &not{Opposite: &exact{}}, nil
 	case TypeRegexp:
 		return &evalRegexp{}, nil
 	default:
@@ -100,13 +100,13 @@ func convertValues(value interface{}) interface{} {
 }
 
 type not struct {
-	Internal Evaluator
+	Opposite Evaluator
 }
 
 func (n *not) Evaluate(reference, actual interface{}) (bool, error) {
-	res, err := n.Internal.Evaluate(reference, actual)
+	res, err := n.Opposite.Evaluate(reference, actual)
 	if err != nil {
-		return false, errors.Wrap(err, "internal evaluation")
+		return false, fmt.Errorf("failed evaluating the opposite rule: %w", err)
 	}
 
 	return !res, nil
@@ -140,7 +140,7 @@ func (r *evalRegexp) compile(ref interface{}) error {
 
 	reg, err := regexp.Compile(str)
 	if err != nil {
-		return errors.Wrap(err, "regexp compilation")
+		return fmt.Errorf("failed compiling regexp: %w", err)
 	}
 
 	r.internal = reg

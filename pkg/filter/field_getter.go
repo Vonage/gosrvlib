@@ -7,6 +7,12 @@ import (
 	"strings"
 )
 
+const (
+	// FieldNameSeparator is the separator for Rule fields.
+	FieldNameSeparator = "."
+)
+
+// reflectPath represents a field path (e.g. address.country) as the indices of the fields (e.g. [2,1]) that can be used with reflect.Value.Field(i int).
 type reflectPath []int
 
 type fieldGetter struct {
@@ -14,7 +20,8 @@ type fieldGetter struct {
 	cache    fieldCache
 }
 
-func (r *fieldGetter) getFieldValue(path string, obj interface{}) (interface{}, error) {
+// GetFieldValue returns the value of obj's field, specified by its path.
+func (r *fieldGetter) GetFieldValue(path string, obj interface{}) (interface{}, error) {
 	// root path case
 	if path == "" {
 		return obj, nil
@@ -30,7 +37,7 @@ func (r *fieldGetter) getFieldValue(path string, obj interface{}) (interface{}, 
 	if !ok {
 		var err error
 
-		pathParts := strings.Split(path, ".")
+		pathParts := strings.Split(path, FieldNameSeparator)
 
 		rPath, err = r.getFieldPath(pathParts, tElement)
 		if err != nil {

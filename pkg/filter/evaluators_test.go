@@ -172,7 +172,7 @@ func TestNot_Evaluate(t *testing.T) {
 			t.Parallel()
 
 			e := &not{
-				Internal: tt.internal,
+				Opposite: tt.internal,
 			}
 			res, err := e.Evaluate(tt.ref, tt.value)
 
