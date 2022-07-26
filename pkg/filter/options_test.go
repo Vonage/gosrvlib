@@ -89,3 +89,40 @@ func TestWithMaxRules(t *testing.T) {
 		})
 	}
 }
+
+func TestWithQueryFilterKey(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name    string
+		key     string
+		wantErr bool
+	}{
+		{
+			name:    "success",
+			key:     "myCustomFilter",
+			wantErr: false,
+		},
+		{
+			name:    "error - empty string",
+			key:     "",
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			opt := WithQueryFilterKey(tt.key)
+			err := opt(&processor{})
+
+			if tt.wantErr {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
+}

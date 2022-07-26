@@ -2,6 +2,7 @@ package filter
 
 import (
 	"errors"
+	"net/url"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -11,7 +12,7 @@ func strPtr(v string) *string {
 	return &v
 }
 
-func TestParseRules(t *testing.T) {
+func TestParseJSON(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -54,7 +55,7 @@ func TestParseRules(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			r, err := ParseRules(tt.json)
+			r, err := ParseJSON(tt.json)
 
 			if tt.wantErr {
 				require.Error(t, err, "ParseRules() error = %v, wantErr %v", err, tt.wantErr)
@@ -106,6 +107,67 @@ func TestNew(t *testing.T) {
 			} else {
 				require.NoError(t, err)
 				require.NotNil(t, p)
+			}
+		})
+	}
+}
+
+func TestFilter_ParseURLQuery(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		rawQuery string
+		opts     []Option
+		want     [][]Rule
+		wantErr  bool
+	}{
+		{
+			name:     "success - default key",
+			rawQuery: "filter=%5B%5B%7B%22field%22%3A%22Age%22%2C%22type%22%3A%22exact%22%2C%22value%22%3A42%7D%5D%5D",
+			want: [][]Rule{{{
+				Field: "Age",
+				Type:  "exact",
+				Value: 42.0,
+			}}},
+			wantErr: false,
+		},
+		{
+			name:     "success - custom key",
+			rawQuery: "myCustomFilter=%5B%5B%7B%22field%22%3A%22Age%22%2C%22type%22%3A%22exact%22%2C%22value%22%3A42%7D%5D%5D",
+			opts:     []Option{WithQueryFilterKey("myCustomFilter")},
+			want: [][]Rule{{{
+				Field: "Age",
+				Type:  "exact",
+				Value: 42.0,
+			}}},
+			wantErr: false,
+		},
+		{
+			name:     "error - invalid json",
+			rawQuery: "myCustomFilter=%5B%5B%7B%22field%22%3A%22Age%22%2C%22type%22%3",
+			wantErr:  true,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			p, err := New(tt.opts...)
+			require.NoError(t, err)
+
+			u := &url.URL{
+				RawQuery: tt.rawQuery,
+			}
+			rules, err := p.ParseURLQuery(u)
+
+			if tt.wantErr {
+				require.Error(t, err, "ParseURLQuery() error = %v, wantErr %v", err, tt.wantErr)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, tt.want, rules, "ParseURLQuery rules = %v, want %v", rules, tt.want)
 			}
 		})
 	}
@@ -686,7 +748,7 @@ func benchmarkFilterApply(b *testing.B, n int, json string, opts ...Option) {
 		}
 	}
 
-	rules, err := ParseRules(json)
+	rules, err := ParseJSON(json)
 	require.NoError(b, err)
 
 	b.ResetTimer()

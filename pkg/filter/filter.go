@@ -11,23 +11,25 @@ import (
 
 const (
 	defaultMaxRules = 3
-	queryFilterKey  = "filter"
+
+	// DefaultURLQueryFilterKey is the default URL query key used by Processor.ParseURLQuery().
+	// Can be customized with WithQueryFilterKey().
+	DefaultURLQueryFilterKey = "filter"
 )
 
 // Processor is the interface to provide subtractive functions.
 type Processor interface {
+	// ParseURLQuery parses and returns the defined query parameter from a *url.URL.
+	// Defaults to DefaultURLQueryFilterKey and can be customized with WithQueryFilterKey()
+	ParseURLQuery(u *url.URL) ([][]Rule, error)
+
 	// Apply filters the slice to remove elements not matching the defined rules.
 	// The slice parameter must be a pointer to a slice and is filtered *in place*.
 	Apply(rules [][]Rule, slice interface{}) error
 }
 
-// GetFilter returns the "filter" query parameter from a *url.URL.
-func GetFilter(u *url.URL) string {
-	return u.Query().Get(queryFilterKey)
-}
-
-// ParseRules parses and returns a [][]Rule from its JSON representation.
-func ParseRules(s string) ([][]Rule, error) {
+// ParseJSON parses and returns a [][]Rule from its JSON representation.
+func ParseJSON(s string) ([][]Rule, error) {
 	var r [][]Rule
 	if err := json.Unmarshal([]byte(s), &r); err != nil {
 		return nil, fmt.Errorf("failed unmarshaling rules: %w", err)
@@ -43,7 +45,8 @@ func ParseRules(s string) ([][]Rule, error) {
 // "[a,[b,c],d]" evaluates to "a AND (b OR c) AND d".
 func New(opts ...Option) (Processor, error) {
 	p := processor{
-		maxRules: defaultMaxRules,
+		maxRules:          defaultMaxRules,
+		urlQueryFilterKey: DefaultURLQueryFilterKey,
 	}
 
 	for _, opt := range opts {
@@ -56,8 +59,16 @@ func New(opts ...Option) (Processor, error) {
 }
 
 type processor struct {
-	fields   fieldGetter
-	maxRules int
+	fields            fieldGetter
+	maxRules          int
+	urlQueryFilterKey string
+}
+
+// ParseURLQuery parses and returns the defined query parameter from a *url.URL.
+func (p *processor) ParseURLQuery(u *url.URL) ([][]Rule, error) {
+	return ParseJSON(
+		u.Query().Get(p.urlQueryFilterKey),
+	)
 }
 
 func (p *processor) Apply(rules [][]Rule, slicePtr interface{}) error {

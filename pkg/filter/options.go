@@ -1,6 +1,9 @@
 package filter
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+)
 
 // Option is the function that allows to set configuration options.
 type Option func(v *processor) error
@@ -27,10 +30,23 @@ func WithFieldNameTag(tag string) Option {
 func WithMaxRules(max int) Option {
 	return func(v *processor) error {
 		if max < 1 {
-			return errors.New("max")
+			return fmt.Errorf("max rules must be stricly positive")
 		}
 
 		v.maxRules = max
+
+		return nil
+	}
+}
+
+// WithQueryFilterKey sets the query parameter key that Processor.ParseURLQuery() looks for.
+func WithQueryFilterKey(key string) Option {
+	return func(v *processor) error {
+		if key == "" {
+			return errors.New("query filter key cannot be empty")
+		}
+
+		v.urlQueryFilterKey = key
 
 		return nil
 	}
