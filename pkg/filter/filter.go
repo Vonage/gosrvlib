@@ -9,6 +9,11 @@ import (
 	"reflect"
 )
 
+const (
+	defaultMaxRules = 3
+	queryFilterKey  = "filter"
+)
+
 // Processor is the interface to provide subtractive functions.
 type Processor interface {
 	// Apply filters the slice to remove elements not matching the defined rules.
@@ -18,7 +23,7 @@ type Processor interface {
 
 // GetFilter returns the "filter" query parameter from a *url.URL.
 func GetFilter(u *url.URL) string {
-	return u.Query().Get("filter")
+	return u.Query().Get(queryFilterKey)
 }
 
 // ParseRules parses and returns a [][]Rule from its JSON representation.
@@ -37,7 +42,9 @@ func ParseRules(s string) ([][]Rule, error) {
 //
 // "[a,[b,c],d]" evaluates to "a AND (b OR c) AND d".
 func New(opts ...Option) (Processor, error) {
-	p := processor{}
+	p := processor{
+		maxRules: defaultMaxRules,
+	}
 
 	for _, opt := range opts {
 		if err := opt(&p); err != nil {
@@ -49,12 +56,18 @@ func New(opts ...Option) (Processor, error) {
 }
 
 type processor struct {
-	fields fieldGetter
+	fields   fieldGetter
+	maxRules int
 }
 
 func (p *processor) Apply(rules [][]Rule, slicePtr interface{}) error {
 	if len(rules) == 0 {
 		return nil
+	}
+
+	err := p.checkRulesCount(rules)
+	if err != nil {
+		return err
 	}
 
 	vSlicePtr := reflect.ValueOf(slicePtr)
@@ -72,6 +85,19 @@ func (p *processor) Apply(rules [][]Rule, slicePtr interface{}) error {
 	}
 
 	return p.filterSliceValue(vSlice, matcher)
+}
+
+func (p *processor) checkRulesCount(rules [][]Rule) error {
+	count := 0
+	for i := range rules {
+		count += len(rules[i])
+	}
+
+	if count > p.maxRules {
+		return fmt.Errorf("too many rules: got %d max is %d", count, p.maxRules)
+	}
+
+	return nil
 }
 
 // filterSliceValue filters a slice passed as a reflect.Value, in place.

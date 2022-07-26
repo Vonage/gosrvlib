@@ -42,3 +42,50 @@ func TestWithFieldNameTag(t *testing.T) {
 		})
 	}
 }
+
+func TestWithMaxRules(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name    string
+		max     int
+		wantErr bool
+	}{
+		{
+			name:    "success - 1",
+			max:     1,
+			wantErr: false,
+		},
+		{
+			name:    "success - 42",
+			max:     42,
+			wantErr: false,
+		},
+		{
+			name:    "error - 0",
+			max:     0,
+			wantErr: true,
+		},
+		{
+			name:    "error - -1",
+			max:     -1,
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			opt := WithMaxRules(tt.max)
+			err := opt(&processor{})
+
+			if tt.wantErr {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
+}

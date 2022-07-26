@@ -514,12 +514,14 @@ func TestFilter_Apply(t *testing.T) {
 			name:     "combination - (false OR true) AND (true OR false)",
 			elements: &[]string{"a"},
 			rules:    [][]Rule{{falseRegex, trueRegex}, {trueRegex, falseRegex}},
+			opts:     []Option{WithMaxRules(4)},
 			want:     &[]string{"a"},
 		},
 		{
 			name:     "combination - (false OR true) AND (false OR false)",
 			elements: &[]string{"a"},
 			rules:    [][]Rule{{falseRegex, trueRegex}, {falseRegex, falseRegex}},
+			opts:     []Option{WithMaxRules(4)},
 			want:     &[]string{},
 		},
 		{
@@ -620,6 +622,24 @@ func TestFilter_Apply(t *testing.T) {
 				Type:  "invalid filter type",
 				Value: "value 1",
 			}}},
+			wantErr: true,
+		},
+		{
+			name:     "error - too many rules",
+			elements: &[]int{1, 2, 3},
+			rules: [][]Rule{{
+				{
+					Field: "",
+					Type:  "equals",
+					Value: 1,
+				},
+				{
+					Field: "",
+					Type:  "equals",
+					Value: 3,
+				},
+			}},
+			opts:    []Option{WithMaxRules(1)},
 			wantErr: true,
 		},
 	}
