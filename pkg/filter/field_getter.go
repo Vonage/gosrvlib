@@ -12,6 +12,10 @@ const (
 	FieldNameSeparator = "."
 )
 
+var (
+	errFieldNotFound = errors.New("field not found")
+)
+
 // reflectPath represents a field path (e.g. address.country) as the indices of the fields (e.g. [2,1]) that can be used with reflect.Value.Field(i int).
 type reflectPath []int
 
@@ -90,7 +94,7 @@ func (r *fieldGetter) getStructField(t reflect.Type, name string) (reflect.Struc
 	if r.fieldTag == "" {
 		field, ok := t.FieldByName(name)
 		if !ok {
-			return reflect.StructField{}, fmt.Errorf("struct %s does not have a field named %s", t, name)
+			return reflect.StructField{}, fmt.Errorf("field %s.%s: %w", t, name, errFieldNotFound)
 		}
 
 		return field, nil
@@ -98,7 +102,7 @@ func (r *fieldGetter) getStructField(t reflect.Type, name string) (reflect.Struc
 
 	field, ok := r.lookupFieldByTag(t, name)
 	if !ok {
-		return reflect.StructField{}, fmt.Errorf("struct %s does not have a field with %s tag value of %s", t, r.fieldTag, name)
+		return reflect.StructField{}, fmt.Errorf("field of %s with tag %s=%s: %w", t, r.fieldTag, name, errFieldNotFound)
 	}
 
 	return field, nil

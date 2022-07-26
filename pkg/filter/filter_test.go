@@ -298,7 +298,7 @@ func TestFilter_Apply(t *testing.T) {
 			},
 		},
 		{
-			name: "success - invalid filter value type", // TODO report error or filter?
+			name: "success - invalid filter value type",
 			elements: &[]simpleStruct{
 				{
 					StringField: "value 1",
@@ -312,7 +312,7 @@ func TestFilter_Apply(t *testing.T) {
 			want: &[]simpleStruct{},
 		},
 		{
-			name: "success - regexp with an int", // TODO report error or filter?
+			name: "success - regexp with an int",
 			elements: &[]simpleStruct{
 				{
 					IntField: 42,
@@ -430,6 +430,39 @@ func TestFilter_Apply(t *testing.T) {
 			want:     &[]int{},
 		},
 		{
+			name: "success - nested path not found",
+			elements: &[]interface{}{
+				complexStruct{
+					Internal: simpleStruct{
+						StringField: "value 1",
+					},
+				},
+			},
+			rules: [][]Rule{{{
+				Field: "Internal.InvalidField",
+				Type:  "exact",
+				Value: "value 1",
+			}}},
+			want: &[]interface{}{},
+		},
+		{
+			name: "success - with field tag not found",
+			elements: &[]interface{}{
+				complexStruct{
+					Internal: simpleStruct{
+						StringField: "value 1",
+					},
+				},
+			},
+			opts: []Option{WithFieldNameTag("json")},
+			rules: [][]Rule{{{
+				Field: "internal.invalid_field",
+				Type:  "exact",
+				Value: "value 1",
+			}}},
+			want: &[]interface{}{},
+		},
+		{
 			name:     "combination - true AND true",
 			elements: &[]string{"a"},
 			rules:    [][]Rule{{trueRegex}, {trueRegex}},
@@ -490,23 +523,6 @@ func TestFilter_Apply(t *testing.T) {
 			want:     &[]string{},
 		},
 		{
-			name: "error - with field tag not found",
-			elements: &[]interface{}{
-				complexStruct{
-					Internal: simpleStruct{
-						StringField: "value 1",
-					},
-				},
-			},
-			opts: []Option{WithFieldNameTag("json")},
-			rules: [][]Rule{{{
-				Field: "internal.invalid_field",
-				Type:  "exact",
-				Value: "value 1",
-			}}},
-			wantErr: true,
-		},
-		{
 			name:     "error - not a pointer",
 			elements: 42,
 			rules: [][]Rule{{{
@@ -551,22 +567,6 @@ func TestFilter_Apply(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "error - nested path not found",
-			elements: &[]interface{}{
-				complexStruct{
-					Internal: simpleStruct{
-						StringField: "value 1",
-					},
-				},
-			},
-			rules: [][]Rule{{{
-				Field: "Internal.InvalidField",
-				Type:  "exact",
-				Value: "value 1",
-			}}},
-			wantErr: true,
-		},
-		{
 			name: "error - nested path inside a basic type",
 			elements: &[]interface{}{
 				simpleStruct{
@@ -595,7 +595,7 @@ func TestFilter_Apply(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "error - not a string",
+			name: "error - not a string and regexp",
 			elements: &[]simpleStruct{
 				{
 					StringField: "value 1",
@@ -662,7 +662,7 @@ func benchmarkFilterApply(b *testing.B, n int, json string, opts ...Option) {
 	data := make([]simpleStruct, n)
 	for i := 0; i < n; i++ {
 		data[i] = simpleStruct{
-			StringField: "hello world", // TODO use faker ?
+			StringField: "hello world",
 		}
 	}
 

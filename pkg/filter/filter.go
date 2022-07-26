@@ -3,6 +3,7 @@ package filter
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/url"
 	"reflect"
@@ -110,6 +111,9 @@ func (p *processor) evaluate(rules [][]Rule, obj interface{}) (bool, error) {
 			rule := &rules[i][j]
 
 			value, err := p.fields.GetFieldValue(obj, rule.Field)
+			if errors.Unwrap(err) == errFieldNotFound {
+				return false, nil // filter out missing field without error
+			}
 			if err != nil {
 				return false, err
 			}
