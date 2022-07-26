@@ -124,9 +124,7 @@ func TestExact_Evaluate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			e := &exact{}
-			res, err := e.Evaluate(tt.ref, tt.value)
-			require.NoError(t, err)
+			res := newExact(tt.ref).Evaluate(tt.value)
 			require.Equal(t, tt.want, res, "Evaluate() = %v, want %v", tt.value, tt.want)
 		})
 	}
@@ -141,28 +139,20 @@ func TestNot_Evaluate(t *testing.T) {
 		ref      interface{}
 		value    interface{}
 		want     bool
-		wantErr  bool
 	}{
 		{
 			name:     "true",
-			internal: &exact{},
+			internal: newExact(1),
 			ref:      1,
 			value:    2,
 			want:     true,
 		},
 		{
 			name:     "false",
-			internal: &exact{},
+			internal: newExact(1),
 			ref:      1,
 			value:    1,
 			want:     false,
-		},
-		{
-			name:     "error",
-			internal: &evalRegexp{},
-			ref:      "(",
-			value:    "some value",
-			wantErr:  true,
 		},
 	}
 
@@ -171,17 +161,9 @@ func TestNot_Evaluate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			e := &not{
-				Opposite: tt.internal,
-			}
-			res, err := e.Evaluate(tt.ref, tt.value)
+			res := newNot(tt.internal).Evaluate(tt.value)
 
-			if tt.wantErr {
-				require.Error(t, err, "Apply() error = %v, wantErr %v", err, tt.wantErr)
-			} else {
-				require.NoError(t, err)
-				require.Equal(t, tt.want, res, "Evaluate = %v, want %v", res, tt.want)
-			}
+			require.Equal(t, tt.want, res, "Evaluate = %v, want %v", res, tt.want)
 		})
 	}
 }

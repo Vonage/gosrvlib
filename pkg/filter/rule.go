@@ -26,23 +26,31 @@ type Rule struct {
 	eval Evaluator
 }
 
-// Evaluate returns true if the value matches the rule or not.
+// Evaluate returns whether the value matches the rule or not.
 //
 // Returns an error if the Type is invalid, a misconfiguration (e.g. invalid regexp) or the value is invalid (e.g. evaluating an int with a regexp).
 func (r *Rule) Evaluate(value interface{}) (bool, error) {
 	if r.eval == nil {
 		var err error
 
-		r.eval, err = getRuleType(r.Type)
+		r.eval, err = r.getEvaluator()
 		if err != nil {
 			return false, err
 		}
 	}
 
-	match, err := r.eval.Evaluate(r.Value, value)
-	if err != nil {
-		return false, fmt.Errorf("failed evaluating the rule: %w", err)
-	}
+	return r.eval.Evaluate(value), nil
+}
 
-	return match, nil
+func (r *Rule) getEvaluator() (Evaluator, error) {
+	switch r.Type {
+	case TypeExact:
+		return newExact(r.Value), nil
+	case TypeNotExact:
+		return newNot(newExact(r.Value)), nil
+	case TypeRegexp:
+		return newRegexp(r.Value)
+	default:
+		return nil, fmt.Errorf("type %s is not supported", r.Type)
+	}
 }

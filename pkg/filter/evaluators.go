@@ -22,40 +22,33 @@ const (
 // Evaluator is the interface to provide functions for a filter type.
 type Evaluator interface {
 	// Evaluate determines if two given values match.
-	Evaluate(reference, actual interface{}) (bool, error)
-}
-
-func getRuleType(typeName string) (Evaluator, error) {
-	switch typeName {
-	case TypeExact:
-		return &exact{}, nil
-	case TypeNotExact:
-		return &not{Opposite: &exact{}}, nil
-	case TypeRegexp:
-		return &evalRegexp{}, nil
-	default:
-		return nil, fmt.Errorf("type %s is not supported", typeName)
-	}
+	Evaluate(value interface{}) bool
 }
 
 type exact struct {
+	ref interface{}
+}
+
+func newExact(reference interface{}) Evaluator {
+	return &exact{
+		ref: convertValues(reference),
+	}
 }
 
 // Evaluate returns whether reference and actual are considered equal.
 // It converts numerical values implicitly before comparison.
-func (e *exact) Evaluate(reference, actual interface{}) (bool, error) {
-	actual = convertValues(actual)
-	reference = convertValues(reference)
+func (e *exact) Evaluate(value interface{}) bool {
+	value = convertValues(value)
 
-	if actual == reference {
-		return true, nil
+	if value == e.ref {
+		return true
 	}
 
-	if e.isNil(actual) && e.isNil(reference) {
-		return true, nil
+	if e.isNil(value) && e.isNil(e.ref) {
+		return true
 	}
 
-	return false, nil
+	return false
 }
 
 func (e *exact) isNil(v interface{}) bool {
@@ -105,51 +98,45 @@ type not struct {
 	Opposite Evaluator
 }
 
-// Evaluate returns the opposite of the internal evaluator.
-func (n *not) Evaluate(reference, actual interface{}) (bool, error) {
-	res, err := n.Opposite.Evaluate(reference, actual)
-	if err != nil {
-		return false, fmt.Errorf("failed evaluating the opposite rule: %w", err)
+func newNot(opposite Evaluator) Evaluator {
+	return &not{
+		Opposite: opposite,
 	}
+}
 
-	return !res, nil
+// Evaluate returns the opposite of the internal evaluator.
+func (n *not) Evaluate(value interface{}) bool {
+	return !n.Opposite.Evaluate(value)
 }
 
 type evalRegexp struct {
 	internal *regexp.Regexp
 }
 
-// Evaluate returns whether actual matches the reference regexp.
-// It returns an error if reference is not a string or a valid regular expression.
-// It returns false if actual is not a string.
-func (r *evalRegexp) Evaluate(reference, actual interface{}) (bool, error) {
-	if r.internal == nil {
-		err := r.compile(reference)
-		if err != nil {
-			return false, err
-		}
-	}
-
-	actualStr, ok := actual.(string)
+func newRegexp(reference interface{}) (Evaluator, error) {
+	str, ok := reference.(string)
 	if !ok {
-		return false, nil
-	}
-
-	return r.internal.MatchString(actualStr), nil
-}
-
-func (r *evalRegexp) compile(ref interface{}) error {
-	str, ok := ref.(string)
-	if !ok {
-		return fmt.Errorf("rule of type %s should have string values (got %v (%v))", TypeRegexp, ref, reflect.TypeOf(ref))
+		return nil, fmt.Errorf("rule of type %s should have string values (got %v (%v))", TypeRegexp, reference, reflect.TypeOf(reference))
 	}
 
 	reg, err := regexp.Compile(str)
 	if err != nil {
-		return fmt.Errorf("failed compiling regexp: %w", err)
+		return nil, fmt.Errorf("failed compiling regexp: %w", err)
 	}
 
-	r.internal = reg
+	return &evalRegexp{
+		internal: reg,
+	}, nil
+}
 
-	return nil
+// Evaluate returns whether actual matches the reference regexp.
+// It returns an error if reference is not a string or a valid regular expression.
+// It returns false if actual is not a string.
+func (r *evalRegexp) Evaluate(value interface{}) bool {
+	actualStr, ok := value.(string)
+	if !ok {
+		return false
+	}
+
+	return r.internal.MatchString(actualStr)
 }
