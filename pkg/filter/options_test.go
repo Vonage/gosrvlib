@@ -32,7 +32,7 @@ func TestWithFieldNameTag(t *testing.T) {
 			t.Parallel()
 
 			opt := WithFieldNameTag(tt.fieldTag)
-			err := opt(&processor{})
+			err := opt(&Processor{})
 
 			if tt.wantErr {
 				require.Error(t, err)
@@ -79,7 +79,7 @@ func TestWithMaxRules(t *testing.T) {
 			t.Parallel()
 
 			opt := WithMaxRules(tt.max)
-			err := opt(&processor{})
+			err := opt(&Processor{})
 
 			if tt.wantErr {
 				require.Error(t, err)
@@ -116,7 +116,7 @@ func TestWithQueryFilterKey(t *testing.T) {
 			t.Parallel()
 
 			opt := WithQueryFilterKey(tt.key)
-			err := opt(&processor{})
+			err := opt(&Processor{})
 
 			if tt.wantErr {
 				require.Error(t, err)

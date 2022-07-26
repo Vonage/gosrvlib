@@ -78,7 +78,7 @@ func TestNew(t *testing.T) {
 		{
 			name: "success",
 			opts: []Option{
-				func(v *processor) error {
+				func(v *Processor) error {
 					return nil
 				},
 			},
@@ -87,7 +87,7 @@ func TestNew(t *testing.T) {
 		{
 			name: "error - option error",
 			opts: []Option{
-				func(v *processor) error {
+				func(v *Processor) error {
 					return errors.New("test error")
 				},
 			},
