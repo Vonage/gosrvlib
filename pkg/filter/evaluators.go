@@ -14,14 +14,14 @@ const (
 	TypeNotExact = "different"
 
 	// TypeRegexp is a filter type that matches the value against a reference regular expression.
-	// The reference value must be a regular expression that can compile
+	// The reference value must be a regular expression that can compile.
 	// Works only with strings (anything else will evaluate to false).
 	TypeRegexp = "regexp"
 )
 
 // Evaluator is the interface to provide functions for a filter type.
 type Evaluator interface {
-	// Evaluate determines if two given values match
+	// Evaluate determines if two given values match.
 	Evaluate(reference, actual interface{}) (bool, error)
 }
 
@@ -41,6 +41,8 @@ func getRuleType(typeName string) (Evaluator, error) {
 type exact struct {
 }
 
+// Evaluate returns whether reference and actual are considered equal.
+// It converts numerical values implicitly before comparison.
 func (e *exact) Evaluate(reference, actual interface{}) (bool, error) {
 	actual = convertValues(actual)
 	reference = convertValues(reference)
@@ -103,6 +105,7 @@ type not struct {
 	Opposite Evaluator
 }
 
+// Evaluate returns the opposite of the internal evaluator.
 func (n *not) Evaluate(reference, actual interface{}) (bool, error) {
 	res, err := n.Opposite.Evaluate(reference, actual)
 	if err != nil {
@@ -116,6 +119,9 @@ type evalRegexp struct {
 	internal *regexp.Regexp
 }
 
+// Evaluate returns whether actual matches the reference regexp.
+// It returns an error if reference is not a string or a valid regular expression.
+// It returns false if actual is not a string.
 func (r *evalRegexp) Evaluate(reference, actual interface{}) (bool, error) {
 	if r.internal == nil {
 		err := r.compile(reference)

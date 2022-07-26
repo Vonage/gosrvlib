@@ -65,12 +65,15 @@ type processor struct {
 }
 
 // ParseURLQuery parses and returns the defined query parameter from a *url.URL.
+// Defaults to DefaultURLQueryFilterKey and can be customized with WithQueryFilterKey().
 func (p *processor) ParseURLQuery(u *url.URL) ([][]Rule, error) {
 	return ParseJSON(
 		u.Query().Get(p.urlQueryFilterKey),
 	)
 }
 
+// Apply filters the slice to remove elements not matching the defined rules.
+// The slice parameter must be a pointer to a slice and is filtered *in place*.
 func (p *processor) Apply(rules [][]Rule, slicePtr interface{}) error {
 	if len(rules) == 0 {
 		return nil
