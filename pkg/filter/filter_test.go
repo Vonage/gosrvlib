@@ -629,10 +629,10 @@ func TestFilter_Apply(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			f, err := New(tt.opts...)
+			p, err := New(tt.opts...)
 			require.NoError(t, err)
 
-			err = f.Apply(tt.rules, tt.elements)
+			err = p.Apply(tt.rules, tt.elements)
 
 			if tt.wantErr {
 				require.Error(t, err, "Apply() error = %v, wantErr %v", err, tt.wantErr)

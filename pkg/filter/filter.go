@@ -73,17 +73,15 @@ func (p *processor) Apply(rules [][]Rule, slicePtr interface{}) error {
 	return p.filterSliceValue(vSlice, matcher)
 }
 
-// filterSliceValue filters a slice passed as a reflect.Value, in place. It calls the matcher function to evaluate whether to keep each item or not.
+// filterSliceValue filters a slice passed as a reflect.Value, in place.
+// It calls the matcher function to evaluate whether to keep each item or not.
 func (p *processor) filterSliceValue(slice reflect.Value, matcher func(interface{}) (bool, error)) error {
 	n := 0
 
 	for i := 0; i < slice.Len(); i++ {
 		value := slice.Index(i)
 
-		if !value.CanInterface() {
-			return fmt.Errorf("elements contained a %s which cannot be interfaced or set", value.Type())
-		}
-
+		// value can always be Interface() because it's in a slice and cannot point to an unexported field
 		match, err := matcher(value.Interface())
 		if err != nil {
 			return err
