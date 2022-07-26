@@ -61,30 +61,26 @@ func (r *fieldGetter) GetFieldValue(path string, obj interface{}) (interface{}, 
 }
 
 func (r *fieldGetter) getFieldPath(fieldNames []string, t reflect.Type) (reflectPath, error) {
-	if t.Kind() == reflect.Pointer {
-		t = t.Elem()
-	}
+	fieldPath := make(reflectPath, 0, len(fieldNames))
 
-	if t.Kind() != reflect.Struct {
-		return nil, fmt.Errorf("fields of elements of type %s are not supported", t)
-	}
+	for len(fieldNames) > 0 {
+		if t.Kind() == reflect.Pointer {
+			t = t.Elem()
+		}
 
-	currentName := fieldNames[0]
+		if t.Kind() != reflect.Struct {
+			return nil, fmt.Errorf("fields of elements of type %s are not supported", t)
+		}
 
-	field, err := r.getStructField(t, currentName)
-	if err != nil {
-		return nil, err
-	}
-
-	fieldPath := field.Index
-
-	if len(fieldNames) > 1 {
-		subPath, err := r.getFieldPath(fieldNames[1:], field.Type)
+		field, err := r.getStructField(t, fieldNames[0])
 		if err != nil {
 			return nil, err
 		}
 
-		fieldPath = append(fieldPath, subPath...)
+		fieldPath = append(fieldPath, field.Index...)
+
+		fieldNames = fieldNames[1:]
+		t = field.Type
 	}
 
 	return fieldPath, nil
