@@ -68,8 +68,9 @@ func (p *processor) Apply(rules [][]Rule, slicePtr interface{}) error {
 	}
 
 	matcher := func(obj interface{}) (bool, error) {
-		return p.evaluate(rules, obj)
+		return p.evaluateRules(rules, obj)
 	}
+
 	return p.filterSliceValue(vSlice, matcher)
 }
 
@@ -100,23 +101,13 @@ func (p *processor) filterSliceValue(slice reflect.Value, matcher func(interface
 	return nil
 }
 
-func (p *processor) evaluate(rules [][]Rule, obj interface{}) (bool, error) {
+// nolint: gocognit
+func (p *processor) evaluateRules(rules [][]Rule, obj interface{}) (bool, error) {
 	for i := range rules {
 		orResult := false
 
 		for j := range rules[i] {
-			// need a pointer to always use the same value and have some state (e.g. regexp)
-			rule := &rules[i][j]
-
-			value, err := p.fields.GetFieldValue(obj, rule.Field)
-			if errors.Unwrap(err) == errFieldNotFound {
-				return false, nil // filter out missing field without error
-			}
-			if err != nil {
-				return false, err
-			}
-
-			match, err := rule.Evaluate(value)
+			match, err := p.evaluateRule(&rules[i][j], obj)
 			if err != nil {
 				return false, err
 			}
@@ -133,4 +124,20 @@ func (p *processor) evaluate(rules [][]Rule, obj interface{}) (bool, error) {
 	}
 
 	return true, nil
+}
+
+// evaluateRule evaluates a specific rule over an object.
+//
+// It needs a pointer to let the Rule reuse its state (e.g. precompiled regexp).
+func (p *processor) evaluateRule(rule *Rule, obj interface{}) (bool, error) {
+	value, err := p.fields.GetFieldValue(obj, rule.Field)
+	if errors.Is(err, errFieldNotFound) {
+		return false, nil // filter out missing field without error
+	}
+
+	if err != nil {
+		return false, err
+	}
+
+	return rule.Evaluate(value)
 }
