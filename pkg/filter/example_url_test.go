@@ -18,7 +18,7 @@ type ID struct {
 
 func ExampleNew_fromURL() {
 	// Simulate an encoded query passed in the http.Request of a http.Handler
-	encodedJSONFilter := "%5B%5B%7B%22field%22%3A%22name%22%2C%22type%22%3A%22exact%22%2C%22value%22%3A%22doe%22%7D%2C%7B%22field%22%3A%22age%22%2C%22type%22%3A%22exact%22%2C%22value%22%3A42%7D%5D%2C%5B%7B%22field%22%3A%22address.country%22%2C%22type%22%3A%22regexp%22%2C%22value%22%3A%22UK%7CFR%22%7D%5D%5D"
+	encodedJSONFilter := "%5B%5B%7B%22field%22%3A%22name%22%2C%22type%22%3A%22equal%22%2C%22value%22%3A%22doe%22%7D%2C%7B%22field%22%3A%22age%22%2C%22type%22%3A%22equal%22%2C%22value%22%3A42%7D%5D%2C%5B%7B%22field%22%3A%22address.country%22%2C%22type%22%3A%22regexp%22%2C%22value%22%3A%22UK%7CFR%22%7D%5D%5D"
 
 	u, err := url.Parse("https://server.com/items?filter=" + encodedJSONFilter)
 	if err != nil {
@@ -40,12 +40,12 @@ func ExampleNew_fromURL() {
 	//   [
 	//     {
 	//       "field": "name",
-	//       "type": "exact",
+	//       "type": "equal",
 	//       "value": "doe"
 	//     },
 	//     {
 	//       "field": "age",
-	//       "type": "exact",
+	//       "type": "equal",
 	//       "value": 42
 	//     }
 	//   ],

@@ -25,8 +25,8 @@ func TestParseJSON(t *testing.T) {
 			name: "success",
 			json: `[
 			  [
-				{ "field": "name", "type": "exact", "value": "doe" },
-				{ "field": "age", "type": "exact", "value": 42 }
+				{ "field": "name", "type": "equal", "value": "doe" },
+				{ "field": "age", "type": "equal", "value": 42 }
 			  ],
 			  [
 				{ "field": "address.country", "type": "regexp", "value": "EN|FR" }
@@ -34,8 +34,8 @@ func TestParseJSON(t *testing.T) {
 			]`,
 			want: [][]Rule{
 				{
-					{Field: "name", Type: "exact", Value: "doe"},
-					{Field: "age", Type: "exact", Value: 42.0},
+					{Field: "name", Type: "equal", Value: "doe"},
+					{Field: "age", Type: "equal", Value: 42.0},
 				},
 				{
 					{Field: "address.country", Type: "regexp", Value: "EN|FR"},
@@ -124,21 +124,21 @@ func TestFilter_ParseURLQuery(t *testing.T) {
 	}{
 		{
 			name:     "success - default key",
-			rawQuery: "filter=%5B%5B%7B%22field%22%3A%22Age%22%2C%22type%22%3A%22exact%22%2C%22value%22%3A42%7D%5D%5D",
+			rawQuery: "filter=%5B%5B%7B%22field%22%3A%22Age%22%2C%22type%22%3A%22equal%22%2C%22value%22%3A42%7D%5D%5D",
 			want: [][]Rule{{{
 				Field: "Age",
-				Type:  "exact",
+				Type:  "equal",
 				Value: 42.0,
 			}}},
 			wantErr: false,
 		},
 		{
 			name:     "success - custom key",
-			rawQuery: "myCustomFilter=%5B%5B%7B%22field%22%3A%22Age%22%2C%22type%22%3A%22exact%22%2C%22value%22%3A42%7D%5D%5D",
+			rawQuery: "myCustomFilter=%5B%5B%7B%22field%22%3A%22Age%22%2C%22type%22%3A%22equal%22%2C%22value%22%3A42%7D%5D%5D",
 			opts:     []Option{WithQueryFilterKey("myCustomFilter")},
 			want: [][]Rule{{{
 				Field: "Age",
-				Type:  "exact",
+				Type:  "equal",
 				Value: 42.0,
 			}}},
 			wantErr: false,
@@ -231,7 +231,7 @@ func TestFilter_Apply(t *testing.T) {
 			},
 			rules: [][]Rule{{{
 				Field: "Internal.StringField",
-				Type:  "exact",
+				Type:  "equal",
 				Value: "value 1",
 			}}},
 			want: &[]complexStruct{
@@ -243,7 +243,7 @@ func TestFilter_Apply(t *testing.T) {
 			},
 		},
 		{
-			name: "success - nested string different",
+			name: "success - nested string notequal",
 			elements: &[]complexStruct{
 				{
 					Internal: simpleStruct{
@@ -258,7 +258,7 @@ func TestFilter_Apply(t *testing.T) {
 			},
 			rules: [][]Rule{{{
 				Field: "Internal.StringField",
-				Type:  "different",
+				Type:  "notequal",
 				Value: "value 1",
 			}}},
 			want: &[]complexStruct{
@@ -308,7 +308,7 @@ func TestFilter_Apply(t *testing.T) {
 			},
 			rules: [][]Rule{{{
 				Field: "IntField",
-				Type:  "exact",
+				Type:  "equal",
 				Value: 42,
 			}}},
 			want: &[]simpleStruct{
@@ -329,7 +329,7 @@ func TestFilter_Apply(t *testing.T) {
 			},
 			rules: [][]Rule{{{
 				Field: "Float64Field",
-				Type:  "exact",
+				Type:  "equal",
 				Value: 42,
 			}}},
 			want: &[]simpleStruct{
@@ -350,7 +350,7 @@ func TestFilter_Apply(t *testing.T) {
 			},
 			rules: [][]Rule{{{
 				Field: "StringPtrField",
-				Type:  "exact",
+				Type:  "equal",
 				Value: nil,
 			}}},
 			want: &[]simpleStruct{
@@ -368,7 +368,7 @@ func TestFilter_Apply(t *testing.T) {
 			},
 			rules: [][]Rule{{{
 				Field: "StringField",
-				Type:  "exact",
+				Type:  "equal",
 				Value: 42,
 			}}},
 			want: &[]simpleStruct{},
@@ -403,7 +403,7 @@ func TestFilter_Apply(t *testing.T) {
 			},
 			rules: [][]Rule{{{
 				Field: "Internal.StringField",
-				Type:  "exact",
+				Type:  "equal",
 				Value: "value 1",
 			}}},
 			want: &[]interface{}{
@@ -431,7 +431,7 @@ func TestFilter_Apply(t *testing.T) {
 			opts: []Option{WithFieldNameTag("json")},
 			rules: [][]Rule{{{
 				Field: "internal.string_field",
-				Type:  "exact",
+				Type:  "equal",
 				Value: "value 1",
 			}}},
 			want: &[]complexStruct{
@@ -458,7 +458,7 @@ func TestFilter_Apply(t *testing.T) {
 			},
 			rules: [][]Rule{{{
 				Field: "StringField",
-				Type:  "exact",
+				Type:  "equal",
 				Value: "value 1",
 			}}},
 			want: &[]embeddingStruct{
@@ -474,7 +474,7 @@ func TestFilter_Apply(t *testing.T) {
 			elements: &[]int{41, 42, 43},
 			rules: [][]Rule{{{
 				Field: "",
-				Type:  "exact",
+				Type:  "equal",
 				Value: 42,
 			}}},
 			want: &[]int{42},
@@ -502,7 +502,7 @@ func TestFilter_Apply(t *testing.T) {
 			},
 			rules: [][]Rule{{{
 				Field: "Internal.InvalidField",
-				Type:  "exact",
+				Type:  "equal",
 				Value: "value 1",
 			}}},
 			want: &[]interface{}{},
@@ -519,7 +519,7 @@ func TestFilter_Apply(t *testing.T) {
 			opts: []Option{WithFieldNameTag("json")},
 			rules: [][]Rule{{{
 				Field: "internal.invalid_field",
-				Type:  "exact",
+				Type:  "equal",
 				Value: "value 1",
 			}}},
 			want: &[]interface{}{},
@@ -590,7 +590,7 @@ func TestFilter_Apply(t *testing.T) {
 			name:     "error - not a pointer",
 			elements: 42,
 			rules: [][]Rule{{{
-				Type: "exact",
+				Type: "equal",
 			}}},
 			wantErr: true,
 		},
@@ -598,7 +598,7 @@ func TestFilter_Apply(t *testing.T) {
 			name:     "error - not a slice",
 			elements: &simpleStruct{},
 			rules: [][]Rule{{{
-				Type: "exact",
+				Type: "equal",
 			}}},
 			wantErr: true,
 		},
@@ -613,7 +613,7 @@ func TestFilter_Apply(t *testing.T) {
 			},
 			rules: [][]Rule{{{
 				Field: "Internal.unexported",
-				Type:  "exact",
+				Type:  "equal",
 				Value: "value 1",
 			}}},
 			wantErr: true,
@@ -625,7 +625,7 @@ func TestFilter_Apply(t *testing.T) {
 			},
 			rules: [][]Rule{{{
 				Field: "Somefield",
-				Type:  "exact",
+				Type:  "equal",
 				Value: "value 1",
 			}}},
 			wantErr: true,
@@ -639,7 +639,7 @@ func TestFilter_Apply(t *testing.T) {
 			},
 			rules: [][]Rule{{{
 				Field: "StringField.InvalidField",
-				Type:  "exact",
+				Type:  "equal",
 				Value: "value 1",
 			}}},
 			wantErr: true,
@@ -766,27 +766,27 @@ func benchmarkFilterApply(b *testing.B, n int, json string, opts ...Option) {
 	}
 }
 
-func BenchmarkFilter_Apply_Exact_100(b *testing.B) {
+func BenchmarkFilter_Apply_Equal_100(b *testing.B) {
 	benchmarkFilterApply(
 		b,
 		100,
-		`[[{"field": "StringField", "type": "exact", "value": "hello world"}]]`,
+		`[[{"field": "StringField", "type": "equal", "value": "hello world"}]]`,
 	)
 }
 
-func BenchmarkFilter_Apply_Exact_1000(b *testing.B) {
+func BenchmarkFilter_Apply_Equal_1000(b *testing.B) {
 	benchmarkFilterApply(
 		b,
 		1000,
-		`[[{"field": "StringField", "type": "exact", "value": "hello world"}]]`,
+		`[[{"field": "StringField", "type": "equal", "value": "hello world"}]]`,
 	)
 }
 
-func BenchmarkFilter_Apply_Exact_10000(b *testing.B) {
+func BenchmarkFilter_Apply_Equal_10000(b *testing.B) {
 	benchmarkFilterApply(
 		b,
 		10000,
-		`[[{"field": "StringField", "type": "exact", "value": "hello world"}]]`,
+		`[[{"field": "StringField", "type": "equal", "value": "hello world"}]]`,
 	)
 }
 
@@ -802,7 +802,7 @@ func BenchmarkFilter_Apply_WithTagField_1000(b *testing.B) {
 	benchmarkFilterApply(
 		b,
 		1000,
-		`[[{"field": "string_field", "type": "exact", "value": "hello world"}]]`,
+		`[[{"field": "string_field", "type": "equal", "value": "hello world"}]]`,
 		WithFieldNameTag("json"),
 	)
 }

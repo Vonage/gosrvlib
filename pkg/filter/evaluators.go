@@ -7,11 +7,11 @@ import (
 )
 
 const (
-	// TypeExact is a filter type that matches exactly the reference value.
-	TypeExact = "exact"
+	// TypeEqual is a filter type that matches exactly the reference value.
+	TypeEqual = "equal"
 
-	// TypeNotExact is a filter type that matches when the value is different from the reference value (opposite of TypeExact).
-	TypeNotExact = "different"
+	// TypeNotEqual is a filter type that matches when the value is different from the reference value (opposite of TypeEqual).
+	TypeNotEqual = "notequal"
 
 	// TypeRegexp is a filter type that matches the value against a reference regular expression.
 	// The reference value must be a regular expression that can compile.
@@ -25,19 +25,19 @@ type Evaluator interface {
 	Evaluate(value interface{}) bool
 }
 
-type exact struct {
+type equal struct {
 	ref interface{}
 }
 
-func newExact(reference interface{}) Evaluator {
-	return &exact{
+func newEqual(reference interface{}) Evaluator {
+	return &equal{
 		ref: convertValues(reference),
 	}
 }
 
 // Evaluate returns whether reference and actual are considered equal.
 // It converts numerical values implicitly before comparison.
-func (e *exact) Evaluate(value interface{}) bool {
+func (e *equal) Evaluate(value interface{}) bool {
 	value = convertValues(value)
 
 	if value == e.ref {
@@ -51,7 +51,7 @@ func (e *exact) Evaluate(value interface{}) bool {
 	return false
 }
 
-func (e *exact) isNil(v interface{}) bool {
+func (e *equal) isNil(v interface{}) bool {
 	if v == nil {
 		return true
 	}

@@ -2,6 +2,7 @@ package filter
 
 import (
 	"fmt"
+	"strings"
 )
 
 // Rule is an individual filter that can be evaluated against any value.
@@ -43,11 +44,11 @@ func (r *Rule) Evaluate(value interface{}) (bool, error) {
 }
 
 func (r *Rule) getEvaluator() (Evaluator, error) {
-	switch r.Type {
-	case TypeExact:
-		return newExact(r.Value), nil
-	case TypeNotExact:
-		return newNot(newExact(r.Value)), nil
+	switch strings.ToLower(r.Type) {
+	case TypeEqual:
+		return newEqual(r.Value), nil
+	case TypeNotEqual:
+		return newNot(newEqual(r.Value)), nil
 	case TypeRegexp:
 		return newRegexp(r.Value)
 	default:

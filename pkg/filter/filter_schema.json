@@ -29,7 +29,7 @@
                 "type": {
                     "type": "string",
                     "title": "The type of the rule",
-                    "enum": ["equals", "different", "regexp"]
+                    "enum": ["equal", "notequal", "regexp"]
                 },
                 "value": {
                     "type": [
@@ -52,12 +52,12 @@
         [
             [{
                 "field": "name",
-                "type": "exact",
+                "type": "equal",
                 "value": "doe"
             },
             {
                 "field": "age",
-                "type": "exact",
+                "type": "equal",
                 "value": 42
             }],
             [{

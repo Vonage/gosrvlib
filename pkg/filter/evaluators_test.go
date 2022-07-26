@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestExact_Evaluate(t *testing.T) {
+func TestEqual_Evaluate(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -124,7 +124,7 @@ func TestExact_Evaluate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			res := newExact(tt.ref).Evaluate(tt.value)
+			res := newEqual(tt.ref).Evaluate(tt.value)
 			require.Equal(t, tt.want, res, "Evaluate() = %v, want %v", tt.value, tt.want)
 		})
 	}
@@ -142,14 +142,14 @@ func TestNot_Evaluate(t *testing.T) {
 	}{
 		{
 			name:     "true",
-			internal: newExact(1),
+			internal: newEqual(1),
 			ref:      1,
 			value:    2,
 			want:     true,
 		},
 		{
 			name:     "false",
-			internal: newExact(1),
+			internal: newEqual(1),
 			ref:      1,
 			value:    1,
 			want:     false,
