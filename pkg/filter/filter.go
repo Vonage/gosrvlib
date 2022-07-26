@@ -109,7 +109,7 @@ func (p *processor) evaluate(rules [][]Rule, obj interface{}) (bool, error) {
 			// need a pointer to always use the same value and have some state (e.g. regexp)
 			rule := &rules[i][j]
 
-			value, err := p.fields.GetFieldValue(rule.Field, obj)
+			value, err := p.fields.GetFieldValue(obj, rule.Field)
 			if err != nil {
 				return false, err
 			}

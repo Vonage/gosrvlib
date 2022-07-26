@@ -20,9 +20,9 @@ type fieldGetter struct {
 	cache    fieldCache
 }
 
-// GetFieldValue returns the value of obj's field, specified by its path.
-func (r *fieldGetter) GetFieldValue(path string, obj interface{}) (interface{}, error) {
-	// root path case
+// GetFieldValue returns the value of obj's field, specified by its dot separated path.
+func (r *fieldGetter) GetFieldValue(obj interface{}, path string) (interface{}, error) {
+	// empty path means the root object
 	if path == "" {
 		return obj, nil
 	}
@@ -39,7 +39,7 @@ func (r *fieldGetter) GetFieldValue(path string, obj interface{}) (interface{}, 
 
 		pathParts := strings.Split(path, FieldNameSeparator)
 
-		rPath, err = r.getFieldPath(pathParts, tElement)
+		rPath, err = r.getFieldPath(tElement, pathParts)
 		if err != nil {
 			return nil, err
 		}
@@ -60,7 +60,7 @@ func (r *fieldGetter) GetFieldValue(path string, obj interface{}) (interface{}, 
 	return value.Interface(), nil
 }
 
-func (r *fieldGetter) getFieldPath(fieldNames []string, t reflect.Type) (reflectPath, error) {
+func (r *fieldGetter) getFieldPath(t reflect.Type, fieldNames []string) (reflectPath, error) {
 	fieldPath := make(reflectPath, 0, len(fieldNames))
 
 	for len(fieldNames) > 0 {
