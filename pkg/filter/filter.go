@@ -56,10 +56,16 @@ type Processor struct {
 
 // ParseURLQuery parses and returns the defined query parameter from a *url.URL.
 // Defaults to DefaultURLQueryFilterKey and can be customized with WithQueryFilterKey().
-func (p *Processor) ParseURLQuery(u *url.URL) ([][]Rule, error) {
-	return ParseJSON(
-		u.Query().Get(p.urlQueryFilterKey),
-	)
+//
+// If the query parameter is empty or missing, will return a nil slice.
+// If there is a value which is invalid, will return an error.
+func (p *Processor) ParseURLQuery(q url.Values) ([][]Rule, error) {
+	value := q.Get(p.urlQueryFilterKey)
+	if value == "" {
+		return nil, nil
+	}
+
+	return ParseJSON(value)
 }
 
 // Apply filters the slice to remove elements not matching the defined rules.

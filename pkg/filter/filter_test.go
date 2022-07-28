@@ -144,8 +144,20 @@ func TestFilter_ParseURLQuery(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name:     "success - empty value",
+			rawQuery: "filter=",
+			want:     nil,
+			wantErr:  false,
+		},
+		{
+			name:     "success - missing value",
+			rawQuery: "",
+			want:     nil,
+			wantErr:  false,
+		},
+		{
 			name:     "error - invalid json",
-			rawQuery: "myCustomFilter=%5B%5B%7B%22field%22%3A%22Age%22%2C%22type%22%3",
+			rawQuery: "filter=%5B",
 			wantErr:  true,
 		},
 	}
@@ -161,7 +173,7 @@ func TestFilter_ParseURLQuery(t *testing.T) {
 			u := &url.URL{
 				RawQuery: tt.rawQuery,
 			}
-			rules, err := p.ParseURLQuery(u)
+			rules, err := p.ParseURLQuery(u.Query())
 
 			if tt.wantErr {
 				require.Error(t, err, "ParseURLQuery() error = %v, wantErr %v", err, tt.wantErr)

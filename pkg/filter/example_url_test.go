@@ -58,7 +58,7 @@ func ExampleNew_fromURL() {
 	//   ]
 	// ]
 	// It means that either the name OR the age must match exactly AND the country must match its regular expression.
-	rules, err := f.ParseURLQuery(u)
+	rules, err := f.ParseURLQuery(u.Query())
 	if err != nil {
 		log.Fatal(err)
 	}
