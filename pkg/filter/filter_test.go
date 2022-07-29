@@ -3,6 +3,7 @@ package filter
 import (
 	"errors"
 	"net/url"
+	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -10,6 +11,13 @@ import (
 
 func strPtr(v string) *string {
 	return &v
+}
+
+func getSliceLen(slice interface{}) int {
+	rSlice := reflect.ValueOf(slice)
+	rSlice = reflect.Indirect(rSlice)
+
+	return rSlice.Len()
 }
 
 func TestParseJSON(t *testing.T) {
@@ -733,13 +741,14 @@ func TestFilter_Apply(t *testing.T) {
 			p, err := New(tt.opts...)
 			require.NoError(t, err)
 
-			err = p.Apply(tt.rules, tt.elements)
+			n, err := p.Apply(tt.rules, tt.elements)
 
 			if tt.wantErr {
 				require.Error(t, err, "Apply() error = %v, wantErr %v", err, tt.wantErr)
 			} else {
 				require.NoError(t, err)
 				require.Equal(t, tt.want, tt.elements, "Filtered = %v, want %v", tt.elements, tt.want)
+				require.Equal(t, n, getSliceLen(tt.elements), "Apply() returned n=%d want %d", n, getSliceLen(tt.elements))
 			}
 		})
 	}
@@ -822,13 +831,14 @@ func TestFilter_ApplySubset(t *testing.T) {
 			p, err := New(tt.opts...)
 			require.NoError(t, err)
 
-			err = p.ApplySubset(tt.rules, tt.elements, tt.offset, tt.length)
+			n, err := p.ApplySubset(tt.rules, tt.elements, tt.offset, tt.length)
 
 			if tt.wantErr {
-				require.Error(t, err, "Apply() error = %v, wantErr %v", err, tt.wantErr)
+				require.Error(t, err, "ApplySubset() error = %v, wantErr %v", err, tt.wantErr)
 			} else {
 				require.NoError(t, err)
 				require.Equal(t, tt.want, tt.elements, "Filtered = %v, want %v", tt.elements, tt.want)
+				require.Equal(t, n, getSliceLen(tt.elements), "ApplySubset() returned n=%d want %d", n, getSliceLen(tt.elements))
 			}
 		})
 	}
@@ -869,7 +879,7 @@ func benchmarkFilterApply(b *testing.B, n int, json string, opts ...Option) {
 
 		b.StartTimer()
 
-		err := filter.Apply(rules, &dataCopy)
+		_, err := filter.Apply(rules, &dataCopy)
 		require.NoError(b, err)
 	}
 }
