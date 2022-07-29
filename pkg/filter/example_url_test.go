@@ -1,9 +1,11 @@
-package filter
+package filter_test
 
 import (
 	"fmt"
 	"log"
 	"net/url"
+
+	"github.com/nexmoinc/gosrvlib/pkg/filter"
 )
 
 type Address struct {
@@ -28,8 +30,8 @@ func ExampleNew_fromURL() {
 	// Initialize the filter with options
 	// * WithJSONValues: We want to be lenient on the typing since we create the filter from JSON which handles a few types
 	// * WithFieldNameTag: to express the filter based on JSON tags and not the actual field names
-	f, err := New(
-		WithFieldNameTag("json"),
+	f, err := filter.New(
+		filter.WithFieldNameTag("json"),
 	)
 	if err != nil {
 		log.Fatal(err)
