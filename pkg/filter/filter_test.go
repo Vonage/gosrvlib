@@ -537,6 +537,13 @@ func TestFilter_Apply(t *testing.T) {
 			want: &[]interface{}{},
 		},
 		{
+			name:     "success - with max results option",
+			elements: &[]string{"1", "2", "3", "4", "5"},
+			opts:     []Option{WithMaxResults(3)},
+			rules:    [][]Rule{{trueRegex}},
+			want:     &[]string{"1", "2", "3"},
+		},
+		{
 			name:     "combination - true AND true",
 			elements: &[]string{"a"},
 			rules:    [][]Rule{{trueRegex}, {trueRegex}},
@@ -727,6 +734,95 @@ func TestFilter_Apply(t *testing.T) {
 			require.NoError(t, err)
 
 			err = p.Apply(tt.rules, tt.elements)
+
+			if tt.wantErr {
+				require.Error(t, err, "Apply() error = %v, wantErr %v", err, tt.wantErr)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, tt.want, tt.elements, "Filtered = %v, want %v", tt.elements, tt.want)
+			}
+		})
+	}
+}
+
+func TestFilter_ApplySubset(t *testing.T) {
+	t.Parallel()
+
+	trueRegex := Rule{
+		Field: "",
+		Type:  "regexp",
+		Value: ".*",
+	}
+
+	tests := []struct {
+		name     string
+		rules    [][]Rule
+		opts     []Option
+		elements interface{}
+		offset   int
+		length   int
+		want     interface{}
+		wantErr  bool
+	}{
+		{
+			name:     "success - whole slice",
+			elements: &[]string{"1", "2", "3", "4", "5"},
+			rules:    [][]Rule{{trueRegex}},
+			offset:   0,
+			length:   5,
+			want:     &[]string{"1", "2", "3", "4", "5"},
+		},
+		{
+			name:     "success - contained subset",
+			elements: &[]string{"1", "2", "3", "4", "5"},
+			rules:    [][]Rule{{trueRegex}},
+			offset:   1,
+			length:   3,
+			want:     &[]string{"2", "3", "4"},
+		},
+		{
+			name:     "success - offset > len(input)",
+			elements: &[]string{"1", "2", "3", "4", "5"},
+			rules:    [][]Rule{{trueRegex}},
+			offset:   5,
+			length:   10,
+			want:     &[]string{},
+		},
+		{
+			name:     "success - offset in but length out of bounds",
+			elements: &[]string{"1", "2", "3", "4", "5"},
+			rules:    [][]Rule{{trueRegex}},
+			offset:   3,
+			length:   10,
+			want:     &[]string{"4", "5"},
+		},
+		{
+			name:     "error - offset < 0",
+			elements: &[]string{"1", "2", "3", "4", "5"},
+			rules:    [][]Rule{{trueRegex}},
+			offset:   -1,
+			length:   10,
+			wantErr:  true,
+		},
+		{
+			name:     "error - length < 1",
+			elements: &[]string{"1", "2", "3", "4", "5"},
+			rules:    [][]Rule{{trueRegex}},
+			offset:   0,
+			length:   0,
+			wantErr:  true,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			p, err := New(tt.opts...)
+			require.NoError(t, err)
+
+			err = p.ApplySubset(tt.rules, tt.elements, tt.offset, tt.length)
 
 			if tt.wantErr {
 				require.Error(t, err, "Apply() error = %v, wantErr %v", err, tt.wantErr)
