@@ -77,7 +77,9 @@ func (p *Processor) ParseURLQuery(q url.Values) ([][]Rule, error) {
 // The slice parameter must be a pointer to a slice and is filtered *in place*.
 //
 // This is a shortcut to ApplySubset with 0 offset and maxResults length.
-func (p *Processor) Apply(rules [][]Rule, slicePtr interface{}) (int, error) {
+//
+// Returns the length of the filtered slice, the total number of elements that matched the filter, and the eventual error.
+func (p *Processor) Apply(rules [][]Rule, slicePtr interface{}) (sliceLen, totalMatches int, err error) {
 	return p.ApplySubset(rules, slicePtr, 0, p.maxResults)
 }
 
@@ -86,45 +88,37 @@ func (p *Processor) Apply(rules [][]Rule, slicePtr interface{}) (int, error) {
 //
 // Depending on offset, the first results are filtered even if they match
 // Depending on length, the filtered slice will only contain a set number of elements.
-func (p *Processor) ApplySubset(rules [][]Rule, slicePtr interface{}, offset, length int) (int, error) {
+//
+// Returns the length of the filtered slice, the total number of elements that matched the filter, and the eventual error.
+func (p *Processor) ApplySubset(rules [][]Rule, slicePtr interface{}, offset, length int) (sliceLen, totalMatches int, err error) {
 	if offset < 0 {
-		return 0, errors.New("offset must be positive")
+		return 0, 0, errors.New("offset must be positive")
 	}
 
 	if length < 1 {
-		return 0, errors.New("length must be strictly positive")
+		return 0, 0, errors.New("length must be strictly positive")
 	}
 
-	err := p.checkRulesCount(rules)
+	err = p.checkRulesCount(rules)
 	if err != nil {
-		return 0, err
+		return 0, 0, err
 	}
 
 	vSlicePtr := reflect.ValueOf(slicePtr)
 	if vSlicePtr.Kind() != reflect.Ptr {
-		return 0, fmt.Errorf("slicePtr should be a slice pointer but is %s", vSlicePtr.Type())
+		return 0, 0, fmt.Errorf("slicePtr should be a slice pointer but is %s", vSlicePtr.Type())
 	}
 
 	vSlice := vSlicePtr.Elem()
 	if vSlice.Kind() != reflect.Slice {
-		return 0, fmt.Errorf("slicePtr should be a slice pointer but is %s", vSlicePtr.Type())
-	}
-
-	sliceLen := vSlice.Len()
-	if len(rules) == 0 {
-		return sliceLen, nil
-	}
-
-	if offset > sliceLen-1 { // offset is out of bounds
-		vSlice.SetLen(0)
-		return 0, nil
+		return 0, 0, fmt.Errorf("slicePtr should be a slice pointer but is %s", vSlicePtr.Type())
 	}
 
 	matcher := func(obj interface{}) (bool, error) {
 		return p.evaluateRules(rules, obj)
 	}
 
-	return p.filterSliceValue(vSlice, sliceLen, offset, length, matcher)
+	return p.filterSliceValue(vSlice, offset, length, matcher)
 }
 
 func (p *Processor) checkRulesCount(rules [][]Rule) error {
@@ -142,38 +136,43 @@ func (p *Processor) checkRulesCount(rules [][]Rule) error {
 
 // filterSliceValue filters a slice passed as a reflect.Value, in place.
 // It calls the matcher function to evaluate whether to keep each item or not.
-func (p *Processor) filterSliceValue(slice reflect.Value, sliceLen, offset, length int, matcher func(interface{}) (bool, error)) (int, error) {
-	// number of matched elements
-	n := 0
+//
+// n is number of matched elements in the slice.
+// m is number of total matched elements.
+func (p *Processor) filterSliceValue(slice reflect.Value, offset, length int, matcher func(interface{}) (bool, error)) (n, m int, err error) {
 	skip := offset
 
-	for i := 0; i < sliceLen && n < length; i++ {
+	for i := 0; i < slice.Len(); i++ {
 		value := slice.Index(i)
 
 		// value can always be Interface() because it's in a slice and cannot point to an unexported field
 		match, err := matcher(value.Interface())
 		if err != nil {
-			return 0, err
+			return 0, 0, err
 		}
 
 		if !match {
 			continue
 		}
 
+		m++
+
 		if skip > 0 {
 			skip--
 			continue
 		}
 
-		// replace unselected elements by the ones that match
-		slice.Index(n).Set(value)
-		n++
+		if n < length {
+			// replace unselected elements by the ones that match
+			slice.Index(n).Set(value)
+			n++
+		}
 	}
 
 	// shorten the slice to the actual number of elements
 	slice.SetLen(n)
 
-	return n, nil
+	return n, m, nil
 }
 
 // nolint: gocognit

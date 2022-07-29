@@ -228,12 +228,13 @@ func TestFilter_Apply(t *testing.T) {
 	}
 
 	tests := []struct {
-		name     string
-		rules    [][]Rule
-		opts     []Option
-		elements interface{}
-		want     interface{}
-		wantErr  bool
+		name             string
+		rules            [][]Rule
+		opts             []Option
+		elements         interface{}
+		want             interface{}
+		wantTotalMatches int
+		wantErr          bool
 	}{
 		{
 			name: "success - nested string equal",
@@ -261,6 +262,7 @@ func TestFilter_Apply(t *testing.T) {
 					},
 				},
 			},
+			wantTotalMatches: 1,
 		},
 		{
 			name: "success - nested string notequal",
@@ -288,6 +290,7 @@ func TestFilter_Apply(t *testing.T) {
 					},
 				},
 			},
+			wantTotalMatches: 1,
 		},
 		{
 			name: "success - nested regex",
@@ -315,6 +318,7 @@ func TestFilter_Apply(t *testing.T) {
 					},
 				},
 			},
+			wantTotalMatches: 1,
 		},
 		{
 			name: "success - int equal",
@@ -336,6 +340,7 @@ func TestFilter_Apply(t *testing.T) {
 					IntField: 42,
 				},
 			},
+			wantTotalMatches: 1,
 		},
 		{
 			name: "success - float64 equal",
@@ -357,6 +362,7 @@ func TestFilter_Apply(t *testing.T) {
 					Float64Field: 42,
 				},
 			},
+			wantTotalMatches: 1,
 		},
 		{
 			name: "success - nil equal",
@@ -378,6 +384,7 @@ func TestFilter_Apply(t *testing.T) {
 					StringPtrField: nil,
 				},
 			},
+			wantTotalMatches: 1,
 		},
 		{
 			name: "success - invalid filter value type",
@@ -391,7 +398,8 @@ func TestFilter_Apply(t *testing.T) {
 				Type:  "equal",
 				Value: 42,
 			}}},
-			want: &[]simpleStruct{},
+			want:             &[]simpleStruct{},
+			wantTotalMatches: 0,
 		},
 		{
 			name: "success - regexp with an int",
@@ -405,7 +413,8 @@ func TestFilter_Apply(t *testing.T) {
 				Type:  "regexp",
 				Value: "42",
 			}}},
-			want: &[]simpleStruct{},
+			want:             &[]simpleStruct{},
+			wantTotalMatches: 0,
 		},
 		{
 			name: "success - mismatched array",
@@ -433,6 +442,7 @@ func TestFilter_Apply(t *testing.T) {
 					},
 				},
 			},
+			wantTotalMatches: 1,
 		},
 		{
 			name: "success - with field tags",
@@ -461,6 +471,7 @@ func TestFilter_Apply(t *testing.T) {
 					},
 				},
 			},
+			wantTotalMatches: 1,
 		},
 		{
 			name: "success - with embedding struct",
@@ -488,6 +499,7 @@ func TestFilter_Apply(t *testing.T) {
 					},
 				},
 			},
+			wantTotalMatches: 1,
 		},
 		{
 			name:     "success - with root field selector",
@@ -497,19 +509,22 @@ func TestFilter_Apply(t *testing.T) {
 				Type:  "equal",
 				Value: 42,
 			}}},
-			want: &[]int{42},
+			want:             &[]int{42},
+			wantTotalMatches: 1,
 		},
 		{
-			name:     "success - with empty AND filter",
-			elements: &[]int{41, 42, 43},
-			rules:    [][]Rule{},
-			want:     &[]int{41, 42, 43},
+			name:             "success - with empty AND filter",
+			elements:         &[]int{41, 42, 43},
+			rules:            [][]Rule{},
+			want:             &[]int{41, 42, 43},
+			wantTotalMatches: 3,
 		},
 		{
-			name:     "success - with empty OR filter",
-			elements: &[]int{41, 42, 43},
-			rules:    [][]Rule{{}},
-			want:     &[]int{},
+			name:             "success - with empty OR filter",
+			elements:         &[]int{41, 42, 43},
+			rules:            [][]Rule{{}},
+			want:             &[]int{},
+			wantTotalMatches: 0,
 		},
 		{
 			name: "success - nested path not found",
@@ -525,7 +540,8 @@ func TestFilter_Apply(t *testing.T) {
 				Type:  "equal",
 				Value: "value 1",
 			}}},
-			want: &[]interface{}{},
+			want:             &[]interface{}{},
+			wantTotalMatches: 0,
 		},
 		{
 			name: "success - with field tag not found",
@@ -542,32 +558,37 @@ func TestFilter_Apply(t *testing.T) {
 				Type:  "equal",
 				Value: "value 1",
 			}}},
-			want: &[]interface{}{},
+			want:             &[]interface{}{},
+			wantTotalMatches: 0,
 		},
 		{
-			name:     "success - with max results option",
-			elements: &[]string{"1", "2", "3", "4", "5"},
-			opts:     []Option{WithMaxResults(3)},
-			rules:    [][]Rule{{trueRegex}},
-			want:     &[]string{"1", "2", "3"},
+			name:             "success - with max results option",
+			elements:         &[]string{"1", "2", "3", "4", "5"},
+			opts:             []Option{WithMaxResults(3)},
+			rules:            [][]Rule{{trueRegex}},
+			want:             &[]string{"1", "2", "3"},
+			wantTotalMatches: 5,
 		},
 		{
-			name:     "combination - true AND true",
-			elements: &[]string{"a"},
-			rules:    [][]Rule{{trueRegex}, {trueRegex}},
-			want:     &[]string{"a"},
+			name:             "combination - true AND true",
+			elements:         &[]string{"a"},
+			rules:            [][]Rule{{trueRegex}, {trueRegex}},
+			want:             &[]string{"a"},
+			wantTotalMatches: 1,
 		},
 		{
-			name:     "combination - true AND false",
-			elements: &[]string{"a"},
-			rules:    [][]Rule{{trueRegex}, {falseRegex}},
-			want:     &[]string{},
+			name:             "combination - true AND false",
+			elements:         &[]string{"a"},
+			rules:            [][]Rule{{trueRegex}, {falseRegex}},
+			want:             &[]string{},
+			wantTotalMatches: 0,
 		},
 		{
-			name:     "combination - false AND true",
-			elements: &[]string{"a"},
-			rules:    [][]Rule{{falseRegex}, {trueRegex}},
-			want:     &[]string{},
+			name:             "combination - false AND true",
+			elements:         &[]string{"a"},
+			rules:            [][]Rule{{falseRegex}, {trueRegex}},
+			want:             &[]string{},
+			wantTotalMatches: 0,
 		},
 		{
 			name:     "combination - false AND false",
@@ -576,42 +597,48 @@ func TestFilter_Apply(t *testing.T) {
 			want:     &[]string{},
 		},
 		{
-			name:     "combination - true OR false",
-			elements: &[]string{"a"},
-			rules:    [][]Rule{{trueRegex, falseRegex}},
-			want:     &[]string{"a"},
+			name:             "combination - true OR false",
+			elements:         &[]string{"a"},
+			rules:            [][]Rule{{trueRegex, falseRegex}},
+			want:             &[]string{"a"},
+			wantTotalMatches: 1,
 		},
 		{
-			name:     "combination - true OR true",
-			elements: &[]string{"a"},
-			rules:    [][]Rule{{trueRegex, trueRegex}},
-			want:     &[]string{"a"},
+			name:             "combination - true OR true",
+			elements:         &[]string{"a"},
+			rules:            [][]Rule{{trueRegex, trueRegex}},
+			want:             &[]string{"a"},
+			wantTotalMatches: 1,
 		},
 		{
-			name:     "combination - false OR true",
-			elements: &[]string{"a"},
-			rules:    [][]Rule{{falseRegex, trueRegex}},
-			want:     &[]string{"a"},
+			name:             "combination - false OR true",
+			elements:         &[]string{"a"},
+			rules:            [][]Rule{{falseRegex, trueRegex}},
+			want:             &[]string{"a"},
+			wantTotalMatches: 1,
 		},
 		{
-			name:     "combination - false OR false",
-			elements: &[]string{"a"},
-			rules:    [][]Rule{{falseRegex, falseRegex}},
-			want:     &[]string{},
+			name:             "combination - false OR false",
+			elements:         &[]string{"a"},
+			rules:            [][]Rule{{falseRegex, falseRegex}},
+			want:             &[]string{},
+			wantTotalMatches: 0,
 		},
 		{
-			name:     "combination - (false OR true) AND (true OR false)",
-			elements: &[]string{"a"},
-			rules:    [][]Rule{{falseRegex, trueRegex}, {trueRegex, falseRegex}},
-			opts:     []Option{WithMaxRules(4)},
-			want:     &[]string{"a"},
+			name:             "combination - (false OR true) AND (true OR false)",
+			elements:         &[]string{"a"},
+			rules:            [][]Rule{{falseRegex, trueRegex}, {trueRegex, falseRegex}},
+			opts:             []Option{WithMaxRules(4)},
+			want:             &[]string{"a"},
+			wantTotalMatches: 1,
 		},
 		{
-			name:     "combination - (false OR true) AND (false OR false)",
-			elements: &[]string{"a"},
-			rules:    [][]Rule{{falseRegex, trueRegex}, {falseRegex, falseRegex}},
-			opts:     []Option{WithMaxRules(4)},
-			want:     &[]string{},
+			name:             "combination - (false OR true) AND (false OR false)",
+			elements:         &[]string{"a"},
+			rules:            [][]Rule{{falseRegex, trueRegex}, {falseRegex, falseRegex}},
+			opts:             []Option{WithMaxRules(4)},
+			want:             &[]string{},
+			wantTotalMatches: 0,
 		},
 		{
 			name:     "error - not a pointer",
@@ -741,14 +768,16 @@ func TestFilter_Apply(t *testing.T) {
 			p, err := New(tt.opts...)
 			require.NoError(t, err)
 
-			n, err := p.Apply(tt.rules, tt.elements)
+			sliceLen, totalMatches, err := p.Apply(tt.rules, tt.elements)
 
 			if tt.wantErr {
 				require.Error(t, err, "Apply() error = %v, wantErr %v", err, tt.wantErr)
 			} else {
 				require.NoError(t, err)
 				require.Equal(t, tt.want, tt.elements, "Filtered = %v, want %v", tt.elements, tt.want)
-				require.Equal(t, n, getSliceLen(tt.elements), "Apply() returned n=%d want %d", n, getSliceLen(tt.elements))
+				wantSliceLen := getSliceLen(tt.elements)
+				require.Equal(t, wantSliceLen, sliceLen, "Apply() returned sliceLen=%d, want %d", sliceLen, wantSliceLen)
+				require.Equal(t, tt.wantTotalMatches, totalMatches, "Apply() returned totalMatches=%d, want %d", totalMatches, tt.wantTotalMatches)
 			}
 		})
 	}
@@ -764,46 +793,60 @@ func TestFilter_ApplySubset(t *testing.T) {
 	}
 
 	tests := []struct {
-		name     string
-		rules    [][]Rule
-		opts     []Option
-		elements interface{}
-		offset   int
-		length   int
-		want     interface{}
-		wantErr  bool
+		name             string
+		rules            [][]Rule
+		opts             []Option
+		elements         interface{}
+		offset           int
+		length           int
+		wantTotalMatches int
+		want             interface{}
+		wantErr          bool
 	}{
 		{
-			name:     "success - whole slice",
-			elements: &[]string{"1", "2", "3", "4", "5"},
-			rules:    [][]Rule{{trueRegex}},
-			offset:   0,
-			length:   5,
-			want:     &[]string{"1", "2", "3", "4", "5"},
+			name:             "success - whole slice",
+			elements:         &[]string{"1", "2", "3", "4", "5"},
+			rules:            [][]Rule{{trueRegex}},
+			offset:           0,
+			length:           5,
+			want:             &[]string{"1", "2", "3", "4", "5"},
+			wantTotalMatches: 5,
 		},
 		{
-			name:     "success - contained subset",
-			elements: &[]string{"1", "2", "3", "4", "5"},
-			rules:    [][]Rule{{trueRegex}},
-			offset:   1,
-			length:   3,
-			want:     &[]string{"2", "3", "4"},
+			name:             "success - contained subset",
+			elements:         &[]string{"1", "2", "3", "4", "5"},
+			rules:            [][]Rule{{trueRegex}},
+			offset:           1,
+			length:           3,
+			want:             &[]string{"2", "3", "4"},
+			wantTotalMatches: 5,
 		},
 		{
-			name:     "success - offset > len(input)",
-			elements: &[]string{"1", "2", "3", "4", "5"},
-			rules:    [][]Rule{{trueRegex}},
-			offset:   5,
-			length:   10,
-			want:     &[]string{},
+			name:             "success - offset > len(input)",
+			elements:         &[]string{"1", "2", "3", "4", "5"},
+			rules:            [][]Rule{{trueRegex}},
+			offset:           5,
+			length:           10,
+			want:             &[]string{},
+			wantTotalMatches: 5,
 		},
 		{
-			name:     "success - offset in but length out of bounds",
-			elements: &[]string{"1", "2", "3", "4", "5"},
-			rules:    [][]Rule{{trueRegex}},
-			offset:   3,
-			length:   10,
-			want:     &[]string{"4", "5"},
+			name:             "success - offset in but length out of bounds",
+			elements:         &[]string{"1", "2", "3", "4", "5"},
+			rules:            [][]Rule{{trueRegex}},
+			offset:           3,
+			length:           10,
+			want:             &[]string{"4", "5"},
+			wantTotalMatches: 5,
+		},
+		{
+			name:             "success - no rules with length and offset",
+			elements:         &[]string{"1", "2", "3", "4", "5"},
+			rules:            [][]Rule{{trueRegex}},
+			offset:           2,
+			length:           2,
+			want:             &[]string{"3", "4"},
+			wantTotalMatches: 5,
 		},
 		{
 			name:     "error - offset < 0",
@@ -831,14 +874,16 @@ func TestFilter_ApplySubset(t *testing.T) {
 			p, err := New(tt.opts...)
 			require.NoError(t, err)
 
-			n, err := p.ApplySubset(tt.rules, tt.elements, tt.offset, tt.length)
+			sliceLen, totalMatches, err := p.ApplySubset(tt.rules, tt.elements, tt.offset, tt.length)
 
 			if tt.wantErr {
 				require.Error(t, err, "ApplySubset() error = %v, wantErr %v", err, tt.wantErr)
 			} else {
 				require.NoError(t, err)
 				require.Equal(t, tt.want, tt.elements, "Filtered = %v, want %v", tt.elements, tt.want)
-				require.Equal(t, n, getSliceLen(tt.elements), "ApplySubset() returned n=%d want %d", n, getSliceLen(tt.elements))
+				wantSliceLen := getSliceLen(tt.elements)
+				require.Equal(t, wantSliceLen, sliceLen, "ApplySubset() returned sliceLen=%d, want %d", sliceLen, wantSliceLen)
+				require.Equal(t, tt.wantTotalMatches, totalMatches, "ApplySubset() returned totalMatches=%d, want %d", totalMatches, tt.wantTotalMatches)
 			}
 		})
 	}
@@ -879,7 +924,7 @@ func benchmarkFilterApply(b *testing.B, n int, json string, opts ...Option) {
 
 		b.StartTimer()
 
-		_, err := filter.Apply(rules, &dataCopy)
+		_, _, err := filter.Apply(rules, &dataCopy)
 		require.NoError(b, err)
 	}
 }

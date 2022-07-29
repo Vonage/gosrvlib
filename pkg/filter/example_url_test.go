@@ -89,18 +89,20 @@ func ExampleNew_fromURL() {
 	}
 
 	// Filters the list in place
-	n, err := f.Apply(rules, &list)
+	sliceLen, totalMatches, err := f.Apply(rules, &list)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println(n)
+	fmt.Println(sliceLen)
+	fmt.Println(totalMatches)
 
 	for _, id := range list {
 		fmt.Println(id)
 	}
 
 	// Output:
+	// 2
 	// 2
 	// {doe 35 {UK}}
 	// {dupont 42 {FR}}
