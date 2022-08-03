@@ -10,20 +10,20 @@ import (
 )
 
 const (
-	// DefaultURLQueryFilterKey is the default URL query key used by Processor.ParseURLQuery().
-	// Can be customized with WithQueryFilterKey().
-	DefaultURLQueryFilterKey = "filter"
-
-	// DefaultMaxRules is the default maximum number of rules.
-	// Can be overridden with WithMaxRules().
-	DefaultMaxRules = 3
-
 	// MaxResults is the maximum number of results that can be returned.
 	MaxResults = 1<<31 - 1 // math.MaxInt32
 
 	// DefaultMaxResults is the default number of results for Apply.
 	// Can be overridden with WithMaxResults().
 	DefaultMaxResults = MaxResults
+
+	// DefaultMaxRules is the default maximum number of rules.
+	// Can be overridden with WithMaxRules().
+	DefaultMaxRules = 3
+
+	// DefaultURLQueryFilterKey is the default URL query key used by Processor.ParseURLQuery().
+	// Can be customized with WithQueryFilterKey().
+	DefaultURLQueryFilterKey = "filter"
 )
 
 // Processor provides the filtering logic and methods.
@@ -92,7 +92,7 @@ func (p *Processor) ApplySubset(rules [][]Rule, slicePtr interface{}, offset, le
 	}
 
 	if length > p.maxResults {
-		return 0, 0, errors.New("length must be less than MaxInt")
+		return 0, 0, errors.New("length must be less than maxResults")
 	}
 
 	err = p.checkRulesCount(rules)
