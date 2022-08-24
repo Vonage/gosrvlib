@@ -31,12 +31,20 @@
           "title": "The type of the rule",
           "enum": [
             "equal",
+            "=",
+            "==",
             "notequal",
+            "!=",
+            "<>",
             "regexp",
             "lt",
+            "<",
             "lte",
+            "<=",
             "gt",
-            "gte"
+            ">",
+            "gte",
+            ">="
           ]
         },
         "value": {

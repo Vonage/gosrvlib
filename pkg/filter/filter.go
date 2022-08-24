@@ -1,4 +1,7 @@
 // Package filter provides generic filtering capabilities for struct slices.
+// The filter can be specified as a slice of slices.
+// The first slice contains the rule sets that will be combined with a boolean AND.
+// The sub slices contains the rules that will be combined with boolean OR.
 //
 // Example:
 // The following pretty-printed JSON:
@@ -35,16 +38,16 @@
 //
 // the equivalent logic is:
 //
-// ((name=doe OR age=42) AND (address.country match "EN" or "FR"))
+//	((name=doe OR age=42) AND (address.country match "EN" or "FR"))
 //
-// The list of supported rule types is listed in the rule.go file:
-// * equal    : matches exactly the reference value.
-// * notequal : matches when the value is different from the reference value (opposite of TypeEqual).
-// * regexp   : matches the value against a reference regular expression.
-// * lt       : matches when the value is less than the reference.
-// * lte      : matches when the value is less than or equal the reference.
-// * gt       : matches when the value is greater than reference.
-// * gte      : matches when the value is greater than or equal the reference.
+// The supported rule types are listed in the rule.go file:
+// * equal    (=, ==)  : matches exactly the reference value.
+// * notequal (!=, <>) : matches when the value is different from the reference value (opposite of TypeEqual).
+// * regexp            : matches the value against a reference regular expression.
+// * lt       (<)      : matches when the value is less than the reference.
+// * lte      (<=)     : matches when the value is less than or equal the reference.
+// * gt       (>)      : matches when the value is greater than reference.
+// * gte      (>=)     : matches when the value is greater than or equal the reference.
 package filter
 
 import (

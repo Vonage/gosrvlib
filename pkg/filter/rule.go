@@ -8,9 +8,17 @@ import (
 const (
 	// TypeEqual is a filter type that matches exactly the reference value.
 	TypeEqual = "equal"
+	// TypeEqualAliasA is an alias for TypeEqual.
+	TypeEqualAliasA = "="
+	// TypeEqualAliasB is an alias for TypeEqual.
+	TypeEqualAliasB = "=="
 
 	// TypeNotEqual is a filter type that matches when the value is different from the reference value (opposite of TypeEqual).
 	TypeNotEqual = "notequal"
+	// TypeNotEqualAliasA is an alias for TypeNotEqual.
+	TypeNotEqualAliasA = "!="
+	// TypeNotEqualAliasB is an alias for TypeNotEqual.
+	TypeNotEqualAliasB = "<>"
 
 	// TypeRegexp is a filter type that matches the value against a reference regular expression.
 	// The reference value must be a regular expression that can compile.
@@ -19,15 +27,23 @@ const (
 
 	// TypeLT is a filter type that matches when the value is less than reference.
 	TypeLT = "lt"
+	// TypeLTAliasA is an alias for TypeLT.
+	TypeLTAliasA = "<"
 
 	// TypeLTE is a filter type that matches when the value is less than or equal the reference.
 	TypeLTE = "lte"
+	// TypeLTEAliasA is an alias for TypeLTE.
+	TypeLTEAliasA = "<="
 
 	// TypeGT is a filter type that matches when the value is greater than reference.
 	TypeGT = "gt"
+	// TypeGTAliasA is an alias for TypeGT.
+	TypeGTAliasA = ">"
 
 	// TypeGTE is a filter type that matches when the value is greater than or equal the reference.
 	TypeGTE = "gte"
+	// TypeGTEAliasA is an alias for TypeGTE.
+	TypeGTEAliasA = ">="
 )
 
 // Rule is an individual filter that can be evaluated against any value.
@@ -70,24 +86,24 @@ func (r *Rule) Evaluate(value interface{}) (bool, error) {
 
 func (r *Rule) getEvaluator() (Evaluator, error) {
 	switch strings.ToLower(r.Type) {
-	case TypeEqual:
+	case TypeEqual, TypeEqualAliasA, TypeEqualAliasB:
 		return newEqual(r.Value), nil
-	case TypeNotEqual:
+	case TypeNotEqual, TypeNotEqualAliasA, TypeNotEqualAliasB:
 		return newNot(newEqual(r.Value)), nil
 	case TypeRegexp:
 		return newRegexp(r.Value)
-	case TypeLT:
+	case TypeLT, TypeLTAliasA:
 		return newLT(r.Value)
-	case TypeLTE:
+	case TypeLTE, TypeLTEAliasA:
 		return newLTE(r.Value)
-	case TypeGT:
+	case TypeGT, TypeGTAliasA:
 		e, err := newLTE(r.Value)
 		if err != nil {
 			return nil, err
 		}
 
 		return newNot(e), nil
-	case TypeGTE:
+	case TypeGTE, TypeGTEAliasA:
 		e, err := newLT(r.Value)
 		if err != nil {
 			return nil, err
