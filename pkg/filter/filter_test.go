@@ -267,7 +267,7 @@ func TestFilter_Apply(t *testing.T) {
 			wantTotalMatches: 1,
 		},
 		{
-			name: "success - nested string notequal",
+			name: "success - nested string not equal",
 			elements: &[]complexStruct{
 				{
 					Internal: simpleStruct{
@@ -533,6 +533,74 @@ func TestFilter_Apply(t *testing.T) {
 				Value: "error",
 			}}},
 			wantErr: true,
+		},
+		{
+			name: "error - non string type for not-contains",
+			elements: &[]simpleStruct{
+				{
+					StringField: "Alpha",
+				},
+			},
+			rules: [][]Rule{{{
+				Field: "StringField",
+				Type:  TypePrefixNot + TypeContains,
+				Value: 5,
+			}}},
+			wantErr: true,
+		},
+		{
+			name: "success - equal fold",
+			elements: &[]simpleStruct{
+				{
+					StringField: "Alpha",
+				},
+				{
+					StringField: "Beta",
+				},
+			},
+			rules: [][]Rule{{{
+				Field: "StringField",
+				Type:  TypeEqualFold,
+				Value: "beta",
+			}}},
+			want:             &[]simpleStruct{{StringField: "Beta"}},
+			wantTotalMatches: 1,
+		},
+		{
+			name: "success - has prefix",
+			elements: &[]simpleStruct{
+				{
+					StringField: "Alpha",
+				},
+				{
+					StringField: "Beta",
+				},
+			},
+			rules: [][]Rule{{{
+				Field: "StringField",
+				Type:  TypeHasPrefix,
+				Value: "Be",
+			}}},
+			want:             &[]simpleStruct{{StringField: "Beta"}},
+			wantTotalMatches: 1,
+		},
+		{
+			name: "success - has suffix",
+			elements: &[]simpleStruct{
+				{
+					StringField: "Alpha",
+				},
+				{
+					StringField: "Beta",
+				},
+			},
+			rules: [][]Rule{{{
+				Field: "StringField",
+				Type:  TypeHasSuffix,
+				Value: "ta",
+			}}},
+			want:             &[]simpleStruct{{StringField: "Beta"}},
+			wantTotalMatches: 1,
 		},
 		{
 			name: "success - invalid filter value type",

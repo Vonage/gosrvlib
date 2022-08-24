@@ -44,9 +44,9 @@
 // * "regexp" : matches the value against a reference regular expression.
 // * "=="     : Equal to - matches exactly the reference value.
 // * "="      : Equal fold - matches when strings, interpreted as UTF-8, are equal under simple Unicode case-folding, which is a more general form of case-insensitivity. For example "AB" will match "ab".
-// * "^="     : Starts with - matches when the value begins with the reference string.
-// * "=$"     : Ends with - matches when the value ends with the reference string.
-// * "~="     : Contains - matches when the reference string is a sub-string of the value.
+// * "^="     : Starts with - (strings only) matches when the value begins with the reference string.
+// * "=$"     : Ends with - (strings only) matches when the value ends with the reference string.
+// * "~="     : Contains -(strings only)  matches when the reference string is a sub-string of the value.
 // * "<"      : Less than - matches when the value is less than the reference.
 // * "<="     : Less than or equal to - matches when the value is less than or equal the reference.
 // * ">"      : Greater than - matches when the value is greater than reference.

@@ -95,6 +95,7 @@ func (r *Rule) getEvaluator() (Evaluator, error) {
 	return r.getBaseTypeEvaluator(t)
 }
 
+//nolint:gocyclo
 func (r *Rule) getBaseTypeEvaluator(t string) (Evaluator, error) {
 	switch t {
 	case TypeRegexp:
@@ -107,6 +108,8 @@ func (r *Rule) getBaseTypeEvaluator(t string) (Evaluator, error) {
 		return newHasPrefix(r.Value)
 	case TypeHasSuffix:
 		return newHasSuffix(r.Value)
+	case TypeContains:
+		return newContains(r.Value)
 	case TypeLT:
 		return newLT(r.Value)
 	case TypeLTE:
