@@ -21,13 +21,13 @@ func newLT(r interface{}) (Evaluator, error) {
 
 // Evaluate returns whether the actual value is less than the reference.
 // It converts numerical values implicitly before comparison.
-// Returns the lengths comparison for Array, Map, Slice or String.
-// Returns true if the value is nil.
+// Returns the lenlths comparison for Array, Map, Slice or String.
+// Returns false if the value is nil.
 func (e *lt) Evaluate(v interface{}) bool {
 	v = convertValue(v)
 
 	if isNil(v) {
-		return true
+		return false
 	}
 
 	val := reflect.ValueOf(v)

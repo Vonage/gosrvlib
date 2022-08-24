@@ -33,7 +33,7 @@ func TestParseJSON(t *testing.T) {
 			name: "success",
 			json: `[
 			  [
-				{ "field": "name", "type": "equal", "value": "doe" },
+				{ "field": "name", "type": "==", "value": "doe" },
 				{ "field": "age", "type": "<=", "value": 42 }
 			  ],
 			  [
@@ -43,7 +43,7 @@ func TestParseJSON(t *testing.T) {
 			want: [][]Rule{
 				{
 					{Field: "name", Type: TypeEqual, Value: "doe"},
-					{Field: "age", Type: TypeLTEAliasA, Value: 42.0},
+					{Field: "age", Type: TypeLTE, Value: 42.0},
 				},
 				{
 					{Field: "address.country", Type: TypeRegexp, Value: "^EN$|^FR$"},
@@ -131,9 +131,9 @@ func TestFilter_ParseURLQuery(t *testing.T) {
 		wantErr  bool
 	}{
 		{
-			// [[{"field":"Age","type":"equal","value":42}]]
+			// [[{"field":"Age","type":"==","value":42}]]
 			name:     "success - default key",
-			rawQuery: "filter=%5B%5B%7B%22field%22%3A%22Age%22%2C%22type%22%3A%22equal%22%2C%22value%22%3A42%7D%5D%5D",
+			rawQuery: "filter=%5B%5B%7B%22field%22%3A%22Age%22%2C%22type%22%3A%22%3D%3D%22%2C%22value%22%3A42%7D%5D%5D",
 			want: [][]Rule{{{
 				Field: "Age",
 				Type:  TypeEqual,
@@ -142,9 +142,9 @@ func TestFilter_ParseURLQuery(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			// [[{"field":"Age","type":"equal","value":42}]]
+			// [[{"field":"Age","type":"==","value":42}]]
 			name:     "success - custom key",
-			rawQuery: "myCustomFilter=%5B%5B%7B%22field%22%3A%22Age%22%2C%22type%22%3A%22equal%22%2C%22value%22%3A42%7D%5D%5D",
+			rawQuery: "myCustomFilter=%5B%5B%7B%22field%22%3A%22Age%22%2C%22type%22%3A%22%3D%3D%22%2C%22value%22%3A42%7D%5D%5D",
 			opts:     []Option{WithQueryFilterKey("myCustomFilter")},
 			want: [][]Rule{{{
 				Field: "Age",
@@ -282,7 +282,7 @@ func TestFilter_Apply(t *testing.T) {
 			},
 			rules: [][]Rule{{{
 				Field: "Internal.StringField",
-				Type:  TypeNotEqual,
+				Type:  TypePrefixNot + TypeEqual,
 				Value: "value 1",
 			}}},
 			want: &[]complexStruct{
@@ -334,7 +334,7 @@ func TestFilter_Apply(t *testing.T) {
 			},
 			rules: [][]Rule{{{
 				Field: "IntField",
-				Type:  TypeEqualAliasA,
+				Type:  TypeEqual,
 				Value: 42,
 			}}},
 			want: &[]simpleStruct{
@@ -356,7 +356,7 @@ func TestFilter_Apply(t *testing.T) {
 			},
 			rules: [][]Rule{{{
 				Field: "Float64Field",
-				Type:  TypeEqualAliasB,
+				Type:  TypeEqual,
 				Value: 42,
 			}}},
 			want: &[]simpleStruct{
@@ -1112,7 +1112,7 @@ func BenchmarkFilter_Apply_Equal_100(b *testing.B) {
 	benchmarkFilterApply(
 		b,
 		100,
-		`[[{"field": "StringField", "type": "equal", "value": "hello world"}]]`,
+		`[[{"field": "StringField", "type": "==", "value": "hello world"}]]`,
 	)
 }
 
@@ -1120,7 +1120,7 @@ func BenchmarkFilter_Apply_Equal_1000(b *testing.B) {
 	benchmarkFilterApply(
 		b,
 		1000,
-		`[[{"field": "StringField", "type": "equal", "value": "hello world"}]]`,
+		`[[{"field": "StringField", "type": "==", "value": "hello world"}]]`,
 	)
 }
 
@@ -1128,7 +1128,7 @@ func BenchmarkFilter_Apply_Equal_10000(b *testing.B) {
 	benchmarkFilterApply(
 		b,
 		10000,
-		`[[{"field": "StringField", "type": "equal", "value": "hello world"}]]`,
+		`[[{"field": "StringField", "type": "==", "value": "hello world"}]]`,
 	)
 }
 
@@ -1144,7 +1144,7 @@ func BenchmarkFilter_Apply_WithTagField_1000(b *testing.B) {
 	benchmarkFilterApply(
 		b,
 		1000,
-		`[[{"field": "string_field", "type": "equal", "value": "hello world"}]]`,
+		`[[{"field": "string_field", "type": "==", "value": "hello world"}]]`,
 		WithFieldNameTag("json"),
 	)
 }

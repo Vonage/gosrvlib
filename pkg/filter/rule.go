@@ -6,44 +6,40 @@ import (
 )
 
 const (
-	// TypeEqual is a filter type that matches exactly the reference value.
-	TypeEqual = "equal"
-	// TypeEqualAliasA is an alias for TypeEqual.
-	TypeEqualAliasA = "="
-	// TypeEqualAliasB is an alias for TypeEqual.
-	TypeEqualAliasB = "=="
-
-	// TypeNotEqual is a filter type that matches when the value is different from the reference value (opposite of TypeEqual).
-	TypeNotEqual = "notequal"
-	// TypeNotEqualAliasA is an alias for TypeNotEqual.
-	TypeNotEqualAliasA = "!="
-	// TypeNotEqualAliasB is an alias for TypeNotEqual.
-	TypeNotEqualAliasB = "<>"
+	// TypePrefixNot is a prefix that can be added to any type to get the negated value (opposite match).
+	TypePrefixNot = "!"
 
 	// TypeRegexp is a filter type that matches the value against a reference regular expression.
 	// The reference value must be a regular expression that can compile.
 	// Works only with strings (anything else will evaluate to false).
 	TypeRegexp = "regexp"
 
+	// TypeEqual is a filter type that matches exactly the reference value.
+	TypeEqual = "=="
+
+	// TypeEqualFold is a filter type that matches when strings, interpreted as UTF-8, are equal under simple Unicode case-folding, which is a more general form of case-insensitivity. For example "AB" will match "ab".
+	TypeEqualFold = "="
+
+	// TypeHasPrefix is a filter type that matches when the value begins with the reference string.
+	TypeHasPrefix = "^="
+
+	// TypeHasSuffix  is a filter type that matches when the value ends with the reference string.
+	TypeHasSuffix = "=$"
+
+	// TypeContains  is a filter type that matches when the reference string is a sub-string of the value.
+	TypeContains = "~="
+
 	// TypeLT is a filter type that matches when the value is less than reference.
-	TypeLT = "lt"
-	// TypeLTAliasA is an alias for TypeLT.
-	TypeLTAliasA = "<"
+	TypeLT = "<"
 
 	// TypeLTE is a filter type that matches when the value is less than or equal the reference.
-	TypeLTE = "lte"
-	// TypeLTEAliasA is an alias for TypeLTE.
-	TypeLTEAliasA = "<="
+	TypeLTE = "<="
 
 	// TypeGT is a filter type that matches when the value is greater than reference.
-	TypeGT = "gt"
-	// TypeGTAliasA is an alias for TypeGT.
-	TypeGTAliasA = ">"
+	TypeGT = ">"
 
 	// TypeGTE is a filter type that matches when the value is greater than or equal the reference.
-	TypeGTE = "gte"
-	// TypeGTEAliasA is an alias for TypeGTE.
-	TypeGTEAliasA = ">="
+	TypeGTE = ">="
 )
 
 // Rule is an individual filter that can be evaluated against any value.
@@ -85,31 +81,34 @@ func (r *Rule) Evaluate(value interface{}) (bool, error) {
 }
 
 func (r *Rule) getEvaluator() (Evaluator, error) {
-	switch strings.ToLower(r.Type) {
-	case TypeEqual, TypeEqualAliasA, TypeEqualAliasB:
-		return newEqual(r.Value), nil
-	case TypeNotEqual, TypeNotEqualAliasA, TypeNotEqualAliasB:
-		return newNot(newEqual(r.Value)), nil
+	t := strings.ToLower(r.Type)
+
+	if strings.HasPrefix(t, TypePrefixNot) {
+		e, err := r.getBaseTypeEvaluator(strings.TrimPrefix(t, TypePrefixNot))
+		if err != nil {
+			return nil, err
+		}
+
+		return newNot(e), nil
+	}
+
+	return r.getBaseTypeEvaluator(t)
+}
+
+func (r *Rule) getBaseTypeEvaluator(t string) (Evaluator, error) {
+	switch t {
 	case TypeRegexp:
 		return newRegexp(r.Value)
-	case TypeLT, TypeLTAliasA:
+	case TypeEqual:
+		return newEqual(r.Value), nil
+	case TypeLT:
 		return newLT(r.Value)
-	case TypeLTE, TypeLTEAliasA:
+	case TypeLTE:
 		return newLTE(r.Value)
-	case TypeGT, TypeGTAliasA:
-		e, err := newLTE(r.Value)
-		if err != nil {
-			return nil, err
-		}
-
-		return newNot(e), nil
-	case TypeGTE, TypeGTEAliasA:
-		e, err := newLT(r.Value)
-		if err != nil {
-			return nil, err
-		}
-
-		return newNot(e), nil
+	case TypeGT:
+		return newGT(r.Value)
+	case TypeGTE:
+		return newGTE(r.Value)
 	default:
 		return nil, fmt.Errorf("type %s is not supported", r.Type)
 	}
