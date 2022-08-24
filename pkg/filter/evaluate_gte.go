@@ -5,18 +5,16 @@ import (
 )
 
 type gte struct {
-	ref interface{}
+	ref float64
 }
 
 func newGTE(r interface{}) (Evaluator, error) {
-	var err error
-
-	r, err = convertNumericValue(r)
+	v, err := convertFloatValue(r)
 	if err != nil {
 		return nil, err
 	}
 
-	return &gte{ref: r}, nil
+	return &gte{ref: v}, nil
 }
 
 // Evaluate returns whether the actual value is greater than or equal the reference.
@@ -31,14 +29,13 @@ func (e *gte) Evaluate(v interface{}) bool {
 	}
 
 	val := reflect.ValueOf(v)
-	ref := reflect.ValueOf(e.ref).Float()
 
 	//nolint:exhaustive
 	switch val.Kind() {
 	case reflect.Float64:
-		return val.Float() >= ref
+		return val.Float() >= e.ref
 	case reflect.Array, reflect.Map, reflect.Slice, reflect.String:
-		return val.Len() >= int(ref)
+		return val.Len() >= int(e.ref)
 	}
 
 	return false
