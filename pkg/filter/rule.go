@@ -103,6 +103,10 @@ func (r *Rule) getBaseTypeEvaluator(t string) (Evaluator, error) {
 		return newEqual(r.Value), nil
 	case TypeEqualFold:
 		return newEqualFold(r.Value), nil
+	case TypeHasPrefix:
+		return newHasPrefix(r.Value)
+	case TypeHasSuffix:
+		return newHasSuffix(r.Value)
 	case TypeLT:
 		return newLT(r.Value)
 	case TypeLTE:
