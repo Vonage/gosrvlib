@@ -101,6 +101,8 @@ func (r *Rule) getBaseTypeEvaluator(t string) (Evaluator, error) {
 		return newRegexp(r.Value)
 	case TypeEqual:
 		return newEqual(r.Value), nil
+	case TypeEqualFold:
+		return newEqualFold(r.Value), nil
 	case TypeLT:
 		return newLT(r.Value)
 	case TypeLTE:
