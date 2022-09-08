@@ -71,8 +71,8 @@ func TestSet(t *testing.T) {
 	mux := &sync.Mutex{}
 
 	slice := make([]string, 2)
-	Set(mux, &slice, 0, "Hello")
-	Set(mux, &slice, 1, "World")
+	Set(mux, slice, 0, "Hello")
+	Set(mux, slice, 1, "World")
 
 	require.ElementsMatch(t, []string{"Hello", "World"}, slice)
 }

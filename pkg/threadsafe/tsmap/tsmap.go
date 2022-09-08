@@ -6,11 +6,11 @@ import (
 )
 
 // Set is a thread-safe function to assign a value to a key in a map.
-func Set[K comparable, V any](mux threadsafe.Locker, m *map[K]V, key K, value V) {
+func Set[K comparable, V any](mux threadsafe.Locker, m map[K]V, key K, value V) {
 	mux.Lock()
 	defer mux.Unlock()
 
-	(*m)[key] = value
+	m[key] = value
 }
 
 // Get is a thread-safe function to get a value by key in a map.

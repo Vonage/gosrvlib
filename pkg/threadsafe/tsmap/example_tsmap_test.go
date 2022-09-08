@@ -11,8 +11,8 @@ func ExampleSet() {
 	mux := &sync.Mutex{}
 
 	m := make(map[int]string, 2)
-	tsmap.Set(mux, &m, 0, "Hello")
-	tsmap.Set(mux, &m, 1, "World")
+	tsmap.Set(mux, m, 0, "Hello")
+	tsmap.Set(mux, m, 1, "World")
 
 	fmt.Println(m)
 

@@ -14,11 +14,11 @@ func Append[T any](mux threadsafe.Locker, slice *[]T, item ...T) {
 }
 
 // Set is a thread-safe function to assign a value to a key in a slice.
-func Set[T any](mux threadsafe.Locker, slice *[]T, key int, value T) {
+func Set[T any](mux threadsafe.Locker, slice []T, key int, value T) {
 	mux.Lock()
 	defer mux.Unlock()
 
-	(*slice)[key] = value
+	slice[key] = value
 }
 
 // Get is a thread-safe function to get a value by key in a slice.

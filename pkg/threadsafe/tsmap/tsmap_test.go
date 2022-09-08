@@ -13,8 +13,8 @@ func TestSet(t *testing.T) {
 	mux := &sync.Mutex{}
 
 	m := make(map[int]string, 2)
-	Set(mux, &m, 0, "Hello")
-	Set(mux, &m, 1, "World")
+	Set(mux, m, 0, "Hello")
+	Set(mux, m, 1, "World")
 
 	require.Equal(t, "Hello", m[0])
 	require.Equal(t, "World", m[1])

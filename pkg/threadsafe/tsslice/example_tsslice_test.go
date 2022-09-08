@@ -75,8 +75,8 @@ func ExampleSet() {
 	mux := &sync.Mutex{}
 
 	slice := make([]string, 2)
-	tsslice.Set(mux, &slice, 0, "Hello")
-	tsslice.Set(mux, &slice, 1, "World")
+	tsslice.Set(mux, slice, 0, "Hello")
+	tsslice.Set(mux, slice, 1, "World")
 
 	fmt.Println(slice)
 
