@@ -31,7 +31,7 @@ func TestGet(t *testing.T) {
 	require.Equal(t, "World", Get(mux, m, 1))
 }
 
-func TestLet(t *testing.T) {
+func TestLen(t *testing.T) {
 	t.Parallel()
 
 	mux := &sync.RWMutex{}
