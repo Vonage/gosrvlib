@@ -16,6 +16,8 @@ import (
 )
 
 func TestApplyMiddleware(t *testing.T) {
+	t.Parallel()
+
 	// Custom middleware chain with logger.
 	ctx, logs := testutil.ContextWithLogObserver(zapcore.DebugLevel)
 
