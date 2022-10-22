@@ -11,7 +11,7 @@ import (
 func Test_defaultConfig(t *testing.T) {
 	t.Parallel()
 
-	cfg := defaultConfig()
+	cfg := defaultConfig(testutil.Context())
 
 	require.NotNil(t, cfg)
 	require.NotNil(t, cfg.metricsHandlerFunc)
@@ -115,7 +115,7 @@ func Test_config_validate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			cfg := defaultConfig()
+			cfg := defaultConfig(testutil.Context())
 			if tt.setupConfig != nil {
 				tt.setupConfig(cfg)
 			}

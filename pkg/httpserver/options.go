@@ -162,3 +162,11 @@ func WithRedactFn(fn RedactFn) Option {
 		return nil
 	}
 }
+
+// WithMiddlewareChain overrides the default chain of middlewares.
+func WithMiddlewareChain(m []Middleware) Option {
+	return func(cfg *config) error {
+		cfg.middleware = m
+		return nil
+	}
+}

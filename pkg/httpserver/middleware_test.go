@@ -1,6 +1,7 @@
 package httpserver
 
 import (
+	"bytes"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -10,10 +11,64 @@ import (
 	"github.com/nexmoinc/gosrvlib/pkg/testutil"
 	"github.com/nexmoinc/gosrvlib/pkg/traceid"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
-func TestRequestInjectHandler(t *testing.T) {
+func TestApplyMiddleware(t *testing.T) {
+	// Custom middleware chain with logger.
+	ctx, logs := testutil.ContextWithLogObserver(zapcore.DebugLevel)
+
+	middleware := func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			l := logging.FromContext(ctx)
+			require.NotNil(t, l, "logger not found")
+
+			l = l.With(
+				zap.Int64("content_length", r.ContentLength),
+			)
+
+			ctx = logging.WithLogger(ctx, l)
+
+			next.ServeHTTP(w, r.WithContext(ctx))
+		})
+	}
+
+	nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		logging.FromContext(r.Context()).Info("called")
+	})
+
+	handler := ApplyMiddleware(nextHandler, middleware)
+
+	req := httptest.NewRequest(http.MethodPost, "/", bytes.NewBuffer([]byte("123")))
+	handler.ServeHTTP(nil, req)
+
+	logEntries := logs.All()
+	require.Len(t, logEntries, 1, "expected only 1 log message")
+
+	logEntry := logEntries[0]
+	logContextMap := logEntry.ContextMap()
+
+	// content_length
+	rqValue, rqExists := logContextMap["content_length"]
+	require.True(t, rqExists, "content_length field missing")
+	require.Equal(t, int64(3), rqValue)
+
+	// message
+	require.Equal(t, "called", logEntry.Message)
+
+	// Empty middleware chain.
+	ctx, logs = testutil.ContextWithLogObserver(zapcore.DebugLevel)
+	handler = ApplyMiddleware(nextHandler)
+
+	req = httptest.NewRequest(http.MethodGet, "/", nil)
+	handler.ServeHTTP(nil, req)
+
+	logEntries = logs.All()
+	require.Len(t, logEntries, 0, "expected no message")
+}
+
+func Test_requestInjectHandler(t *testing.T) {
 	t.Parallel()
 
 	nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -24,7 +79,8 @@ func TestRequestInjectHandler(t *testing.T) {
 	})
 
 	ctx, logs := testutil.ContextWithLogObserver(zapcore.DebugLevel)
-	handler := RequestInjectHandler(logging.FromContext(ctx), traceid.DefaultHeader, redact.HTTPData, nextHandler)
+	defaultMiddleware := DefaultMiddleware(ctx, traceid.DefaultHeader, redact.HTTPData)
+	handler := ApplyMiddleware(nextHandler, defaultMiddleware...)
 
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	handler.ServeHTTP(nil, req)

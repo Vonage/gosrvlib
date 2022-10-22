@@ -16,7 +16,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// Router is the interface representing the router used by the HTTP http server.
+// Router is the interface representing the router used by the HTTP server.
 type Router interface {
 	http.Handler
 
@@ -39,11 +39,11 @@ type nopBinder struct{}
 
 func (b *nopBinder) BindHTTP(_ context.Context) []route.Route { return nil }
 
-// Start configures and start a new HTTP http server.
+// Start configures and start a new HTTP server.
 func Start(ctx context.Context, binder Binder, opts ...Option) error {
 	l := logging.WithComponent(ctx, "httpserver")
 
-	cfg := defaultConfig()
+	cfg := defaultConfig(ctx)
 
 	for _, applyOpt := range opts {
 		if err := applyOpt(cfg); err != nil {
@@ -86,12 +86,10 @@ func Start(ctx context.Context, binder Binder, opts ...Option) error {
 }
 
 func startServer(ctx context.Context, cfg *config) error {
-	l := logging.FromContext(ctx)
-
 	// create and start the http server
 	s := &http.Server{
 		Addr:              cfg.serverAddr,
-		Handler:           RequestInjectHandler(l, cfg.traceIDHeaderName, cfg.redactFn, cfg.router),
+		Handler:           ApplyMiddleware(cfg.router, cfg.middleware...),
 		ReadHeaderTimeout: cfg.serverReadHeaderTimeout,
 		ReadTimeout:       cfg.serverReadTimeout,
 		TLSConfig:         cfg.tlsConfig,
@@ -114,6 +112,7 @@ func startServer(ctx context.Context, cfg *config) error {
 		return fmt.Errorf("failed creting the address listener: %w", err)
 	}
 
+	l := logging.FromContext(ctx)
 	l.Info("listening for HTTP requests", zap.String("addr", cfg.serverAddr))
 
 	go func() {
@@ -141,24 +140,25 @@ func startServer(ctx context.Context, cfg *config) error {
 
 func defaultRouter(ctx context.Context, traceIDHeaderName string, redactFn RedactFn, instrumentHandler InstrumentHandler) *httprouter.Router {
 	r := httprouter.New()
-	l := logging.FromContext(ctx)
 
-	r.NotFound = RequestInjectHandler(l, traceIDHeaderName, redactFn, instrumentHandler("404", func(w http.ResponseWriter, r *http.Request) {
+	defaultMiddleware := DefaultMiddleware(ctx, traceIDHeaderName, redactFn)
+
+	r.NotFound = ApplyMiddleware(instrumentHandler("404", func(w http.ResponseWriter, r *http.Request) {
 		httputil.SendStatus(r.Context(), w, http.StatusNotFound)
-	}))
+	}), defaultMiddleware...)
 
-	r.MethodNotAllowed = RequestInjectHandler(l, traceIDHeaderName, redactFn, instrumentHandler("405", func(w http.ResponseWriter, r *http.Request) {
+	r.MethodNotAllowed = ApplyMiddleware(instrumentHandler("405", func(w http.ResponseWriter, r *http.Request) {
 		httputil.SendStatus(r.Context(), w, http.StatusMethodNotAllowed)
-	}))
+	}), defaultMiddleware...)
 
 	r.PanicHandler = func(w http.ResponseWriter, r *http.Request, p interface{}) {
-		RequestInjectHandler(l, traceIDHeaderName, redactFn, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ApplyMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			logging.FromContext(r.Context()).Error("panic",
 				zap.Any("err", p),
 				zap.String("stacktrace", string(debug.Stack())),
 			)
 			httputil.SendStatus(r.Context(), w, http.StatusInternalServerError)
-		})).ServeHTTP(w, r)
+		}), defaultMiddleware...).ServeHTTP(w, r)
 	}
 
 	return r

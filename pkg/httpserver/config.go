@@ -12,6 +12,7 @@ import (
 
 	"github.com/nexmoinc/gosrvlib/pkg/httpserver/route"
 	"github.com/nexmoinc/gosrvlib/pkg/ipify"
+	"github.com/nexmoinc/gosrvlib/pkg/logging"
 	"github.com/nexmoinc/gosrvlib/pkg/profiling"
 	"github.com/nexmoinc/gosrvlib/pkg/redact"
 	"github.com/nexmoinc/gosrvlib/pkg/traceid"
@@ -35,8 +36,14 @@ func GetPublicIPDefaultFunc() GetPublicIPFunc {
 	return c.GetPublicIP
 }
 
+// DefaultMiddleware returns the default middleware chain.
+func DefaultMiddleware(ctx context.Context, traceIDHeaderName string, redactFn RedactFn) []Middleware {
+	return []Middleware{NewDefaultLogMiddleware(logging.FromContext(ctx), traceIDHeaderName, redactFn)}
+}
+
 type config struct {
 	router                  Router
+	middleware              []Middleware
 	serverAddr              string
 	serverReadHeaderTimeout time.Duration
 	serverReadTimeout       time.Duration
@@ -55,7 +62,7 @@ type config struct {
 	redactFn                RedactFn
 }
 
-func defaultConfig() *config {
+func defaultConfig(ctx context.Context) *config {
 	defaultInstrumentHandler := func(path string, handler http.HandlerFunc) http.Handler { return handler }
 
 	return &config{
@@ -74,6 +81,7 @@ func defaultConfig() *config {
 		statusHandlerFunc:       defaultStatusHandler,
 		traceIDHeaderName:       traceid.DefaultHeader,
 		redactFn:                redact.HTTPData,
+		middleware:              DefaultMiddleware(ctx, traceid.DefaultHeader, redact.HTTPData),
 	}
 }
 

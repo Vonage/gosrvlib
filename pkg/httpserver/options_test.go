@@ -260,3 +260,16 @@ func TestWithRedactFn(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, "alphatest", cfg.redactFn("alpha"))
 }
+
+func TestWithMiddlewareChain(t *testing.T) {
+	t.Parallel()
+
+	cfg := &config{}
+	f := func(http.Handler) http.Handler {
+		return http.DefaultServeMux
+	}
+	m := []Middleware{f}
+	err := WithMiddlewareChain(m)(cfg)
+	require.NoError(t, err)
+	require.Equal(t, m, cfg.middleware)
+}

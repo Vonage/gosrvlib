@@ -10,14 +10,40 @@ import (
 	"go.uber.org/zap"
 )
 
-// RequestInjectHandler wraps all incoming requests and injects a logger in the request scoped context.
-func RequestInjectHandler(rootLogger *zap.Logger, traceIDHeaderName string, redactFn RedactFn, next http.Handler) http.Handler {
+// Middleware is an HTTP middleware.
+type Middleware func(http.Handler) http.Handler
+
+// ApplyMiddleware applies a middleware chain to the provided HTTP handler.
+func ApplyMiddleware(h http.Handler, m ...Middleware) http.Handler {
+	if len(m) == 0 {
+		return h
+	}
+
+	wrapped := h
+
+	// apply middlewares in reverse to preserve their execution order
+	for i := len(m) - 1; i >= 0; i-- {
+		wrapped = m[i](wrapped)
+	}
+
+	return wrapped
+}
+
+// defaultLogMiddleware implements a Middleware.
+type defaultLogMiddleware struct {
+	Logger            *zap.Logger
+	TraceIDHeaderName string
+	RedactFn          RedactFn
+}
+
+// requestInjectHandler wraps all incoming requests and injects a logger in the request scoped context.
+func (m *defaultLogMiddleware) requestInjectHandler(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		reqID := traceid.FromHTTPRequestHeader(r, traceIDHeaderName, uidc.NewID128())
+		reqID := traceid.FromHTTPRequestHeader(r, m.TraceIDHeaderName, uidc.NewID128())
 
-		l := rootLogger.With(
+		l := m.Logger.With(
 			zap.String("traceid", reqID),
 			zap.String("request_method", r.Method),
 			zap.String("request_path", r.URL.Path),
@@ -30,7 +56,7 @@ func RequestInjectHandler(rootLogger *zap.Logger, traceIDHeaderName string, reda
 
 		if l.Check(zap.DebugLevel, "debug") != nil {
 			reqDump, _ := httputil.DumpRequest(r, true)
-			l = l.With(zap.String("request", redactFn(string(reqDump))))
+			l = l.With(zap.String("request", m.RedactFn(string(reqDump))))
 		}
 
 		ctx = logging.WithLogger(ctx, l)
@@ -40,4 +66,15 @@ func RequestInjectHandler(rootLogger *zap.Logger, traceIDHeaderName string, reda
 	}
 
 	return http.HandlerFunc(fn)
+}
+
+// NewDefaultLogMiddleware builds a new default log middleware.
+func NewDefaultLogMiddleware(l *zap.Logger, traceIDHeaderName string, redactFn RedactFn) Middleware {
+	m := &defaultLogMiddleware{
+		Logger:            l,
+		TraceIDHeaderName: traceIDHeaderName,
+		RedactFn:          redactFn,
+	}
+
+	return m.requestInjectHandler
 }
