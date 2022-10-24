@@ -257,6 +257,78 @@ func Test_notImplementedHandler(t *testing.T) {
 	require.Equal(t, http.StatusNotImplemented, resp.StatusCode)
 }
 
+type customMiddlewareBinder struct {
+	firstMiddleware  chan struct{}
+	secondMiddleware chan struct{}
+}
+
+func (c *customMiddlewareBinder) handler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+}
+
+func (c *customMiddlewareBinder) middleware(ch chan struct{}) route.Middleware {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ch <- struct{}{}
+			c.handler(w, r)
+		})
+	}
+}
+
+func (c *customMiddlewareBinder) BindHTTP(ctx context.Context) []route.Route {
+	return []route.Route{
+		{
+			Method:      http.MethodGet,
+			Path:        "/hello",
+			Handler:     c.handler,
+			Description: "Index endpoint",
+			Middlewares: []route.Middleware{c.middleware(c.firstMiddleware), c.middleware(c.secondMiddleware)},
+		},
+	}
+}
+
+func Test_customMiddlewares(t *testing.T) {
+	t.Parallel()
+
+	binder := &customMiddlewareBinder{
+		firstMiddleware:  make(chan struct{}),
+		secondMiddleware: make(chan struct{}),
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	go func() {
+		err := Start(ctx, binder, WithServerAddr("0.0.0.0:1234"))
+		require.NoError(t, err, "failed to start test server")
+	}()
+
+	go func() {
+		select {
+		case <-ctx.Done():
+			require.Fail(t, "first middleware should have been called first.")
+		case <-binder.firstMiddleware:
+		}
+
+		select {
+		case <-ctx.Done():
+			require.Fail(t, "second middleware has not been called.")
+		case <-binder.secondMiddleware:
+		}
+	}()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, "http://localhost:1234/hello", nil)
+	require.NoError(t, err, "failed to create request")
+	resp, err := http.DefaultClient.Do(req)
+
+	if err != nil {
+		defer resp.Body.Close() //nolint:errcheck
+	}
+
+	require.NoError(t, err, "failed to get response from test server")
+	require.Equal(t, http.StatusOK, resp.StatusCode, "unexpected response code")
+}
+
 //nolint:gocognit
 func TestStart(t *testing.T) {
 	t.Parallel()

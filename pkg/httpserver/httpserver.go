@@ -72,7 +72,14 @@ func Start(ctx context.Context, binder Binder, opts ...Option) error {
 
 	for _, r := range routes {
 		l.Debug("binding route", zap.String("path", r.Path))
-		cfg.router.Handler(r.Method, r.Path, cfg.instrumentHandler(r.Path, r.Handler))
+		// Define the default middlewares and attach the custom middlewares.
+		middlewares := []route.Middleware{
+			loggerMiddleware(l, cfg.traceIDHeaderName, cfg.redactFn),
+			instrumentHandler(r.Path, cfg.instrumentHandler),
+		}
+		middlewares = append(middlewares, r.Middlewares...)
+		handler := applyMiddlewares(r.Handler, middlewares...)
+		cfg.router.Handler(r.Method, r.Path, handler)
 	}
 
 	// attach route index if enabled
@@ -91,7 +98,7 @@ func startServer(ctx context.Context, cfg *config) error {
 	// create and start the http server
 	s := &http.Server{
 		Addr:              cfg.serverAddr,
-		Handler:           RequestInjectHandler(l, cfg.traceIDHeaderName, cfg.redactFn, cfg.router),
+		Handler:           cfg.router,
 		ReadHeaderTimeout: cfg.serverReadHeaderTimeout,
 		ReadTimeout:       cfg.serverReadTimeout,
 		TLSConfig:         cfg.tlsConfig,
