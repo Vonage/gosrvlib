@@ -307,13 +307,13 @@ func Test_customMiddlewares(t *testing.T) {
 	go func() {
 		select {
 		case <-ctx.Done():
-			require.Fail(t, "first middleware should have been called first.")
+			return
 		case <-binder.firstMiddleware:
 		}
 
 		select {
 		case <-ctx.Done():
-			require.Fail(t, "second middleware has not been called.")
+			return
 		case <-binder.secondMiddleware:
 		}
 	}()
@@ -324,6 +324,7 @@ func Test_customMiddlewares(t *testing.T) {
 	cfg.router.ServeHTTP(resp, req)
 	require.NoError(t, err, "failed to get response from test server")
 	require.Equal(t, http.StatusOK, resp.Code, "unexpected response code")
+	require.NoError(t, ctx.Err(), "context should not be cancelled")
 }
 
 //nolint:gocognit
