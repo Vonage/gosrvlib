@@ -11,7 +11,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func instrumentHandler(path string, handler InstrumentHandler) route.Middleware {
+func instrumentMiddleware(path string, handler InstrumentHandler) route.Middleware {
 	return func(next http.Handler) http.Handler {
 		return handler(path, next.ServeHTTP)
 	}

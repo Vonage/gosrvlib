@@ -55,7 +55,7 @@ func loadRoutes(ctx context.Context, l *zap.Logger, binder Binder, cfg *config) 
 		// Define the default middlewares and attach the custom middlewares.
 		middlewares := []route.Middleware{
 			loggerMiddleware(l, cfg.traceIDHeaderName, cfg.redactFn),
-			instrumentHandler(r.Path, cfg.instrumentHandler),
+			instrumentMiddleware(r.Path, cfg.instrumentHandler),
 		}
 		middlewares = append(middlewares, r.Middlewares...)
 		handler := applyMiddlewares(r.Handler, middlewares...)
