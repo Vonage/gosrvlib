@@ -39,32 +39,11 @@ type nopBinder struct{}
 
 func (b *nopBinder) BindHTTP(_ context.Context) []route.Route { return nil }
 
-// Start configures and start a new HTTP http server.
-func Start(ctx context.Context, binder Binder, opts ...Option) error {
-	l := logging.WithComponent(ctx, "httpserver")
-
-	cfg := defaultConfig()
-
-	for _, applyOpt := range opts {
-		if err := applyOpt(cfg); err != nil {
-			return err
-		}
-	}
-
-	if cfg.router == nil {
-		cfg.router = defaultRouter(ctx, cfg.traceIDHeaderName, cfg.redactFn, cfg.instrumentHandler)
-	}
-
-	if err := cfg.validate(); err != nil {
-		return err
-	}
-
+func loadRoutes(ctx context.Context, l *zap.Logger, binder Binder, cfg *config) {
 	l.Debug("adding default routes")
-
 	routes := newDefaultRoutes(cfg)
 
 	l.Debug("adding service routes")
-
 	customRoutes := binder.BindHTTP(ctx)
 
 	// merge custom service routes with the default routes
@@ -87,6 +66,29 @@ func Start(ctx context.Context, binder Binder, opts ...Option) error {
 		l.Debug("enabling route index handler")
 		cfg.router.Handler(http.MethodGet, indexPath, cfg.instrumentHandler(indexPath, cfg.indexHandlerFunc(routes)))
 	}
+}
+
+// Start configures and start a new HTTP http server.
+func Start(ctx context.Context, binder Binder, opts ...Option) error {
+	l := logging.WithComponent(ctx, "httpserver")
+
+	cfg := defaultConfig()
+
+	for _, applyOpt := range opts {
+		if err := applyOpt(cfg); err != nil {
+			return err
+		}
+	}
+
+	if cfg.router == nil {
+		cfg.router = defaultRouter(ctx, cfg.traceIDHeaderName, cfg.redactFn, cfg.instrumentHandler)
+	}
+
+	if err := cfg.validate(); err != nil {
+		return err
+	}
+
+	loadRoutes(ctx, l, binder, cfg)
 
 	// wrap router with default middlewares
 	return startServer(ctx, cfg)
