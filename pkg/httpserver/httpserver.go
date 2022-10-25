@@ -52,13 +52,16 @@ func loadRoutes(ctx context.Context, l *zap.Logger, binder Binder, cfg *config) 
 
 	for _, r := range routes {
 		l.Debug("binding route", zap.String("path", r.Path))
-		// Define the default middlewares and attach the custom middlewares.
-		middlewares := []route.Middleware{
+
+		// Add default and custom middleware functions
+		middleware := []MiddlewareFn{
 			loggerMiddleware(l, cfg.traceIDHeaderName, cfg.redactFn),
-			instrumentMiddleware(r.Path, cfg.instrumentHandler),
 		}
-		middlewares = append(middlewares, r.Middlewares...)
-		handler := applyMiddlewares(r.Handler, middlewares...)
+
+		middleware = append(middlewares, cfg.middlewares...)
+		middleware = append(middlewares, r.Middlewares...)
+
+		handler := applyMiddleware(r, middleware...)
 		cfg.router.Handler(r.Method, r.Path, handler)
 	}
 
@@ -147,31 +150,6 @@ func startServer(ctx context.Context, cfg *config) error {
 	}()
 
 	return nil
-}
-
-func defaultRouter(ctx context.Context, traceIDHeaderName string, redactFn RedactFn, instrumentHandler InstrumentHandler) *httprouter.Router {
-	r := httprouter.New()
-	l := logging.FromContext(ctx)
-
-	r.NotFound = RequestInjectHandler(l, traceIDHeaderName, redactFn, instrumentHandler("404", func(w http.ResponseWriter, r *http.Request) {
-		httputil.SendStatus(r.Context(), w, http.StatusNotFound)
-	}))
-
-	r.MethodNotAllowed = RequestInjectHandler(l, traceIDHeaderName, redactFn, instrumentHandler("405", func(w http.ResponseWriter, r *http.Request) {
-		httputil.SendStatus(r.Context(), w, http.StatusMethodNotAllowed)
-	}))
-
-	r.PanicHandler = func(w http.ResponseWriter, r *http.Request, p interface{}) {
-		RequestInjectHandler(l, traceIDHeaderName, redactFn, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			logging.FromContext(r.Context()).Error("panic",
-				zap.Any("err", p),
-				zap.String("stacktrace", string(debug.Stack())),
-			)
-			httputil.SendStatus(r.Context(), w, http.StatusInternalServerError)
-		})).ServeHTTP(w, r)
-	}
-
-	return r
 }
 
 func defaultIndexHandler(routes []route.Route) http.HandlerFunc {

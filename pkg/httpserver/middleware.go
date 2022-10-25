@@ -11,21 +11,20 @@ import (
 	"go.uber.org/zap"
 )
 
-func instrumentMiddleware(path string, handler InstrumentHandler) route.Middleware {
-	return func(next http.Handler) http.Handler {
-		return handler(path, next.ServeHTTP)
-	}
-}
-
-func loggerMiddleware(rootLogger *zap.Logger, traceIDHeaderName string, redactFn RedactFn) route.Middleware {
+func loggerMiddleware(rootLogger *zap.Logger, traceIDHeaderName string, redactFn RedactFn) MiddlewareFn {
 	return func(next http.Handler) http.Handler {
 		return RequestInjectHandler(rootLogger, traceIDHeaderName, redactFn, next)
 	}
 }
 
-func applyMiddlewares(next http.Handler, middlewares ...route.Middleware) http.Handler {
-	for i := len(middlewares) - 1; i >= 0; i-- {
-		next = middlewares[i](next)
+func applyMiddleware(r Route, middleware ...MiddlewareFn) http.Handler {
+	info := MiddlewareInfo {
+		Method: r.Method,
+		Path: r.Path,
+	}
+
+	for i := len(middleware) - 1; i >= 0; i-- {
+		next = middleware[i](info, next)
 	}
 
 	return next

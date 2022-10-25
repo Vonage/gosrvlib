@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/julienschmidt/httprouter"
-	"github.com/nexmoinc/gosrvlib/pkg/httpserver/route"
 	"github.com/stretchr/testify/require"
 )
 
@@ -170,7 +169,7 @@ func TestWithEnableAllDefaultRoutes(t *testing.T) {
 func TestWithIndexHandlerFunc(t *testing.T) {
 	t.Parallel()
 
-	v := func(routes []route.Route) http.HandlerFunc {
+	v := func(routes []Route) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 			// mock function
 		}
@@ -259,4 +258,15 @@ func TestWithRedactFn(t *testing.T) {
 	err := WithRedactFn(v)(cfg)
 	require.NoError(t, err)
 	require.Equal(t, "alphatest", cfg.redactFn("alpha"))
+}
+
+func TestWithMiddlewares(t *testing.T) {
+	t.Parallel()
+
+	v := func(_ MiddlewareInfo, handler http.Handler) http.Handler { return handler }
+	w := []MiddlewareFn{v, v}
+	cfg := &config{}
+	err := WithMiddlewares(w...)(cfg)
+	require.NoError(t, err)
+	require.Len(t, cfg.middlewares, 2)
 }

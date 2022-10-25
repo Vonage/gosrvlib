@@ -75,14 +75,6 @@ func WithTLSCertData(pemCert, pemKey []byte) Option {
 	}
 }
 
-// WithInstrumentHandler set the http.Handler wrap function to collect metrics.
-func WithInstrumentHandler(handler InstrumentHandler) Option {
-	return func(cfg *config) error {
-		cfg.instrumentHandler = handler
-		return nil
-	}
-}
-
 // WithEnableDefaultRoutes sets the default routes to be enabled on the server.
 func WithEnableDefaultRoutes(ids ...defaultRoute) Option {
 	return func(cfg *config) error {
@@ -159,6 +151,15 @@ func WithTraceIDHeaderName(name string) Option {
 func WithRedactFn(fn RedactFn) Option {
 	return func(cfg *config) error {
 		cfg.redactFn = fn
+		return nil
+	}
+}
+
+// WithMiddlewareFn adds one or more middleware handler functions to all routes (endpoints).
+// These middleware handlers are applied in the provided order after the default ones and before the custom route ones.
+func WithMiddlewareFn(fn ...MiddlewareFn) Option {
+	return func(cfg *config) error {
+		cfg.middleware = append(cfg.middleware, fn...)
 		return nil
 	}
 }

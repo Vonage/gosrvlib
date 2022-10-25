@@ -26,9 +26,6 @@ type IndexHandlerFunc func([]route.Route) http.HandlerFunc
 // GetPublicIPFunc is a type alias for function to get public IP of the service.
 type GetPublicIPFunc func(context.Context) (string, error)
 
-// InstrumentHandler is a type alias for the function used to wrap an http.Handler to collect metrics.
-type InstrumentHandler func(string, http.HandlerFunc) http.Handler
-
 // GetPublicIPDefaultFunc returns the GetPublicIP function for a default ipify client.
 func GetPublicIPDefaultFunc() GetPublicIPFunc {
 	c, _ := ipify.New() // no errors are returned with default values
@@ -43,7 +40,6 @@ type config struct {
 	serverWriteTimeout      time.Duration
 	shutdownTimeout         time.Duration
 	tlsConfig               *tls.Config
-	instrumentHandler       InstrumentHandler
 	defaultEnabledRoutes    []defaultRoute
 	indexHandlerFunc        IndexHandlerFunc
 	ipHandlerFunc           http.HandlerFunc
@@ -53,18 +49,16 @@ type config struct {
 	statusHandlerFunc       http.HandlerFunc
 	traceIDHeaderName       string
 	redactFn                RedactFn
+	middleware              []MiddlewareFn
 }
 
 func defaultConfig() *config {
-	defaultInstrumentHandler := func(path string, handler http.HandlerFunc) http.Handler { return handler }
-
 	return &config{
 		serverAddr:              ":8017",
 		serverReadHeaderTimeout: 1 * time.Minute,
 		serverReadTimeout:       1 * time.Minute,
 		serverWriteTimeout:      1 * time.Minute,
 		shutdownTimeout:         30 * time.Second,
-		instrumentHandler:       defaultInstrumentHandler,
 		defaultEnabledRoutes:    nil,
 		indexHandlerFunc:        defaultIndexHandler,
 		ipHandlerFunc:           defaultIPHandler(GetPublicIPDefaultFunc()),
@@ -74,6 +68,7 @@ func defaultConfig() *config {
 		statusHandlerFunc:       defaultStatusHandler,
 		traceIDHeaderName:       traceid.DefaultHeader,
 		redactFn:                redact.HTTPData,
+		middleware:              []MiddlewareFn{},
 	}
 }
 
@@ -96,10 +91,6 @@ func (c *config) validate() error {
 
 	if c.shutdownTimeout == 0 {
 		return fmt.Errorf("invalid shutdownTimeout")
-	}
-
-	if c.instrumentHandler == nil {
-		return fmt.Errorf("instrumentHandler is required")
 	}
 
 	if c.ipHandlerFunc == nil {
@@ -159,4 +150,53 @@ func validateAddr(addr string) error {
 	}
 
 	return nil
+}
+
+func (c *config) defaultRouter(ctx context.Context) {
+	r := httprouter.New()
+	l := logging.FromContext(ctx)
+
+	middleware := []MiddlewareFn{
+		loggerMiddleware(l, c.traceIDHeaderName, c.redactFn),
+	}
+	middleware = append(middleware, c.middleware...)
+
+	r.NotFound = applyMiddleware(
+		Route{
+			Path: "404",
+			Handler: func(w http.ResponseWriter, r *http.Request) {
+				httputil.SendStatus(r.Context(), w, http.StatusNotFound)
+			},
+		},
+		middleware...,
+	)
+
+	r.MethodNotAllowed = applyMiddleware(
+		Route{
+			Path: "405",
+			Handler: func(w http.ResponseWriter, r *http.Request) {
+				httputil.SendStatus(r.Context(), w, http.StatusMethodNotAllowed)
+			},
+		},
+		middleware...,
+	)
+
+	r.PanicHandler = func(w http.ResponseWriter, r *http.Request, p interface{}) {
+		applyMiddleware(
+			Route{
+				Path: "500",
+				Handler: func(w http.ResponseWriter, r *http.Request) {
+					logging.FromContext(r.Context()).Error(
+						"panic",
+						zap.Any("err", p),
+						zap.String("stacktrace", string(debug.Stack())),
+					)
+					httputil.SendStatus(r.Context(), w, http.StatusInternalServerError)
+				},
+			},
+			middleware...,
+		).ServeHTTP(w, r)
+	}
+
+	c.router = r
 }

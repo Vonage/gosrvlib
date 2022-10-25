@@ -54,13 +54,6 @@ func Test_config_validate(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "fail with missing instrumentHandler",
-			setupConfig: func(cfg *config) {
-				cfg.instrumentHandler = nil
-			},
-			wantErr: true,
-		},
-		{
 			name: "fail with missing metrics handler",
 			setupConfig: func(cfg *config) {
 				cfg.metricsHandlerFunc = nil
