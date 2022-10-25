@@ -41,11 +41,12 @@ func (b *nopBinder) BindHTTP(_ context.Context) []route.Route { return nil }
 
 func loadRoutes(ctx context.Context, l *zap.Logger, binder Binder, cfg *config) {
 	l.Debug("adding default routes")
+
 	routes := newDefaultRoutes(cfg)
 
 	l.Debug("adding service routes")
-	customRoutes := binder.BindHTTP(ctx)
 
+	customRoutes := binder.BindHTTP(ctx)
 	// merge custom service routes with the default routes
 	routes = append(routes, customRoutes...)
 
