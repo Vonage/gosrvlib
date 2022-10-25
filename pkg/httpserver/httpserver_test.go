@@ -322,9 +322,8 @@ func Test_customMiddlewares(t *testing.T) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, "http://localhost:1234/hello", nil)
 	require.NoError(t, err, "failed to create request")
 	cfg.router.ServeHTTP(resp, req)
-	require.NoError(t, err, "failed to get response from test server")
 	require.Equal(t, http.StatusOK, resp.Code, "unexpected response code")
-	require.NoError(t, ctx.Err(), "context should not be cancelled")
+	require.NoError(t, ctx.Err(), "context should not be canceled")
 }
 
 //nolint:gocognit
