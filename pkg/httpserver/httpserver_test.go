@@ -271,7 +271,7 @@ func (c *customMiddlewareBinder) middleware(ch chan struct{}) route.Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ch <- struct{}{}
-			c.handler(w, r)
+			next.ServeHTTP(w, r)
 		})
 	}
 }
