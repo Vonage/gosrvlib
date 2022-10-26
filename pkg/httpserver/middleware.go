@@ -4,31 +4,11 @@ import (
 	"net/http"
 	"net/http/httputil"
 
-	"github.com/nexmoinc/gosrvlib/pkg/httpserver/route"
 	"github.com/nexmoinc/gosrvlib/pkg/logging"
 	"github.com/nexmoinc/gosrvlib/pkg/traceid"
 	"github.com/nexmoinc/gosrvlib/pkg/uidc"
 	"go.uber.org/zap"
 )
-
-func loggerMiddleware(rootLogger *zap.Logger, traceIDHeaderName string, redactFn RedactFn) MiddlewareFn {
-	return func(next http.Handler) http.Handler {
-		return RequestInjectHandler(rootLogger, traceIDHeaderName, redactFn, next)
-	}
-}
-
-func applyMiddleware(r Route, middleware ...MiddlewareFn) http.Handler {
-	info := MiddlewareInfo {
-		Method: r.Method,
-		Path: r.Path,
-	}
-
-	for i := len(middleware) - 1; i >= 0; i-- {
-		next = middleware[i](info, next)
-	}
-
-	return next
-}
 
 // RequestInjectHandler wraps all incoming requests and injects a logger in the request scoped context.
 func RequestInjectHandler(rootLogger *zap.Logger, traceIDHeaderName string, redactFn RedactFn, next http.Handler) http.Handler {
@@ -60,4 +40,18 @@ func RequestInjectHandler(rootLogger *zap.Logger, traceIDHeaderName string, reda
 	}
 
 	return http.HandlerFunc(fn)
+}
+
+// LoggerMiddlewareFn returns the middleware handler function to handle logs.
+func LoggerMiddlewareFn(args MiddlewareArgs, next http.Handler) http.Handler {
+	return RequestInjectHandler(args.RootLogger, args.TraceIDHeaderName, args.RedactFunc, next)
+}
+
+// ApplyMiddleware returns an http Handler with all middleware handler functions applied.
+func ApplyMiddleware(arg MiddlewareArgs, next http.Handler, middleware ...MiddlewareFn) http.Handler {
+	for i := len(middleware) - 1; i >= 0; i-- {
+		next = middleware[i](arg, next)
+	}
+
+	return next
 }

@@ -138,16 +138,6 @@ YlAqGKDZ+A+l
 	}
 }
 
-func TestWithInstrumentHandler(t *testing.T) {
-	t.Parallel()
-
-	v := func(path string, handler http.HandlerFunc) http.Handler { return handler }
-	cfg := &config{}
-	err := WithInstrumentHandler(v)(cfg)
-	require.NoError(t, err)
-	require.Equal(t, reflect.ValueOf(v).Pointer(), reflect.ValueOf(cfg.instrumentHandler).Pointer())
-}
-
 func TestWithEnableDefaultRoutes(t *testing.T) {
 	t.Parallel()
 
@@ -260,13 +250,13 @@ func TestWithRedactFn(t *testing.T) {
 	require.Equal(t, "alphatest", cfg.redactFn("alpha"))
 }
 
-func TestWithMiddlewares(t *testing.T) {
+func TestWithMiddlewareFn(t *testing.T) {
 	t.Parallel()
 
-	v := func(_ MiddlewareInfo, handler http.Handler) http.Handler { return handler }
+	v := func(_ MiddlewareArgs, handler http.Handler) http.Handler { return handler }
 	w := []MiddlewareFn{v, v}
 	cfg := &config{}
-	err := WithMiddlewares(w...)(cfg)
+	err := WithMiddlewareFn(w...)(cfg)
 	require.NoError(t, err)
-	require.Len(t, cfg.middlewares, 2)
+	require.Len(t, cfg.middleware, 2)
 }

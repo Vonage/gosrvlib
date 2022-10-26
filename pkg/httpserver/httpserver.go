@@ -7,10 +7,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"runtime/debug"
 
-	"github.com/julienschmidt/httprouter"
-	"github.com/nexmoinc/gosrvlib/pkg/httpserver/route"
 	"github.com/nexmoinc/gosrvlib/pkg/httputil"
 	"github.com/nexmoinc/gosrvlib/pkg/logging"
 	"go.uber.org/zap"
@@ -27,7 +24,7 @@ type Router interface {
 // Binder is an interface to allow configuring the HTTP router.
 type Binder interface {
 	// BindHTTP returns the routes.
-	BindHTTP(ctx context.Context) []route.Route
+	BindHTTP(ctx context.Context) []Route
 }
 
 // NopBinder returns a simple no-operation binder.
@@ -37,38 +34,60 @@ func NopBinder() Binder {
 
 type nopBinder struct{}
 
-func (b *nopBinder) BindHTTP(_ context.Context) []route.Route { return nil }
+func (b *nopBinder) BindHTTP(_ context.Context) []Route { return nil }
 
 func loadRoutes(ctx context.Context, l *zap.Logger, binder Binder, cfg *config) {
-	l.Debug("adding default routes")
+	l.Debug("load default routes")
 
 	routes := newDefaultRoutes(cfg)
 
-	l.Debug("adding service routes")
+	l.Debug("load service routes")
 
 	customRoutes := binder.BindHTTP(ctx)
-	// merge custom service routes with the default routes
+
 	routes = append(routes, customRoutes...)
+
+	l.Debug("applying routes")
 
 	for _, r := range routes {
 		l.Debug("binding route", zap.String("path", r.Path))
 
 		// Add default and custom middleware functions
-		middleware := []MiddlewareFn{
-			loggerMiddleware(l, cfg.traceIDHeaderName, cfg.redactFn),
+		middleware := cfg.commonMiddleware()
+		middleware = append(middleware, r.Middleware...)
+
+		args := MiddlewareArgs{
+			Method:            r.Method,
+			Path:              r.Path,
+			Description:       r.Description,
+			TraceIDHeaderName: cfg.traceIDHeaderName,
+			RedactFunc:        cfg.redactFn,
+			RootLogger:        l,
 		}
 
-		middleware = append(middlewares, cfg.middlewares...)
-		middleware = append(middlewares, r.Middlewares...)
+		handler := ApplyMiddleware(args, r.Handler, middleware...)
 
-		handler := applyMiddleware(r, middleware...)
 		cfg.router.Handler(r.Method, r.Path, handler)
 	}
 
 	// attach route index if enabled
 	if cfg.isIndexRouteEnabled() {
 		l.Debug("enabling route index handler")
-		cfg.router.Handler(http.MethodGet, indexPath, cfg.instrumentHandler(indexPath, cfg.indexHandlerFunc(routes)))
+
+		middleware := cfg.commonMiddleware()
+
+		args := MiddlewareArgs{
+			Method:            http.MethodGet,
+			Path:              indexPath,
+			Description:       "Index",
+			TraceIDHeaderName: cfg.traceIDHeaderName,
+			RedactFunc:        cfg.redactFn,
+			RootLogger:        l,
+		}
+
+		handler := ApplyMiddleware(args, cfg.indexHandlerFunc(routes), middleware...)
+
+		cfg.router.Handler(args.Method, args.Path, handler)
 	}
 }
 
@@ -85,7 +104,7 @@ func Start(ctx context.Context, binder Binder, opts ...Option) error {
 	}
 
 	if cfg.router == nil {
-		cfg.router = defaultRouter(ctx, cfg.traceIDHeaderName, cfg.redactFn, cfg.instrumentHandler)
+		cfg.defaultRouter(ctx)
 	}
 
 	if err := cfg.validate(); err != nil {
@@ -152,9 +171,9 @@ func startServer(ctx context.Context, cfg *config) error {
 	return nil
 }
 
-func defaultIndexHandler(routes []route.Route) http.HandlerFunc {
+func defaultIndexHandler(routes []Route) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		data := &route.Index{Routes: routes}
+		data := &Index{Routes: routes}
 		httputil.SendJSON(r.Context(), w, http.StatusOK, data)
 	}
 }

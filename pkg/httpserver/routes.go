@@ -2,8 +2,6 @@ package httpserver
 
 import (
 	"net/http"
-
-	"github.com/nexmoinc/gosrvlib/pkg/httpserver/route"
 )
 
 type defaultRoute string
@@ -45,43 +43,43 @@ func allDefaultRoutes() []defaultRoute {
 	}
 }
 
-func newDefaultRoutes(cfg *config) []route.Route {
-	routes := make([]route.Route, 0, len(cfg.defaultEnabledRoutes)+1)
+func newDefaultRoutes(cfg *config) []Route {
+	routes := make([]Route, 0, len(cfg.defaultEnabledRoutes)+1)
 
 	for _, id := range cfg.defaultEnabledRoutes {
 		switch id {
 		case IndexRoute:
 			// The index route needs to access all the routes bound to the handler.
 		case IPRoute:
-			routes = append(routes, route.Route{
+			routes = append(routes, Route{
 				Method:      http.MethodGet,
 				Path:        ipHandlerPath,
 				Handler:     cfg.ipHandlerFunc,
 				Description: "Returns the public IP address of this service instance.",
 			})
 		case MetricsRoute:
-			routes = append(routes, route.Route{
+			routes = append(routes, Route{
 				Method:      http.MethodGet,
 				Path:        metricsHandlerPath,
 				Handler:     cfg.metricsHandlerFunc,
 				Description: "Returns Prometheus metrics.",
 			})
 		case PingRoute:
-			routes = append(routes, route.Route{
+			routes = append(routes, Route{
 				Method:      http.MethodGet,
 				Path:        pingHandlerPath,
 				Handler:     cfg.pingHandlerFunc,
 				Description: "Ping this service.",
 			})
 		case PprofRoute:
-			routes = append(routes, route.Route{
+			routes = append(routes, Route{
 				Method:      http.MethodGet,
 				Path:        pprofHandlerPath,
 				Handler:     cfg.pprofHandlerFunc,
 				Description: "Returns pprof data for the selected profile.",
 			})
 		case StatusRoute:
-			routes = append(routes, route.Route{
+			routes = append(routes, Route{
 				Method:      http.MethodGet,
 				Path:        statusHandlerPath,
 				Handler:     cfg.statusHandlerFunc,

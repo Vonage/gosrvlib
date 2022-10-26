@@ -80,23 +80,56 @@ func Send(ctx context.Context, w http.ResponseWriter, statusCode int, info *AppI
 }
 
 // NewRouter create a new router configured to responds with JSend wrapper responses for 404, 405 and panic.
-func NewRouter(info *AppInfo, instrumentHandler httpserver.InstrumentHandler) *httprouter.Router {
+func NewRouter(info *AppInfo, middleware ...httpserver.MiddlewareFn) *httprouter.Router {
 	r := httprouter.New()
 
-	r.NotFound = instrumentHandler("404", func(w http.ResponseWriter, r *http.Request) {
-		Send(r.Context(), w, http.StatusNotFound, info, "invalid endpoint")
-	})
+	r.NotFound = ApplyMiddleware(
+		MiddlewareArgs{
+			Path:              "404",
+			Description:       http.StatusText(http.StatusNotFound),
+			TraceIDHeaderName: c.traceIDHeaderName,
+			RedactFunc:        c.redactFn,
+			RootLogger:        logging.FromContext(ctx),
+		},
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			Send(r.Context(), w, http.StatusNotFound, info, "invalid endpoint")
+		}),
+		middleware...,
+	)
 
-	r.MethodNotAllowed = instrumentHandler("405", func(w http.ResponseWriter, r *http.Request) {
-		Send(r.Context(), w, http.StatusMethodNotAllowed, info, "the request cannot be routed")
-	})
+	r.MethodNotAllowed = ApplyMiddleware(
+		MiddlewareArgs{
+			Path:              "405",
+			Description:       http.StatusText(http.StatusMethodNotAllowed),
+			TraceIDHeaderName: c.traceIDHeaderName,
+			RedactFunc:        c.redactFn,
+			RootLogger:        logging.FromContext(ctx),
+		},
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			Send(r.Context(), w, http.StatusMethodNotAllowed, info, "the request cannot be routed")
+		}),
+		middleware...,
+	)
 
 	r.PanicHandler = func(w http.ResponseWriter, r *http.Request, p interface{}) {
-		logging.FromContext(r.Context()).Error("panic",
-			zap.Any("err", p),
-			zap.String("stacktrace", string(debug.Stack())),
-		)
-		Send(r.Context(), w, http.StatusInternalServerError, info, "internal error")
+		ApplyMiddleware(
+			MiddlewareArgs{
+				Path:              "500",
+				Description:       http.StatusText(http.StatusInternalServerError),
+				TraceIDHeaderName: c.traceIDHeaderName,
+				RedactFunc:        c.redactFn,
+				RootLogger:        logging.FromContext(ctx),
+			},
+			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				logging.FromContext(r.Context()).Error(
+					"panic",
+					zap.Any("err", p),
+					zap.String("stacktrace", string(debug.Stack())),
+				)
+				Send(r.Context(), w, http.StatusInternalServerError, info, "internal error")
+			}),
+			middleware...,
+		).ServeHTTP(w, r)
 	}
 
 	return r

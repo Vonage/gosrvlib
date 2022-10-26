@@ -10,7 +10,6 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	route "github.com/nexmoinc/gosrvlib/pkg/httpserver/route"
 )
 
 // MockRouter is a mock of Router interface.
@@ -84,10 +83,10 @@ func (m *MockBinder) EXPECT() *MockBinderMockRecorder {
 }
 
 // BindHTTP mocks base method.
-func (m *MockBinder) BindHTTP(arg0 context.Context) []route.Route {
+func (m *MockBinder) BindHTTP(arg0 context.Context) []Route {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BindHTTP", arg0)
-	ret0, _ := ret[0].([]route.Route)
+	ret0, _ := ret[0].([]Route)
 	return ret0
 }
 

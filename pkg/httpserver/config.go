@@ -6,22 +6,26 @@ import (
 	"fmt"
 	"math"
 	"net/http"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/nexmoinc/gosrvlib/pkg/httpserver/route"
+	"github.com/julienschmidt/httprouter"
+	"github.com/nexmoinc/gosrvlib/pkg/httputil"
 	"github.com/nexmoinc/gosrvlib/pkg/ipify"
+	"github.com/nexmoinc/gosrvlib/pkg/logging"
 	"github.com/nexmoinc/gosrvlib/pkg/profiling"
 	"github.com/nexmoinc/gosrvlib/pkg/redact"
 	"github.com/nexmoinc/gosrvlib/pkg/traceid"
+	"go.uber.org/zap"
 )
 
 // RedactFn is an alias for a redact function.
 type RedactFn func(s string) string
 
 // IndexHandlerFunc is a type alias for the route index function.
-type IndexHandlerFunc func([]route.Route) http.HandlerFunc
+type IndexHandlerFunc func([]Route) http.HandlerFunc
 
 // GetPublicIPFunc is a type alias for function to get public IP of the service.
 type GetPublicIPFunc func(context.Context) (string, error)
@@ -152,48 +156,63 @@ func validateAddr(addr string) error {
 	return nil
 }
 
+func (c *config) commonMiddleware() []MiddlewareFn {
+	middleware := []MiddlewareFn{
+		LoggerMiddlewareFn,
+	}
+
+	return append(middleware, c.middleware...)
+}
+
 func (c *config) defaultRouter(ctx context.Context) {
 	r := httprouter.New()
-	l := logging.FromContext(ctx)
+	middleware := c.commonMiddleware()
 
-	middleware := []MiddlewareFn{
-		loggerMiddleware(l, c.traceIDHeaderName, c.redactFn),
-	}
-	middleware = append(middleware, c.middleware...)
-
-	r.NotFound = applyMiddleware(
-		Route{
-			Path: "404",
-			Handler: func(w http.ResponseWriter, r *http.Request) {
-				httputil.SendStatus(r.Context(), w, http.StatusNotFound)
-			},
+	r.NotFound = ApplyMiddleware(
+		MiddlewareArgs{
+			Path:              "404",
+			Description:       http.StatusText(http.StatusNotFound),
+			TraceIDHeaderName: c.traceIDHeaderName,
+			RedactFunc:        c.redactFn,
+			RootLogger:        logging.FromContext(ctx),
 		},
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			httputil.SendStatus(r.Context(), w, http.StatusNotFound)
+		}),
 		middleware...,
 	)
 
-	r.MethodNotAllowed = applyMiddleware(
-		Route{
-			Path: "405",
-			Handler: func(w http.ResponseWriter, r *http.Request) {
-				httputil.SendStatus(r.Context(), w, http.StatusMethodNotAllowed)
-			},
+	r.MethodNotAllowed = ApplyMiddleware(
+		MiddlewareArgs{
+			Path:              "405",
+			Description:       http.StatusText(http.StatusMethodNotAllowed),
+			TraceIDHeaderName: c.traceIDHeaderName,
+			RedactFunc:        c.redactFn,
+			RootLogger:        logging.FromContext(ctx),
 		},
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			httputil.SendStatus(r.Context(), w, http.StatusMethodNotAllowed)
+		}),
 		middleware...,
 	)
 
 	r.PanicHandler = func(w http.ResponseWriter, r *http.Request, p interface{}) {
-		applyMiddleware(
-			Route{
-				Path: "500",
-				Handler: func(w http.ResponseWriter, r *http.Request) {
-					logging.FromContext(r.Context()).Error(
-						"panic",
-						zap.Any("err", p),
-						zap.String("stacktrace", string(debug.Stack())),
-					)
-					httputil.SendStatus(r.Context(), w, http.StatusInternalServerError)
-				},
+		ApplyMiddleware(
+			MiddlewareArgs{
+				Path:              "500",
+				Description:       http.StatusText(http.StatusInternalServerError),
+				TraceIDHeaderName: c.traceIDHeaderName,
+				RedactFunc:        c.redactFn,
+				RootLogger:        logging.FromContext(ctx),
 			},
+			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				logging.FromContext(r.Context()).Error(
+					"panic",
+					zap.Any("err", p),
+					zap.String("stacktrace", string(debug.Stack())),
+				)
+				httputil.SendStatus(r.Context(), w, http.StatusInternalServerError)
+			}),
 			middleware...,
 		).ServeHTTP(w, r)
 	}
