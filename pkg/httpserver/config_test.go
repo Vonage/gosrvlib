@@ -104,6 +104,7 @@ func Test_config_validate(t *testing.T) {
 			wantErr: false,
 		},
 	}
+
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
@@ -170,6 +171,7 @@ func Test_validateAddr(t *testing.T) {
 			wantErr: false,
 		},
 	}
+
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
@@ -204,6 +206,7 @@ func Test_config_isIndexRouteEnabled(t *testing.T) {
 			want:                 false,
 		},
 	}
+
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
@@ -221,8 +224,6 @@ func Test_config_isIndexRouteEnabled(t *testing.T) {
 
 func Test_setRouter(t *testing.T) {
 	t.Parallel()
-
-	cfg := defaultConfig()
 
 	tests := []struct {
 		name        string
@@ -267,6 +268,8 @@ func Test_setRouter(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
+			cfg := defaultConfig()
 
 			cfg.setRouter(testutil.Context())
 
