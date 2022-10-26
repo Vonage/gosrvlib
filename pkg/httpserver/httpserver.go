@@ -103,9 +103,7 @@ func Start(ctx context.Context, binder Binder, opts ...Option) error {
 		}
 	}
 
-	if cfg.router == nil {
-		cfg.defaultRouter(ctx)
-	}
+	cfg.setRouter(ctx)
 
 	if err := cfg.validate(); err != nil {
 		return err
@@ -201,4 +199,16 @@ func defaultStatusHandler(w http.ResponseWriter, r *http.Request) {
 
 func notImplementedHandler(w http.ResponseWriter, r *http.Request) {
 	httputil.SendStatus(r.Context(), w, http.StatusNotImplemented)
+}
+
+func defaultNotFoundHandlerFunc(w http.ResponseWriter, r *http.Request) {
+	httputil.SendStatus(r.Context(), w, http.StatusNotFound)
+}
+
+func defaultMethodNotAllowedHandlerFunc(w http.ResponseWriter, r *http.Request) {
+	httputil.SendStatus(r.Context(), w, http.StatusMethodNotAllowed)
+}
+
+func defaultPanicHandlerFunc(w http.ResponseWriter, r *http.Request) {
+	httputil.SendStatus(r.Context(), w, http.StatusInternalServerError)
 }

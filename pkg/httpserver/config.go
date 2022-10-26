@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/julienschmidt/httprouter"
-	"github.com/nexmoinc/gosrvlib/pkg/httputil"
 	"github.com/nexmoinc/gosrvlib/pkg/ipify"
 	"github.com/nexmoinc/gosrvlib/pkg/logging"
 	"github.com/nexmoinc/gosrvlib/pkg/profiling"
@@ -37,42 +36,49 @@ func GetPublicIPDefaultFunc() GetPublicIPFunc {
 }
 
 type config struct {
-	router                  Router
-	serverAddr              string
-	serverReadHeaderTimeout time.Duration
-	serverReadTimeout       time.Duration
-	serverWriteTimeout      time.Duration
-	shutdownTimeout         time.Duration
-	tlsConfig               *tls.Config
-	defaultEnabledRoutes    []defaultRoute
-	indexHandlerFunc        IndexHandlerFunc
-	ipHandlerFunc           http.HandlerFunc
-	metricsHandlerFunc      http.HandlerFunc
-	pingHandlerFunc         http.HandlerFunc
-	pprofHandlerFunc        http.HandlerFunc
-	statusHandlerFunc       http.HandlerFunc
-	traceIDHeaderName       string
-	redactFn                RedactFn
-	middleware              []MiddlewareFn
+	router                      *httprouter.Router
+	serverAddr                  string
+	traceIDHeaderName           string
+	serverReadHeaderTimeout     time.Duration
+	serverReadTimeout           time.Duration
+	serverWriteTimeout          time.Duration
+	shutdownTimeout             time.Duration
+	tlsConfig                   *tls.Config
+	defaultEnabledRoutes        []defaultRoute
+	indexHandlerFunc            IndexHandlerFunc
+	ipHandlerFunc               http.HandlerFunc
+	metricsHandlerFunc          http.HandlerFunc
+	pingHandlerFunc             http.HandlerFunc
+	pprofHandlerFunc            http.HandlerFunc
+	statusHandlerFunc           http.HandlerFunc
+	notFoundHandlerFunc         http.HandlerFunc
+	methodNotAllowedHandlerFunc http.HandlerFunc
+	panicHandlerFunc            http.HandlerFunc
+	redactFn                    RedactFn
+	middleware                  []MiddlewareFn
 }
 
 func defaultConfig() *config {
 	return &config{
-		serverAddr:              ":8017",
-		serverReadHeaderTimeout: 1 * time.Minute,
-		serverReadTimeout:       1 * time.Minute,
-		serverWriteTimeout:      1 * time.Minute,
-		shutdownTimeout:         30 * time.Second,
-		defaultEnabledRoutes:    nil,
-		indexHandlerFunc:        defaultIndexHandler,
-		ipHandlerFunc:           defaultIPHandler(GetPublicIPDefaultFunc()),
-		metricsHandlerFunc:      notImplementedHandler,
-		pingHandlerFunc:         defaultPingHandler,
-		pprofHandlerFunc:        profiling.PProfHandler,
-		statusHandlerFunc:       defaultStatusHandler,
-		traceIDHeaderName:       traceid.DefaultHeader,
-		redactFn:                redact.HTTPData,
-		middleware:              []MiddlewareFn{},
+		router:                      httprouter.New(),
+		serverAddr:                  ":8017",
+		traceIDHeaderName:           traceid.DefaultHeader,
+		serverReadHeaderTimeout:     1 * time.Minute,
+		serverReadTimeout:           1 * time.Minute,
+		serverWriteTimeout:          1 * time.Minute,
+		shutdownTimeout:             30 * time.Second,
+		defaultEnabledRoutes:        nil,
+		indexHandlerFunc:            defaultIndexHandler,
+		ipHandlerFunc:               defaultIPHandler(GetPublicIPDefaultFunc()),
+		metricsHandlerFunc:          notImplementedHandler,
+		pingHandlerFunc:             defaultPingHandler,
+		pprofHandlerFunc:            profiling.PProfHandler,
+		statusHandlerFunc:           defaultStatusHandler,
+		notFoundHandlerFunc:         defaultNotFoundHandlerFunc,
+		methodNotAllowedHandlerFunc: defaultMethodNotAllowedHandlerFunc,
+		panicHandlerFunc:            defaultPanicHandlerFunc,
+		redactFn:                    redact.HTTPData,
+		middleware:                  []MiddlewareFn{},
 	}
 }
 
@@ -164,58 +170,56 @@ func (c *config) commonMiddleware() []MiddlewareFn {
 	return append(middleware, c.middleware...)
 }
 
-func (c *config) defaultRouter(ctx context.Context) {
-	r := httprouter.New()
+func (c *config) setRouter(ctx context.Context) {
+	l := logging.FromContext(ctx)
 	middleware := c.commonMiddleware()
 
-	r.NotFound = ApplyMiddleware(
-		MiddlewareArgs{
-			Path:              "404",
-			Description:       http.StatusText(http.StatusNotFound),
-			TraceIDHeaderName: c.traceIDHeaderName,
-			RedactFunc:        c.redactFn,
-			RootLogger:        logging.FromContext(ctx),
-		},
-		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			httputil.SendStatus(r.Context(), w, http.StatusNotFound)
-		}),
-		middleware...,
-	)
-
-	r.MethodNotAllowed = ApplyMiddleware(
-		MiddlewareArgs{
-			Path:              "405",
-			Description:       http.StatusText(http.StatusMethodNotAllowed),
-			TraceIDHeaderName: c.traceIDHeaderName,
-			RedactFunc:        c.redactFn,
-			RootLogger:        logging.FromContext(ctx),
-		},
-		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			httputil.SendStatus(r.Context(), w, http.StatusMethodNotAllowed)
-		}),
-		middleware...,
-	)
-
-	r.PanicHandler = func(w http.ResponseWriter, r *http.Request, p interface{}) {
-		ApplyMiddleware(
+	if c.router.NotFound == nil {
+		c.router.NotFound = ApplyMiddleware(
 			MiddlewareArgs{
-				Path:              "500",
-				Description:       http.StatusText(http.StatusInternalServerError),
+				Path:              "404",
+				Description:       http.StatusText(http.StatusNotFound),
 				TraceIDHeaderName: c.traceIDHeaderName,
 				RedactFunc:        c.redactFn,
-				RootLogger:        logging.FromContext(ctx),
+				RootLogger:        l,
 			},
-			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				logging.FromContext(r.Context()).Error(
-					"panic",
-					zap.Any("err", p),
-					zap.String("stacktrace", string(debug.Stack())),
-				)
-				httputil.SendStatus(r.Context(), w, http.StatusInternalServerError)
-			}),
+			c.notFoundHandlerFunc,
 			middleware...,
-		).ServeHTTP(w, r)
+		)
 	}
 
-	c.router = r
+	if c.router.MethodNotAllowed == nil {
+		c.router.MethodNotAllowed = ApplyMiddleware(
+			MiddlewareArgs{
+				Path:              "405",
+				Description:       http.StatusText(http.StatusMethodNotAllowed),
+				TraceIDHeaderName: c.traceIDHeaderName,
+				RedactFunc:        c.redactFn,
+				RootLogger:        l,
+			},
+			c.methodNotAllowedHandlerFunc,
+			middleware...,
+		)
+	}
+
+	if c.router.PanicHandler == nil {
+		c.router.PanicHandler = func(w http.ResponseWriter, r *http.Request, p interface{}) {
+			logging.FromContext(r.Context()).Error(
+				"panic",
+				zap.Any("err", p),
+				zap.String("stacktrace", string(debug.Stack())),
+			)
+			ApplyMiddleware(
+				MiddlewareArgs{
+					Path:              "500",
+					Description:       http.StatusText(http.StatusInternalServerError),
+					TraceIDHeaderName: c.traceIDHeaderName,
+					RedactFunc:        c.redactFn,
+					RootLogger:        l,
+				},
+				c.panicHandlerFunc,
+				middleware...,
+			).ServeHTTP(w, r)
+		}
+	}
 }

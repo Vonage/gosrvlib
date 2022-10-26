@@ -1,4 +1,4 @@
-//go:generate mockgen -package httpserver -destination ./mock_test.go . Router,Binder
+//go:generate mockgen -package httpserver -destination ./mock_test.go . Binder
 
 package httpserver
 
@@ -228,7 +228,7 @@ func Test_customMiddlewares(t *testing.T) {
 
 	l := zap.NewNop()
 	cfg := defaultConfig()
-	cfg.defaultRouter(ctx)
+	cfg.setRouter(ctx)
 	loadRoutes(ctx, l, binder, cfg)
 
 	go func() {
@@ -262,7 +262,6 @@ func TestStart(t *testing.T) {
 		opts           []Option
 		failListenPort int
 		setupBinder    func(*MockBinder)
-		setupRouter    func(*MockRouter)
 		wantErr        bool
 	}{
 		{
@@ -288,9 +287,6 @@ func TestStart(t *testing.T) {
 			setupBinder: func(b *MockBinder) {
 				b.EXPECT().BindHTTP(gomock.Any()).Times(1)
 			},
-			setupRouter: func(r *MockRouter) {
-				r.EXPECT().Handler(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
-			},
 			failListenPort: 12345,
 			wantErr:        true,
 		},
@@ -303,9 +299,6 @@ func TestStart(t *testing.T) {
 			},
 			setupBinder: func(b *MockBinder) {
 				b.EXPECT().BindHTTP(gomock.Any()).Times(1)
-			},
-			setupRouter: func(r *MockRouter) {
-				r.EXPECT().Handler(gomock.Any(), gomock.Any(), gomock.Any()).Times(6)
 			},
 			wantErr: false,
 		},
@@ -347,12 +340,10 @@ YlAqGKDZ+A+l
 			setupBinder: func(b *MockBinder) {
 				b.EXPECT().BindHTTP(gomock.Any()).Times(1)
 			},
-			setupRouter: func(r *MockRouter) {
-				r.EXPECT().Handler(gomock.Any(), gomock.Any(), gomock.Any()).Times(6)
-			},
 			wantErr: false,
 		},
 	}
+
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
@@ -372,12 +363,6 @@ YlAqGKDZ+A+l
 				time.Sleep(100 * time.Millisecond)
 			}()
 			opts := tt.opts
-
-			mockRouter := NewMockRouter(mockCtrl)
-			if tt.setupRouter != nil {
-				tt.setupRouter(mockRouter)
-				opts = append(opts, WithRouter(mockRouter))
-			}
 
 			if tt.failListenPort != 0 {
 				l, err := net.Listen("tcp", fmt.Sprintf(":%d", tt.failListenPort))

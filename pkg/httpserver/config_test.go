@@ -99,7 +99,7 @@ func Test_config_validate(t *testing.T) {
 		{
 			name: "succeed with valid configuration",
 			setupConfig: func(cfg *config) {
-				cfg.defaultRouter(testutil.Context())
+				cfg.setRouter(testutil.Context())
 			},
 			wantErr: false,
 		},
@@ -219,7 +219,7 @@ func Test_config_isIndexRouteEnabled(t *testing.T) {
 	}
 }
 
-func Test_defaultRouter(t *testing.T) {
+func Test_setRouter(t *testing.T) {
 	t.Parallel()
 
 	cfg := defaultConfig()
@@ -268,7 +268,7 @@ func Test_defaultRouter(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			cfg.defaultRouter(testutil.Context())
+			cfg.setRouter(testutil.Context())
 
 			if tt.setupRouter != nil {
 				tt.setupRouter(cfg.router)
