@@ -63,7 +63,7 @@ func bind(cfg *appConfig, appInfo *jsendx.AppInfo, mtr instr.Metrics) bootstrap.
 		}
 
 		middleware := func(args httpserver.MiddlewareArgs, next http.Handler) http.Handler {
-			return m.InstrumentHandler(args.Path, next.(http.HandlerFunc))
+			return m.InstrumentHandler(args.Path, next.ServeHTTP)
 		}
 
 		// start monitoring server
