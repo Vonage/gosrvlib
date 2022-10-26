@@ -254,7 +254,6 @@ func Test_customMiddlewares(t *testing.T) {
 	require.NoError(t, ctx.Err(), "context should not be canceled")
 }
 
-//nolint:gocognit
 func TestStart(t *testing.T) {
 	t.Parallel()
 
