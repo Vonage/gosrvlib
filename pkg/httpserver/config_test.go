@@ -192,17 +192,17 @@ func Test_config_isIndexRouteEnabled(t *testing.T) {
 
 	tests := []struct {
 		name                 string
-		defaultEnabledRoutes []defaultRoute
+		defaultEnabledRoutes []DefaultRoute
 		want                 bool
 	}{
 		{
 			name:                 "should return true for enabled index route",
-			defaultEnabledRoutes: []defaultRoute{IndexRoute, MetricsRoute},
+			defaultEnabledRoutes: []DefaultRoute{IndexRoute, MetricsRoute},
 			want:                 true,
 		},
 		{
 			name:                 "should return false for enabled index route",
-			defaultEnabledRoutes: []defaultRoute{MetricsRoute},
+			defaultEnabledRoutes: []DefaultRoute{MetricsRoute},
 			want:                 false,
 		},
 	}

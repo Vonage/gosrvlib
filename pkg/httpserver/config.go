@@ -44,7 +44,7 @@ type config struct {
 	serverWriteTimeout          time.Duration
 	shutdownTimeout             time.Duration
 	tlsConfig                   *tls.Config
-	defaultEnabledRoutes        []defaultRoute
+	defaultEnabledRoutes        []DefaultRoute
 	indexHandlerFunc            IndexHandlerFunc
 	ipHandlerFunc               http.HandlerFunc
 	metricsHandlerFunc          http.HandlerFunc
@@ -55,8 +55,9 @@ type config struct {
 	methodNotAllowedHandlerFunc http.HandlerFunc
 	panicHandlerFunc            http.HandlerFunc
 	redactFn                    RedactFn
-	disableHandleLogger         bool
 	middleware                  []MiddlewareFn
+	disableDefaultRouteLogger   map[DefaultRoute]bool
+	disableRouteLogger          bool
 }
 
 func defaultConfig() *config {
@@ -80,6 +81,7 @@ func defaultConfig() *config {
 		panicHandlerFunc:            defaultPanicHandlerFunc,
 		redactFn:                    redact.HTTPData,
 		middleware:                  []MiddlewareFn{},
+		disableDefaultRouteLogger:   make(map[DefaultRoute]bool, len(allDefaultRoutes())),
 	}
 }
 
@@ -165,7 +167,7 @@ func validateAddr(addr string) error {
 func (c *config) commonMiddleware(noRouteLogger bool) []MiddlewareFn {
 	middleware := []MiddlewareFn{}
 
-	if !c.disableHandleLogger && !noRouteLogger {
+	if !c.disableRouteLogger && !noRouteLogger {
 		middleware = append(middleware, LoggerMiddlewareFn)
 	}
 

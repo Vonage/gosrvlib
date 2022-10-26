@@ -78,7 +78,7 @@ func WithTLSCertData(pemCert, pemKey []byte) Option {
 }
 
 // WithEnableDefaultRoutes sets the default routes to be enabled on the server.
-func WithEnableDefaultRoutes(ids ...defaultRoute) Option {
+func WithEnableDefaultRoutes(ids ...DefaultRoute) Option {
 	return func(cfg *config) error {
 		cfg.defaultEnabledRoutes = ids
 		return nil
@@ -190,10 +190,18 @@ func WithPanicHandlerFunc(handler http.HandlerFunc) Option {
 	}
 }
 
-// WithoutHandlerLogger disables the default handler logger.
-func WithoutHandlerLogger() Option {
+// WithoutRouteLogger disables the logger handler for all routes.
+func WithoutRouteLogger() Option {
 	return func(cfg *config) error {
-		cfg.disableHandleLogger = true
+		cfg.disableRouteLogger = true
+		return nil
+	}
+}
+
+// WithoutDefaultRouteLogger disables the logger handler for the specified default route.
+func WithoutDefaultRouteLogger(route DefaultRoute) Option {
+	return func(cfg *config) error {
+		cfg.disableDefaultRouteLogger[route] = true
 		return nil
 	}
 }

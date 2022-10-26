@@ -74,7 +74,8 @@ func loadRoutes(ctx context.Context, l *zap.Logger, binder Binder, cfg *config) 
 	if cfg.isIndexRouteEnabled() {
 		l.Debug("enabling route index handler")
 
-		middleware := cfg.commonMiddleware(false)
+		_, disableLogger := cfg.disableDefaultRouteLogger[IndexRoute]
+		middleware := cfg.commonMiddleware(disableLogger)
 
 		args := MiddlewareArgs{
 			Method:            http.MethodGet,
