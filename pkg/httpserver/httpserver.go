@@ -13,14 +13,6 @@ import (
 	"go.uber.org/zap"
 )
 
-// Router is the interface representing the router used by the HTTP http server.
-type Router interface {
-	http.Handler
-
-	// Handler is an http.Handler wrapper.
-	Handler(method, path string, handler http.Handler)
-}
-
 // Binder is an interface to allow configuring the HTTP router.
 type Binder interface {
 	// BindHTTP returns the routes.
