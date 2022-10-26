@@ -260,3 +260,39 @@ func TestWithMiddlewareFn(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, cfg.middleware, 2)
 }
+
+func TestWithNotFoundHandlerFunc(t *testing.T) {
+	t.Parallel()
+
+	v := func(_ http.ResponseWriter, _ *http.Request) {
+		// mock function
+	}
+	cfg := &config{}
+	err := WithNotFoundHandlerFunc(v)(cfg)
+	require.NoError(t, err)
+	require.Equal(t, reflect.ValueOf(v).Pointer(), reflect.ValueOf(cfg.notFoundHandlerFunc).Pointer())
+}
+
+func TestWithMethodNotAllowedHandlerFunc(t *testing.T) {
+	t.Parallel()
+
+	v := func(_ http.ResponseWriter, _ *http.Request) {
+		// mock function
+	}
+	cfg := &config{}
+	err := WithMethodNotAllowedHandlerFunc(v)(cfg)
+	require.NoError(t, err)
+	require.Equal(t, reflect.ValueOf(v).Pointer(), reflect.ValueOf(cfg.methodNotAllowedHandlerFunc).Pointer())
+}
+
+func TestWithPanicHandlerFunc(t *testing.T) {
+	t.Parallel()
+
+	v := func(_ http.ResponseWriter, _ *http.Request) {
+		// mock function
+	}
+	cfg := &config{}
+	err := WithPanicHandlerFunc(v)(cfg)
+	require.NoError(t, err)
+	require.Equal(t, reflect.ValueOf(v).Pointer(), reflect.ValueOf(cfg.panicHandlerFunc).Pointer())
+}
