@@ -57,6 +57,15 @@ type AppInfo struct {
 	ProgramRelease string
 }
 
+// RouterArgs extra arguments for the router.
+type RouterArgs struct {
+	// TraceIDHeaderName is the Trace ID header name.
+	TraceIDHeaderName string
+
+	// RedactFunc is the function used to redact HTTP request and response dumps in the logs.
+	RedactFunc httpserver.RedactFn
+}
+
 // Wrap sends an Response object.
 func Wrap(statusCode int, info *AppInfo, data interface{}) *Response {
 	now := time.Now().UTC()
@@ -80,15 +89,15 @@ func Send(ctx context.Context, w http.ResponseWriter, statusCode int, info *AppI
 }
 
 // NewRouter create a new router configured to responds with JSend wrapper responses for 404, 405 and panic.
-func NewRouter(info *AppInfo, middleware ...httpserver.MiddlewareFn) *httprouter.Router {
+func NewRouter(ctx context.Context, info *AppInfo, args RouterArgs, middleware ...httpserver.MiddlewareFn) *httprouter.Router {
 	r := httprouter.New()
 
-	r.NotFound = ApplyMiddleware(
-		MiddlewareArgs{
+	r.NotFound = httpserver.ApplyMiddleware(
+		httpserver.MiddlewareArgs{
 			Path:              "404",
 			Description:       http.StatusText(http.StatusNotFound),
-			TraceIDHeaderName: c.traceIDHeaderName,
-			RedactFunc:        c.redactFn,
+			TraceIDHeaderName: args.TraceIDHeaderName,
+			RedactFunc:        args.RedactFunc,
 			RootLogger:        logging.FromContext(ctx),
 		},
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -97,12 +106,12 @@ func NewRouter(info *AppInfo, middleware ...httpserver.MiddlewareFn) *httprouter
 		middleware...,
 	)
 
-	r.MethodNotAllowed = ApplyMiddleware(
-		MiddlewareArgs{
+	r.MethodNotAllowed = httpserver.ApplyMiddleware(
+		httpserver.MiddlewareArgs{
 			Path:              "405",
 			Description:       http.StatusText(http.StatusMethodNotAllowed),
-			TraceIDHeaderName: c.traceIDHeaderName,
-			RedactFunc:        c.redactFn,
+			TraceIDHeaderName: args.TraceIDHeaderName,
+			RedactFunc:        args.RedactFunc,
 			RootLogger:        logging.FromContext(ctx),
 		},
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -112,12 +121,12 @@ func NewRouter(info *AppInfo, middleware ...httpserver.MiddlewareFn) *httprouter
 	)
 
 	r.PanicHandler = func(w http.ResponseWriter, r *http.Request, p interface{}) {
-		ApplyMiddleware(
-			MiddlewareArgs{
+		httpserver.ApplyMiddleware(
+			httpserver.MiddlewareArgs{
 				Path:              "500",
 				Description:       http.StatusText(http.StatusInternalServerError),
-				TraceIDHeaderName: c.traceIDHeaderName,
-				RedactFunc:        c.redactFn,
+				TraceIDHeaderName: args.TraceIDHeaderName,
+				RedactFunc:        args.RedactFunc,
 				RootLogger:        logging.FromContext(ctx),
 			},
 			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
