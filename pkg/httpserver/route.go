@@ -20,6 +20,9 @@ type Route struct {
 
 	// Middleware is a set of middleware to apply to this route.
 	Middleware []MiddlewareFn `json:"-"`
+
+	// DisableLogger disable the default logger when set to true.
+	DisableLogger bool `json:"-"`
 }
 
 // Index contains the list of routes attached to the current service.

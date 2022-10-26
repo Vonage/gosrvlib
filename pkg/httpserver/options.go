@@ -189,3 +189,11 @@ func WithPanicHandlerFunc(handler http.HandlerFunc) Option {
 		return nil
 	}
 }
+
+// WithoutHandlerLogger disables the default handler logger.
+func WithoutHandlerLogger() Option {
+	return func(cfg *config) error {
+		cfg.disableHandleLogger = true
+		return nil
+	}
+}

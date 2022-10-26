@@ -55,6 +55,7 @@ type config struct {
 	methodNotAllowedHandlerFunc http.HandlerFunc
 	panicHandlerFunc            http.HandlerFunc
 	redactFn                    RedactFn
+	disableHandleLogger         bool
 	middleware                  []MiddlewareFn
 }
 
@@ -161,9 +162,11 @@ func validateAddr(addr string) error {
 	return nil
 }
 
-func (c *config) commonMiddleware() []MiddlewareFn {
-	middleware := []MiddlewareFn{
-		LoggerMiddlewareFn,
+func (c *config) commonMiddleware(noRouteLogger bool) []MiddlewareFn {
+	middleware := []MiddlewareFn{}
+
+	if !c.disableHandleLogger && !noRouteLogger {
+		middleware = append(middleware, LoggerMiddlewareFn)
 	}
 
 	return append(middleware, c.middleware...)
@@ -171,7 +174,7 @@ func (c *config) commonMiddleware() []MiddlewareFn {
 
 func (c *config) setRouter(ctx context.Context) {
 	l := logging.FromContext(ctx)
-	middleware := c.commonMiddleware()
+	middleware := c.commonMiddleware(true)
 
 	if c.router.NotFound == nil {
 		c.router.NotFound = ApplyMiddleware(

@@ -296,3 +296,12 @@ func TestWithPanicHandlerFunc(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, reflect.ValueOf(v).Pointer(), reflect.ValueOf(cfg.panicHandlerFunc).Pointer())
 }
+
+func TestWithoutHandlerLogger(t *testing.T) {
+	t.Parallel()
+
+	cfg := &config{}
+	err := WithoutHandlerLogger()(cfg)
+	require.NoError(t, err)
+	require.True(t, cfg.disableHandleLogger)
+}
