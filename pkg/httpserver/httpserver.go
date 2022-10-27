@@ -54,7 +54,7 @@ func loadRoutes(ctx context.Context, l *zap.Logger, binder Binder, cfg *config) 
 			Description:       r.Description,
 			TraceIDHeaderName: cfg.traceIDHeaderName,
 			RedactFunc:        cfg.redactFn,
-			RootLogger:        l,
+			RouteLogger:       l,
 		}
 
 		handler := ApplyMiddleware(args, r.Handler, middleware...)
@@ -75,7 +75,7 @@ func loadRoutes(ctx context.Context, l *zap.Logger, binder Binder, cfg *config) 
 			Description:       "Index",
 			TraceIDHeaderName: cfg.traceIDHeaderName,
 			RedactFunc:        cfg.redactFn,
-			RootLogger:        l,
+			RouteLogger:       l,
 		}
 
 		handler := ApplyMiddleware(args, cfg.indexHandlerFunc(routes), middleware...)
