@@ -310,10 +310,14 @@ func TestWithoutDefaultRouteLogger(t *testing.T) {
 	t.Parallel()
 
 	cfg := defaultConfig()
-	err := WithoutDefaultRouteLogger(PingRoute)(cfg)
+	err := WithoutDefaultRouteLogger(PingRoute, PprofRoute)(cfg)
 	require.NoError(t, err)
 
 	v, ok := cfg.disableDefaultRouteLogger[PingRoute]
+	require.True(t, ok)
+	require.True(t, v)
+
+	v, ok = cfg.disableDefaultRouteLogger[PprofRoute]
 	require.True(t, ok)
 	require.True(t, v)
 }

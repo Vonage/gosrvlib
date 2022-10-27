@@ -198,10 +198,13 @@ func WithoutRouteLogger() Option {
 	}
 }
 
-// WithoutDefaultRouteLogger disables the logger handler for the specified default route.
-func WithoutDefaultRouteLogger(route DefaultRoute) Option {
+// WithoutDefaultRouteLogger disables the logger handler for the specified default routes.
+func WithoutDefaultRouteLogger(routes ...DefaultRoute) Option {
 	return func(cfg *config) error {
-		cfg.disableDefaultRouteLogger[route] = true
+		for _, route := range routes {
+			cfg.disableDefaultRouteLogger[route] = true
+		}
+
 		return nil
 	}
 }
