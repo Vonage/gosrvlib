@@ -29,11 +29,11 @@ type nopBinder struct{}
 func (b *nopBinder) BindHTTP(_ context.Context) []Route { return nil }
 
 func loadRoutes(ctx context.Context, l *zap.Logger, binder Binder, cfg *config) {
-	l.Debug("load default routes")
+	l.Debug("loading default routes")
 
 	routes := newDefaultRoutes(cfg)
 
-	l.Debug("load service routes")
+	l.Debug("loading service routes")
 
 	customRoutes := binder.BindHTTP(ctx)
 
