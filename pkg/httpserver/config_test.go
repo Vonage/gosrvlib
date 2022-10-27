@@ -9,14 +9,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// Router is the interface representing the router used by the HTTP http server.
-type Router interface {
-	http.Handler
-
-	// Handler is an http.Handler wrapper.
-	Handler(method, path string, handler http.Handler)
-}
-
 func Test_defaultConfig(t *testing.T) {
 	t.Parallel()
 
@@ -231,13 +223,20 @@ func Test_config_isIndexRouteEnabled(t *testing.T) {
 }
 
 func Test_setRouter(t *testing.T) {
+	type testRouter interface {
+		http.Handler
+
+		// Handler is an http.Handler wrapper.
+		Handler(method, path string, handler http.Handler)
+	}
+
 	t.Parallel()
 
 	tests := []struct {
 		name        string
 		method      string
 		path        string
-		setupRouter func(Router)
+		setupRouter func(testRouter)
 		wantStatus  int
 	}{
 		{
@@ -249,7 +248,7 @@ func Test_setRouter(t *testing.T) {
 		{
 			name:   "should handle 405",
 			method: http.MethodPost,
-			setupRouter: func(r Router) {
+			setupRouter: func(r testRouter) {
 				fn := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					http.Error(w, http.StatusText(http.StatusOK), http.StatusOK)
 				})
@@ -261,7 +260,7 @@ func Test_setRouter(t *testing.T) {
 		{
 			name:   "should handle panic in handler",
 			method: http.MethodGet,
-			setupRouter: func(r Router) {
+			setupRouter: func(r testRouter) {
 				fn := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					panic("panicking!")
 				})
