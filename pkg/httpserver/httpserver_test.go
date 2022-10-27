@@ -296,6 +296,7 @@ func TestStart(t *testing.T) {
 				WithServerAddr(":11111"),
 				WithShutdownTimeout(1 * time.Millisecond),
 				WithEnableAllDefaultRoutes(),
+				WithInstrumentHandler(func(path string, handler http.HandlerFunc) http.Handler { return handler }),
 			},
 			setupBinder: func(b *MockBinder) {
 				b.EXPECT().BindHTTP(gomock.Any()).Times(1)
