@@ -27,8 +27,8 @@ type MiddlewareArgs struct {
 	// RedactFunc is the function used to redact HTTP request and response dumps in the logs.
 	RedactFunc RedactFn
 
-	// RouteLogger is the logger.
-	RouteLogger *zap.Logger
+	// RootLogger is the logger.
+	RootLogger *zap.Logger
 }
 
 // MiddlewareFn is a function that wraps an http.Handler.
@@ -68,7 +68,7 @@ func RequestInjectHandler(rootLogger *zap.Logger, traceIDHeaderName string, reda
 
 // LoggerMiddlewareFn returns the middleware handler function to handle logs.
 func LoggerMiddlewareFn(args MiddlewareArgs, next http.Handler) http.Handler {
-	return RequestInjectHandler(args.RouteLogger, args.TraceIDHeaderName, args.RedactFunc, next)
+	return RequestInjectHandler(args.RootLogger, args.TraceIDHeaderName, args.RedactFunc, next)
 }
 
 // ApplyMiddleware returns an http Handler with all middleware handler functions applied.
