@@ -1,7 +1,6 @@
 package httpreverseproxy
 
 import (
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"net/http/httputil"
@@ -31,12 +30,6 @@ func TestNew(t *testing.T) {
 		{
 			name:        "succeeds with defaults",
 			serviceAddr: "http://service.domain.invalid:1234/",
-			wantErr:     false,
-		},
-		{
-			name:        "succeeds with custom logger",
-			serviceAddr: "http://service.domain.invalid:1235/",
-			opts:        []Option{WithLogger(&log.Logger{})},
 			wantErr:     false,
 		},
 		{

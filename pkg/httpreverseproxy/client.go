@@ -2,7 +2,6 @@ package httpreverseproxy
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -20,7 +19,6 @@ type HTTPClient interface {
 type Client struct {
 	proxy      *httputil.ReverseProxy
 	httpClient HTTPClient
-	logger     *log.Logger
 }
 
 // New returns a new instance of the Client.
@@ -58,10 +56,6 @@ func New(addr string, opts ...Option) (*Client, error) {
 		}
 
 		c.proxy.Transport = &httpWrapper{client: c.httpClient}
-	}
-
-	if c.logger != nil {
-		c.proxy.ErrorLog = c.logger
 	}
 
 	return c, nil

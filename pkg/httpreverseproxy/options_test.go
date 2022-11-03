@@ -1,7 +1,6 @@
 package httpreverseproxy
 
 import (
-	"log"
 	"net/http"
 	"net/http/httputil"
 	"reflect"
@@ -30,13 +29,4 @@ func TestWithReverseProxy(t *testing.T) {
 	c := &Client{}
 	WithReverseProxy(v)(c)
 	require.Equal(t, reflect.ValueOf(v).Pointer(), reflect.ValueOf(c.proxy).Pointer())
-}
-
-func TestWithLogger(t *testing.T) {
-	t.Parallel()
-
-	v := &log.Logger{}
-	c := &Client{}
-	WithLogger(v)(c)
-	require.Equal(t, reflect.ValueOf(v).Pointer(), reflect.ValueOf(c.logger).Pointer())
 }
