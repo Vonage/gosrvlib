@@ -3,12 +3,12 @@ package httpreverseproxy
 import (
 	"net/http"
 	"net/http/httptest"
-	stdhttputil "net/http/httputil"
+	"net/http/httputil"
 	"net/url"
 	"testing"
 	"time"
 
-	"github.com/nexmoinc/gosrvlib/pkg/httputil"
+	libhttputil "github.com/nexmoinc/gosrvlib/pkg/httputil"
 	"github.com/nexmoinc/gosrvlib/pkg/testutil"
 	"github.com/stretchr/testify/require"
 )
@@ -40,8 +40,8 @@ func TestNew(t *testing.T) {
 		},
 		{
 			name:        "succeeds with custom reverse proxy",
-			serviceAddr: "http://service.domain.invalid:1235/",
-			opts:        []Option{WithReverseProxy(&stdhttputil.ReverseProxy{})},
+			serviceAddr: "http://service.domain.invalid:1236/",
+			opts:        []Option{WithReverseProxy(&httputil.ReverseProxy{})},
 			wantErr:     false,
 		},
 	}
@@ -75,11 +75,11 @@ func TestClient_ForwardRequest(t *testing.T) {
 	targetMux := http.NewServeMux()
 	targetMux.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
-			httputil.SendStatus(r.Context(), w, http.StatusOK)
+			libhttputil.SendStatus(r.Context(), w, http.StatusOK)
 			close(doneCh)
 		}()
 
-		rd, err := stdhttputil.DumpRequest(r, false)
+		rd, err := httputil.DumpRequest(r, false)
 		require.NoError(t, err)
 		t.Logf("%s", string(rd))
 
@@ -97,7 +97,7 @@ func TestClient_ForwardRequest(t *testing.T) {
 	c, err := New(targetServer.URL)
 	require.NoError(t, err)
 
-	proxyMux := testutil.RouterWithHandler(http.MethodGet, "/v1/*path", c.ForwardRequest)
+	proxyMux := testutil.RouterWithHandler(http.MethodGet, "/proxy/*path", c.ForwardRequest)
 
 	proxyServer := httptest.NewServer(proxyMux)
 	defer proxyServer.Close()
@@ -105,7 +105,7 @@ func TestClient_ForwardRequest(t *testing.T) {
 	// perform test!
 	proxyServerURL = proxyServer.URL
 
-	req, _ := http.NewRequestWithContext(testutil.Context(), http.MethodGet, proxyServerURL+"/v1/test", nil)
+	req, _ := http.NewRequestWithContext(testutil.Context(), http.MethodGet, proxyServerURL+"/proxy/test", nil)
 
 	hc := &http.Client{Timeout: 1 * time.Second}
 	resp, err := hc.Do(req)

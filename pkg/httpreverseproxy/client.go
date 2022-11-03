@@ -3,25 +3,25 @@ package httpreverseproxy
 import (
 	"fmt"
 	"net/http"
-	stdhttputil "net/http/httputil"
+	"net/http/httputil"
 	"net/url"
 	"strings"
 
-	"github.com/nexmoinc/gosrvlib/pkg/httputil"
+	libhttputil "github.com/nexmoinc/gosrvlib/pkg/httputil"
 )
 
-// HTTPClient contains the function to perform the actual HTTP request.
+// HTTPClient contains the function to perform the HTTP request to the proxied service.
 type HTTPClient interface {
 	Do(*http.Request) (*http.Response, error)
 }
 
 // Client implements the Reverse Proxy.
 type Client struct {
-	proxy      *stdhttputil.ReverseProxy
+	proxy      *httputil.ReverseProxy
 	httpClient HTTPClient
 }
 
-// New returns a new instance of  Client.
+// New returns a new instance of the Client.
 func New(addr string, opts ...Option) (*Client, error) {
 	c := &Client{}
 
@@ -30,13 +30,13 @@ func New(addr string, opts ...Option) (*Client, error) {
 	}
 
 	if c.proxy == nil {
-		c.proxy = &stdhttputil.ReverseProxy{}
+		c.proxy = &httputil.ReverseProxy{}
 	}
 
 	if c.proxy.Director == nil {
 		addr = strings.TrimRight(addr, "/")
-		proxyURL, err := url.Parse(addr)
 
+		proxyURL, err := url.Parse(addr)
 		if err != nil {
 			return nil, fmt.Errorf("invalid service address: %s", addr)
 		}
@@ -44,7 +44,7 @@ func New(addr string, opts ...Option) (*Client, error) {
 		c.proxy.Director = func(r *http.Request) {
 			r.URL.Scheme = proxyURL.Scheme
 			r.URL.Host = proxyURL.Host
-			r.URL.Path = "/" + httputil.PathParam(r, "path")
+			r.URL.Path = "/" + libhttputil.PathParam(r, "path")
 			r.Header.Set("X-Forwarded-Host", r.Header.Get("Host"))
 		}
 	}
@@ -71,7 +71,8 @@ type httpWrapper struct {
 
 // RoundTrip implements the RoundTripper interface.
 func (c *httpWrapper) RoundTrip(r *http.Request) (*http.Response, error) {
-	// Due to https://github.com/golang/go/blob/f3c39a83a3076eb560c7f687cbb35eef9b506e7d/src/net/http/client.go#L219
+	// Request.RequestURI can't be set in client requests.
+	// Ref.: https://github.com/golang/go/blob/f3c39a83a3076eb560c7f687cbb35eef9b506e7d/src/net/http/client.go#L219
 	r.RequestURI = ""
 
 	return c.client.Do(r) //nolint:wrapcheck
