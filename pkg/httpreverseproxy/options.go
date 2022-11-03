@@ -1,6 +1,7 @@
 package httpreverseproxy
 
 import (
+	"log"
 	"net/http/httputil"
 )
 
@@ -22,5 +23,13 @@ func WithReverseProxy(p *httputil.ReverseProxy) Option {
 func WithHTTPClient(h HTTPClient) Option {
 	return func(c *Client) {
 		c.httpClient = h
+	}
+}
+
+// WithLogger specifies an optional logger for errors that occur when attempting to proxy the request.
+// If nil, logging is done via the log package's standard logger.
+func WithLogger(l *log.Logger) Option {
+	return func(c *Client) {
+		c.logger = l
 	}
 }

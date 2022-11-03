@@ -1,6 +1,7 @@
 package httpreverseproxy
 
 import (
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"net/http/httputil"
@@ -33,14 +34,20 @@ func TestNew(t *testing.T) {
 			wantErr:     false,
 		},
 		{
-			name:        "succeeds with custom http client",
+			name:        "succeeds with custom logger",
 			serviceAddr: "http://service.domain.invalid:1235/",
+			opts:        []Option{WithLogger(&log.Logger{})},
+			wantErr:     false,
+		},
+		{
+			name:        "succeeds with custom http client",
+			serviceAddr: "http://service.domain.invalid:1236/",
 			opts:        []Option{WithHTTPClient(&testHTTPClient{})},
 			wantErr:     false,
 		},
 		{
 			name:        "succeeds with custom reverse proxy",
-			serviceAddr: "http://service.domain.invalid:1236/",
+			serviceAddr: "http://service.domain.invalid:1237/",
 			opts:        []Option{WithReverseProxy(&httputil.ReverseProxy{})},
 			wantErr:     false,
 		},
@@ -69,10 +76,12 @@ func TestClient_ForwardRequest(t *testing.T) {
 
 	doneCh := make(chan struct{})
 
-	var proxyServerURL string
-
 	// setup target test server
 	targetMux := http.NewServeMux()
+
+	targetServer := httptest.NewServer(targetMux)
+	defer targetServer.Close()
+
 	targetMux.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			libhttputil.SendStatus(r.Context(), w, http.StatusOK)
@@ -83,15 +92,12 @@ func TestClient_ForwardRequest(t *testing.T) {
 		require.NoError(t, err)
 		t.Logf("%s", string(rd))
 
-		proxyTestURL, err := url.Parse(proxyServerURL)
+		proxyTestURL, err := url.Parse(targetServer.URL)
 		require.NoError(t, err)
 
 		require.Equal(t, r.Host, proxyTestURL.Host)
 		require.Equal(t, r.Header.Get("X-Forwarded-For"), "127.0.0.1")
 	})
-
-	targetServer := httptest.NewServer(targetMux)
-	defer targetServer.Close()
 
 	// setup proxy test server
 	c, err := New(targetServer.URL)
@@ -102,10 +108,8 @@ func TestClient_ForwardRequest(t *testing.T) {
 	proxyServer := httptest.NewServer(proxyMux)
 	defer proxyServer.Close()
 
-	// perform test!
-	proxyServerURL = proxyServer.URL
-
-	req, _ := http.NewRequestWithContext(testutil.Context(), http.MethodGet, proxyServerURL+"/proxy/test", nil)
+	// perform test
+	req, _ := http.NewRequestWithContext(testutil.Context(), http.MethodGet, proxyServer.URL+"/proxy/test", nil)
 
 	hc := &http.Client{Timeout: 1 * time.Second}
 	resp, err := hc.Do(req)
