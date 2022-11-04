@@ -38,6 +38,7 @@ func TestNew(t *testing.T) {
 	require.Equal(t, fn(http.DefaultTransport), got.client.Transport)
 }
 
+//nolint:gocognit
 func TestClient_Do(t *testing.T) {
 	t.Parallel()
 
@@ -62,23 +63,35 @@ func TestClient_Do(t *testing.T) {
 		name          string
 		logLevel      string
 		logSinkScheme string
+		requestAddr   string
 		opts          []Option
+		wantErr       bool
 	}{
 		{
 			name:          "no options, info level",
 			logLevel:      "info",
 			logSinkScheme: "memdiffa",
+			requestAddr:   server.URL,
 		},
 		{
 			name:          "no options, debug level",
 			logLevel:      "debug",
 			logSinkScheme: "memdiffb",
+			requestAddr:   server.URL,
 		},
 		{
 			name:          "prefix, debug level",
 			logLevel:      "debug",
 			logSinkScheme: "memdiffc",
+			requestAddr:   server.URL,
 			opts:          []Option{WithLogPrefix("testprefix_")},
+		},
+		{
+			name:          "no options, error",
+			logLevel:      "debug",
+			logSinkScheme: "memdiffd",
+			requestAddr:   "/error",
+			wantErr:       true,
 		},
 	}
 
@@ -90,31 +103,9 @@ func TestClient_Do(t *testing.T) {
 			client := New(tt.opts...)
 			ctx := context.Background()
 
-			req, err := http.NewRequestWithContext(ctx, http.MethodGet, "/error", nil)
-			require.NoError(t, err, "failed creating http request: %v", err)
-
-			resp, err := client.Do(req)
-			require.Nil(t, resp)
-			require.Error(t, err, "client.Do with invalid URL: an error was expected")
-
-			req, err = http.NewRequestWithContext(ctx, http.MethodGet, server.URL, nil)
-			require.NoError(t, err, "failed creating http request: %v", err)
-
-			resp, err = client.Do(req)
-			require.NoError(t, err, "client.Do(): unexpected error = %v", err)
-
-			t.Cleanup(
-				func() {
-					err := resp.Body.Close()
-					require.NoError(t, err, "error closing resp.Body")
-				},
-			)
-
-			require.NotNil(t, resp, "returned response should not be nil")
-
 			// Create a sink instance, and register it with zap for the "memory" protocol.
 			sink := &MemorySink{new(bytes.Buffer)}
-			err = zap.RegisterSink(tt.logSinkScheme, func(*url.URL) (zap.Sink, error) {
+			err := zap.RegisterSink(tt.logSinkScheme, func(*url.URL) (zap.Sink, error) {
 				return sink, nil
 			})
 			require.NoError(t, err)
@@ -134,27 +125,42 @@ func TestClient_Do(t *testing.T) {
 			require.NotNil(t, l)
 
 			ctx = logging.WithLogger(ctx, l)
-			req, err = http.NewRequestWithContext(ctx, http.MethodGet, server.URL, nil)
+			req, err := http.NewRequestWithContext(ctx, http.MethodGet, tt.requestAddr, nil)
 			require.NoError(t, err)
 
-			resp, err = client.Do(req)
-			require.NoError(t, err)
+			resp, err := client.Do(req)
+
+			t.Cleanup(
+				func() {
+					if resp != nil {
+						err := resp.Body.Close()
+						require.NoError(t, err, "error closing resp.Body")
+					}
+				},
+			)
+
+			// check logs
+			out := sink.String()
+			require.NotEmpty(t, out, "captured log output")
+			require.Contains(t, out, `"`+client.logPrefix+`traceid"`)
+
+			if tt.wantErr {
+				require.Error(t, err)
+				require.Contains(t, out, `"`+client.logPrefix+`error"`)
+				return
+			}
 
 			defer func() {
 				err := resp.Body.Close()
 				require.NoError(t, err)
 			}()
 
-			require.NotNil(t, resp)
-
-			responseBody, err := io.ReadAll(resp.Body)
 			require.NoError(t, err)
+			require.NotNil(t, resp)
+			responseBody, errb := io.ReadAll(resp.Body)
+			require.NoError(t, errb)
 			require.Equal(t, body, responseBody)
-
-			// check logs
-			out := sink.String()
-			require.NotEmpty(t, out, "captured log output")
-			require.Contains(t, out, `"`+client.logPrefix+`traceid"`)
+			require.Contains(t, out, `"`+client.logPrefix+`outbound"`)
 
 			if tt.logLevel == "debug" {
 				require.Contains(t, out, `"`+client.logPrefix+`request":"GET / HTTP/1.1`)

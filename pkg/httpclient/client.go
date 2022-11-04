@@ -62,7 +62,7 @@ func (c *Client) Do(r *http.Request) (resp *http.Response, err error) {
 		l = l.With(zap.Duration(c.logPrefix+"duration", time.Since(start)))
 
 		if err != nil {
-			l.Error("error", zap.Error(err))
+			l.Error(c.logPrefix+"error", zap.Error(err))
 			return
 		}
 
