@@ -98,14 +98,12 @@ func (c *Client) Do(r *http.Request) (resp *http.Response, err error) {
 
 	resp, err = c.client.Do(r)
 
-	if debug {
-		if resp != nil {
-			respDump, errd := httputil.DumpResponse(resp, true)
-			if errd == nil {
-				l = l.With(
-					zap.String(c.logPrefix+"response", c.redactFn(string(respDump))),
-				)
-			}
+	if debug && resp != nil {
+		respDump, errd := httputil.DumpResponse(resp, true)
+		if errd == nil {
+			l = l.With(
+				zap.String(c.logPrefix+"response", c.redactFn(string(respDump))),
+			)
 		}
 	}
 
