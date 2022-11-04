@@ -119,6 +119,7 @@ func TestClient_Do(t *testing.T) {
 	// check logs
 	out := sink.String()
 	require.NotEmpty(t, out, "captured log output")
+	require.Contains(t, out, `"traceid"`)
 	require.Contains(t, out, `"request":"GET / HTTP/1.1`)
 	require.Contains(t, out, `"response":"HTTP/1.1 200 OK`)
 	require.Contains(t, out, bodyStr)
