@@ -77,28 +77,29 @@ func (c *Client) Do(r *http.Request) (resp *http.Response, err error) {
 	r.Header.Set(c.traceIDHeaderName, reqID)
 	r = r.WithContext(ctx)
 
-	l = l.With(
-		zap.String(c.logPrefix+"traceid", reqID),
-		zap.String(c.logPrefix+"request_method", r.Method),
-		zap.String(c.logPrefix+"request_path", r.URL.Path),
-		zap.String(c.logPrefix+"request_query", r.URL.RawQuery),
-		zap.String(c.logPrefix+"request_uri", r.RequestURI),
-	)
-
+	reqDump := []byte{}
 	if debug {
-		reqDump, _ := httputil.DumpRequestOut(r, true)
-		l = l.With(zap.String(c.logPrefix+"request", c.redactFn(string(reqDump))))
+		reqDump, _ = httputil.DumpRequestOut(r, true)
 	}
 
 	resp, err = c.client.Do(r)
-	if err != nil {
-		return nil, err //nolint:wrapcheck
-	}
 
 	if debug {
-		respDump, _ := httputil.DumpResponse(resp, true)
-		l = l.With(zap.String(c.logPrefix+"response", c.redactFn(string(respDump))))
+		respDump := []byte{}
+		if resp != nil {
+			respDump, _ = httputil.DumpResponse(resp, true)
+		}
+
+		l = l.With(
+			zap.String(c.logPrefix+"traceid", reqID),
+			zap.String(c.logPrefix+"request_method", r.Method),
+			zap.String(c.logPrefix+"request_path", r.URL.Path),
+			zap.String(c.logPrefix+"request_query", r.URL.RawQuery),
+			zap.String(c.logPrefix+"request_uri", r.RequestURI),
+			zap.String(c.logPrefix+"request", c.redactFn(string(reqDump))),
+			zap.String(c.logPrefix+"response", c.redactFn(string(respDump))),
+		)
 	}
 
-	return resp, nil
+	return resp, err //nolint:wrapcheck
 }
