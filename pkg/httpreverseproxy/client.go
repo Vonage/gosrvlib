@@ -29,7 +29,7 @@ type errHandler = func(w http.ResponseWriter, r *http.Request, err error)
 
 // New returns a new instance of the Client.
 //
-//nolint:gocognit,gocyclo
+//nolint:gocognit
 func New(addr string, opts ...Option) (*Client, error) {
 	c := &Client{}
 
