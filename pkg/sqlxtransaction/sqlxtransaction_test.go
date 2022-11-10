@@ -2,6 +2,7 @@ package sqlxtransaction
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"testing"
 
@@ -96,4 +97,56 @@ func Test_Exec(t *testing.T) {
 			require.NoError(t, mock.ExpectationsWereMet())
 		})
 	}
+}
+
+type dbMock struct {
+	*sqlx.DB
+	givenOptions *sql.TxOptions
+}
+
+func (d *dbMock) BeginTxx(ctx context.Context, opts *sql.TxOptions) (*sqlx.Tx, error) {
+	d.givenOptions = opts
+	return d.DB.BeginTxx(ctx, opts)
+}
+
+func Test_ExecWithOptions(t *testing.T) {
+	tests := []struct {
+		name    string
+		options *sql.TxOptions
+	}{
+		{
+			name:    "without options",
+			options: nil,
+		},
+		{
+			name: "with READ_COMMITTED isolation level",
+			options: &sql.TxOptions{
+				Isolation: sql.LevelReadCommitted,
+			},
+		},
+		{
+			name: "with ReadOnly",
+			options: &sql.TxOptions{
+				ReadOnly: true,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			mockDB, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
+			require.NoError(t, err)
+			defer func() { _ = mockDB.Close() }()
+
+			mock.ExpectBegin()
+			mock.ExpectCommit()
+
+			db := &dbMock{DB: sqlx.NewDb(mockDB, "sqlmock")}
+			err = ExecWithOptions(testutil.Context(), db, func(ctx context.Context, tx *sqlx.Tx) error { return nil }, tt.options)
+			require.NoError(t, err)
+			require.Equal(t, tt.options, db.givenOptions)
+		})
+	}
+
 }
