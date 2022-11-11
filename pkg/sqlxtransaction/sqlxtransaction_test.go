@@ -106,10 +106,12 @@ type dbMock struct {
 
 func (d *dbMock) BeginTxx(ctx context.Context, opts *sql.TxOptions) (*sqlx.Tx, error) {
 	d.givenOptions = opts
-	return d.DB.BeginTxx(ctx, opts)
+	return d.DB.BeginTxx(ctx, opts) //nolint:wrapcheck
 }
 
 func Test_ExecWithOptions(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name    string
 		options *sql.TxOptions
@@ -131,7 +133,9 @@ func Test_ExecWithOptions(t *testing.T) {
 			},
 		},
 	}
+
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -148,5 +152,4 @@ func Test_ExecWithOptions(t *testing.T) {
 			require.Equal(t, tt.options, db.givenOptions)
 		})
 	}
-
 }
