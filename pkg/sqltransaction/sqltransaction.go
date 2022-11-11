@@ -30,7 +30,7 @@ func ExecWithOptions(ctx context.Context, db DB, run ExecFunc, opts *sql.TxOptio
 
 	tx, err := db.BeginTx(ctx, opts)
 	if err != nil {
-		return fmt.Errorf("unable to start an SQL transaction: %w", err)
+		return fmt.Errorf("unable to start SQL transaction: %w", err)
 	}
 
 	defer func() {
@@ -44,11 +44,11 @@ func ExecWithOptions(ctx context.Context, db DB, run ExecFunc, opts *sql.TxOptio
 	}()
 
 	if err = run(ctx, tx); err != nil {
-		return fmt.Errorf("failed executing a function inside an SQL transaction: %w", err)
+		return fmt.Errorf("failed executing a function inside SQL transaction: %w", err)
 	}
 
 	if err = tx.Commit(); err != nil {
-		return fmt.Errorf("unable to commit an SQL transaction: %w", err)
+		return fmt.Errorf("unable to commit SQL transaction: %w", err)
 	}
 
 	committed = true
