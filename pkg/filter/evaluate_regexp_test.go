@@ -44,6 +44,20 @@ func TestRegexp_Evaluate(t *testing.T) {
 			want:    false,
 			wantErr: false,
 		},
+		{
+			name:    "true - matching regexp with string alias",
+			ref:     "[a-d]+",
+			value:   StringAlias("abcdaabbccdd"),
+			want:    true,
+			wantErr: false,
+		},
+		{
+			name:    "false - not matching regexp with string alias",
+			ref:     "^[a-d]+$",
+			value:   StringAlias("abcdaxabbccdd"),
+			want:    false,
+			wantErr: false,
+		},
 	}
 
 	for _, tt := range tests {

@@ -147,6 +147,18 @@ func TestEqual_Evaluate(t *testing.T) {
 			value: nil,
 			want:  true,
 		},
+		{
+			name:  "true - string / StringAlias",
+			ref:   "hello",
+			value: StringAlias("hello"),
+			want:  true,
+		},
+		{
+			name:  "false - string / StringAlias",
+			ref:   "hello",
+			value: StringAlias("world"),
+			want:  false,
+		},
 	}
 
 	for _, tt := range tests {
