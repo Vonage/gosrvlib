@@ -59,12 +59,12 @@ func convertValue(v interface{}) interface{} {
 }
 
 func convertStringValue(v interface{}) (string, bool) {
-	if s, ok := v.(string); ok {
-		return s, true
-	}
-
 	if v == nil {
 		return "", false
+	}
+
+	if s, ok := v.(string); ok {
+		return s, true
 	}
 
 	// Convert string aliases back to string
