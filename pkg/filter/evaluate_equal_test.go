@@ -148,15 +148,15 @@ func TestEqual_Evaluate(t *testing.T) {
 			want:  true,
 		},
 		{
-			name:  "true - string / StringAlias",
+			name:  "true - string / stringAlias",
 			ref:   "hello",
-			value: StringAlias("hello"),
+			value: stringAlias("hello"),
 			want:  true,
 		},
 		{
-			name:  "false - string / StringAlias",
+			name:  "false - string / stringAlias",
 			ref:   "hello",
-			value: StringAlias("world"),
+			value: stringAlias("world"),
 			want:  false,
 		},
 	}

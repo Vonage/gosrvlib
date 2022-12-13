@@ -54,14 +54,14 @@ func TestHasPrefix_Evaluate(t *testing.T) {
 		{
 			name:    "true - matching prefix with string alias",
 			ref:     "buon",
-			value:   StringAlias("buonissimo"),
+			value:   stringAlias("buonissimo"),
 			want:    true,
 			wantErr: false,
 		},
 		{
 			name:    "false - not matching prefix with string alias",
 			ref:     "buon",
-			value:   StringAlias("bravissimo"),
+			value:   stringAlias("bravissimo"),
 			want:    false,
 			wantErr: false,
 		},

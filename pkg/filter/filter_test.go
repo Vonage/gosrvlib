@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type StringAlias string
+type stringAlias string
 
 func strPtr(v string) *string {
 	return &v

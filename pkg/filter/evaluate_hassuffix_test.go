@@ -54,14 +54,14 @@ func TestHasSuffix_Evaluate(t *testing.T) {
 		{
 			name:    "true - matching suffix with string alias",
 			ref:     "issimo",
-			value:   StringAlias("buonissimo"),
+			value:   stringAlias("buonissimo"),
 			want:    true,
 			wantErr: false,
 		},
 		{
 			name:    "false - not matching suffix with string alias",
 			ref:     "err",
-			value:   StringAlias("bravissimo"),
+			value:   stringAlias("bravissimo"),
 			want:    false,
 			wantErr: false,
 		},

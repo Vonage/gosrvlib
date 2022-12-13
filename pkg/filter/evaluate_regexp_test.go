@@ -47,14 +47,14 @@ func TestRegexp_Evaluate(t *testing.T) {
 		{
 			name:    "true - matching regexp with string alias",
 			ref:     "[a-d]+",
-			value:   StringAlias("abcdaabbccdd"),
+			value:   stringAlias("abcdaabbccdd"),
 			want:    true,
 			wantErr: false,
 		},
 		{
 			name:    "false - not matching regexp with string alias",
 			ref:     "^[a-d]+$",
-			value:   StringAlias("abcdaxabbccdd"),
+			value:   stringAlias("abcdaxabbccdd"),
 			want:    false,
 			wantErr: false,
 		},
