@@ -13,6 +13,9 @@ const (
 
 	// DefaultValue is the default trace ID value.
 	DefaultValue = ""
+
+	// DefaultLogKey is the default log field key for the Trace ID.
+	DefaultLogKey = "traceid"
 )
 
 // ctxKey is used to store the trace ID in the context.
