@@ -5,10 +5,8 @@ package logging
 import (
 	"context"
 	"fmt"
-	"html"
 	"io"
 	"os"
-	"regexp"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -18,10 +16,6 @@ import (
 //
 //nolint:gochecknoglobals
 var LogFatal = zap.L().Fatal
-
-const regexPatternSanitize = `(\n|\n\r|\r\n|\r)`
-
-var regexSanitize = regexp.MustCompile(regexPatternSanitize)
 
 type ctxKey struct{}
 
@@ -181,10 +175,4 @@ func Close(ctx context.Context, obj io.Closer, errorMessage string) {
 	if err := obj.Close(); err != nil {
 		FromContext(ctx).Error(errorMessage, zap.Error(err))
 	}
-}
-
-// Sanitize sanitizes user input string to prevent log injection.
-// Ref. https://www.owasp.org/index.php/Log_Injection
-func Sanitize(s string) string {
-	return html.EscapeString(regexSanitize.ReplaceAllString(s, ""))
 }
