@@ -346,3 +346,10 @@ func TestClose(t *testing.T) {
 	require.Contains(t, out, "\"msg\":\"test error ERROR\"")
 	require.Contains(t, out, "\"error\":\"close error\"}\n")
 }
+
+func TestSanitize(t *testing.T) {
+	t.Parallel()
+
+	s := Sanitize("<OK\n")
+	require.Equal(t, "&lt;OK", s)
+}

@@ -55,7 +55,7 @@ func New(addr string, opts ...Option) (*Client, error) {
 			r.URL.Host = proxyURL.Host
 			r.URL.Path = "/" + libhttputil.PathParam(r, "path")
 			r.Host = proxyURL.Host
-			r.Header.Set("X-Forwarded-Host", r.Header.Get("Host"))
+			r.Header.Set("X-Forwarded-Host", logging.Sanitize(r.Header.Get("Host")))
 		}
 	}
 
@@ -119,7 +119,7 @@ func defaultErrorHandler(logger *zap.Logger) errHandler {
 			zap.String(traceid.DefaultLogKey, traceid.FromContext(ctx, "")),
 			zap.String("request_method", r.Method),
 			zap.String("request_path", r.URL.Path),
-			zap.String("request_query", r.URL.RawQuery),
+			zap.String("request_query", logging.Sanitize(r.URL.RawQuery)),
 			zap.String("request_uri", r.RequestURI),
 			zap.Int("response_code", http.StatusBadGateway),
 			zap.String("response_message", http.StatusText(http.StatusBadGateway)),
