@@ -46,7 +46,7 @@ func RequestInjectHandler(logger *zap.Logger, traceIDHeaderName string, redactFn
 			zap.String(traceid.DefaultLogKey, reqID),
 			zap.Time("request_time", reqTime),
 			zap.String("request_method", r.Method),
-			zap.String("request_path", r.URL.Path),
+			zap.String("request_path", logging.Sanitize(r.URL.Path)),
 			zap.String("request_query", logging.Sanitize(r.URL.RawQuery)),
 			zap.String("request_remote_address", r.RemoteAddr),
 			zap.String("request_uri", r.RequestURI),

@@ -89,7 +89,7 @@ func (c *Client) Do(r *http.Request) (*http.Response, error) {
 		zap.String(c.logPrefix+traceid.DefaultLogKey, reqID),
 		zap.Time(c.logPrefix+"request_time", reqTime),
 		zap.String(c.logPrefix+"request_method", r.Method),
-		zap.String(c.logPrefix+"request_path", r.URL.Path),
+		zap.String(c.logPrefix+"request_path", logging.Sanitize(r.URL.Path)),
 		zap.String(c.logPrefix+"request_query", logging.Sanitize(r.URL.RawQuery)),
 		zap.String(c.logPrefix+"request_uri", r.RequestURI),
 	)

@@ -118,7 +118,7 @@ func defaultErrorHandler(logger *zap.Logger) errHandler {
 		logger.With(
 			zap.String(traceid.DefaultLogKey, traceid.FromContext(ctx, "")),
 			zap.String("request_method", r.Method),
-			zap.String("request_path", r.URL.Path),
+			zap.String("request_path", logging.Sanitize(r.URL.Path)),
 			zap.String("request_query", logging.Sanitize(r.URL.RawQuery)),
 			zap.String("request_uri", r.RequestURI),
 			zap.Int("response_code", http.StatusBadGateway),
