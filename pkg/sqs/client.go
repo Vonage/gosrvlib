@@ -169,7 +169,7 @@ func MessageDecode(msg string, data interface{}) error {
 func (c *Client) SendData(ctx context.Context, data interface{}) error {
 	message, err := MessageEncode(data)
 	if err != nil {
-		return fmt.Errorf("failed to send data: %w", err)
+		return err
 	}
 
 	return c.Send(ctx, message)
