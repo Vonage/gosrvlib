@@ -176,11 +176,11 @@ func Test_sendRequest(t *testing.T) {
 			ts := httptest.NewServer(mux)
 			defer ts.Close()
 
-			clientOpts := []Option{WithRetryAttempts(1)}
+			clientOpts := []Option{}
 			if tt.setupMocks != nil {
 				mc := NewMockHTTPClient(ctrl)
 				tt.setupMocks(mc)
-				clientOpts = append(clientOpts, WithHTTPClient(mc))
+				clientOpts = append(clientOpts, WithHTTPClient(mc), WithRetryAttempts(1))
 			}
 
 			c, err := New(
