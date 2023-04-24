@@ -97,9 +97,8 @@ func New(addr, org, apiKey string, opts ...Option) (*Client, error) {
 
 // HealthCheck performs a status check on this service.
 // Note: sleuth.io API currently does not provide a ping endpoint,
-//
-//	so we check if we are getting the right error using the
-//	correct API Key and inexistent deployment ID.
+// so we check if we are getting the right error using the
+// correct API Key and inexistent deployment ID.
 func (c *Client) HealthCheck(ctx context.Context) error {
 	ctx, cancel := context.WithTimeout(ctx, c.pingTimeout)
 	defer cancel()
