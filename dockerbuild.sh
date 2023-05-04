@@ -60,7 +60,7 @@ EOM
 DOCKER_IMAGE_NAME=${VENDOR}/build_${PROJECT}
 
 # Build the Docker image
-${DOCKER} build --progress=plain --no-cache --build-arg SSH_PRIVATE_KEY="${SSH_PRIVATE_KEY}" --build-arg SSH_PUBLIC_KEY="${SSH_PUBLIC_KEY}" --tag ${DOCKER_IMAGE_NAME} --file Dockerfile.test .
+BUILDKIT_PROGRESS=plain ${DOCKER} build --no-cache --build-arg SSH_PRIVATE_KEY="${SSH_PRIVATE_KEY}" --build-arg SSH_PUBLIC_KEY="${SSH_PUBLIC_KEY}" --tag ${DOCKER_IMAGE_NAME} --file Dockerfile.test .
 
 # Start a container using the newly created Docker image
 CONTAINER_ID=$(docker run -d ${DOCKER_IMAGE_NAME})
