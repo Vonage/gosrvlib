@@ -41,6 +41,7 @@ func WithCreateMetricsClientFunc(fn CreateMetricsClientFunc) Option {
 }
 
 // WithShutdownTimeout sets the shutdown timeout.
+// This is the time to wait on exit for a graceful shutdown.
 func WithShutdownTimeout(timeout time.Duration) Option {
 	return func(cfg *config) {
 		cfg.shutdownTimeout = timeout

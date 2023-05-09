@@ -90,7 +90,7 @@ const (
 
 // Extra parameters default values.
 const (
-	defaultShutdownTimeout = 30 // time in seconds to wait for graceful shutdown.
+	defaultShutdownTimeout = 30 // time in seconds to wait on exit for a graceful shutdown.
 )
 
 // Configuration is the interface we need the application config struct to implement.
