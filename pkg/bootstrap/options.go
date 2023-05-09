@@ -2,6 +2,7 @@ package bootstrap
 
 import (
 	"context"
+	"time"
 
 	"go.uber.org/zap"
 )
@@ -36,5 +37,12 @@ func WithCreateLoggerFunc(fn CreateLoggerFunc) Option {
 func WithCreateMetricsClientFunc(fn CreateMetricsClientFunc) Option {
 	return func(cfg *config) {
 		cfg.createMetricsClientFunc = fn
+	}
+}
+
+// WithShutdownTimeout sets the shutdown timeout.
+func WithShutdownTimeout(timeout time.Duration) Option {
+	return func(cfg *config) {
+		cfg.shutdownTimeout = timeout
 	}
 }
