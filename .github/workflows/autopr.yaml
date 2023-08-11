@@ -15,7 +15,7 @@ jobs:
           script: |
             const { repo, owner } = context.repo;
             const result = await github.rest.pulls.create({
-              title: '[AUTOPR] Update dependencies',
+              title: '[AUTOPR] Automatic updates',
               owner,
               repo,
               head: '${{ github.ref_name }}',
