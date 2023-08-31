@@ -83,3 +83,17 @@ func TestReduce(t *testing.T) {
 
 	require.Equal(t, 135, got)
 }
+
+func TestInvert(t *testing.T) {
+	t.Parallel()
+
+	mux := &sync.RWMutex{}
+
+	m := map[int]int{1: 10, 2: 20}
+
+	got := Invert(mux, m)
+
+	require.Len(t, got, 2)
+	require.Equal(t, 1, got[10])
+	require.Equal(t, 2, got[20])
+}
