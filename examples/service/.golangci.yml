@@ -42,6 +42,12 @@ linters-settings:
           - $gostd
           - github.com/stretchr
 
+issues:
+  exclude-rules:
+    - path: _test.go
+      linters:
+        - dupl
+
 linters:
   enable:
     - asasalint    # check for pass []any as any in variadic func(...any) [fast: false, auto-fix: false]
@@ -54,7 +60,7 @@ linters:
     - decorder    # check declaration order and count of types, constants, variables and functions [fast: true, auto-fix: false]
     #- depguard    # Go linter that checks if package imports are in a list of acceptable packages [fast: true, auto-fix: false]
     - dogsled    # Checks assignments with too many blank identifiers (e.g. x, _, _, _, := f()) [fast: true, auto-fix: false]
-    #- dupl    # Tool for code clone detection [fast: true, auto-fix: false]
+    - dupl    # Tool for code clone detection [fast: true, auto-fix: false]
     - dupword    # checks for duplicate words in the source code [fast: true, auto-fix: true]
     - durationcheck    # check for two durations multiplied together [fast: false, auto-fix: false]
     - errcheck    # errcheck is a program for checking for unchecked errors in Go code. These unchecked errors can be critical bugs in some cases [fast: false, auto-fix: false]
