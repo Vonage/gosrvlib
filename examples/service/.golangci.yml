@@ -52,6 +52,7 @@ issues:
       linters:
         - dupl
         - funlen
+  #fix: true
 
 linters:
   enable:
@@ -78,7 +79,7 @@ linters:
     - exportloopref    # checks for pointers to enclosing loop variables [fast: false, auto-fix: false]
     - forbidigo    # Forbids identifiers [fast: false, auto-fix: false]
     - forcetypeassert    # finds forced type assertions [fast: true, auto-fix: false]
-    #- funlen    # Tool for detection of long functions [fast: true, auto-fix: false]
+    - funlen    # Tool for detection of long functions [fast: true, auto-fix: false]
     - gci    # Gci controls Go package import order and makes it always deterministic. [fast: true, auto-fix: false]
     - ginkgolinter    # enforces standards of using ginkgo and gomega [fast: false, auto-fix: false]
     - gocheckcompilerdirectives    # Checks that go compiler directive comments (//go:) are valid. [fast: true, auto-fix: false]
@@ -118,7 +119,7 @@ linters:
     - nakedret    # Finds naked returns in functions greater than a specified function length [fast: true, auto-fix: false]
     - nestif    # Reports deeply nested if statements [fast: true, auto-fix: false]
     - nilerr    # Finds the code that returns nil even if it checks that the error is not nil. [fast: false, auto-fix: false]
-    #- nilnil    # Checks that there is no simultaneous return of `nil` error and an invalid value. [fast: false, auto-fix: false]
+    - nilnil    # Checks that there is no simultaneous return of `nil` error and an invalid value. [fast: false, auto-fix: false]
     #- nlreturn    # nlreturn checks for a new line before return and branch statements to increase code clarity [fast: true, auto-fix: false]
     - noctx    # noctx finds sending http request without context.Context [fast: false, auto-fix: false]
     - nolintlint    # Reports ill-formed or insufficient nolint directives [fast: true, auto-fix: false]
@@ -134,7 +135,7 @@ linters:
     - sqlclosecheck    # Checks that sql.Rows and sql.Stmt are closed. [fast: false, auto-fix: false]
     - staticcheck    # (megacheck): It's a set of rules from staticcheck. It's not the same thing as the staticcheck binary. The author of staticcheck doesn't support or approve the use of staticcheck as a library inside golangci-lint. [fast: false, auto-fix: false]
     - stylecheck    # Stylecheck is a replacement for golint [fast: false, auto-fix: false]
-    #- tagalign    # check that struct tags are well aligned [fast: true, auto-fix: true]
+    - tagalign    # check that struct tags are well aligned [fast: true, auto-fix: true]
     #- tagliatelle    # Checks the struct tags. [fast: true, auto-fix: false]
     - tenv    # tenv is analyzer that detects using os.Setenv instead of t.Setenv since Go1.17 [fast: false, auto-fix: false]
     - testableexamples    # linter checks if examples are testable (have an expected output) [fast: true, auto-fix: false]
