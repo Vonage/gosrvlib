@@ -15,6 +15,10 @@ output:
   format: colored-line-number
 
 linters-settings:
+  funlen:
+    lines: 100
+    statements: 50
+    ignore-comments: true
   gocognit:
     min-complexity: 10
   gocyclo:
@@ -47,6 +51,7 @@ issues:
     - path: _test.go
       linters:
         - dupl
+        - funlen
 
 linters:
   enable:
@@ -73,7 +78,7 @@ linters:
     - exportloopref    # checks for pointers to enclosing loop variables [fast: false, auto-fix: false]
     - forbidigo    # Forbids identifiers [fast: false, auto-fix: false]
     - forcetypeassert    # finds forced type assertions [fast: true, auto-fix: false]
-    #- funlen    # Tool for detection of long functions [fast: true, auto-fix: false]
+    - funlen    # Tool for detection of long functions [fast: true, auto-fix: false]
     - gci    # Gci controls Go package import order and makes it always deterministic. [fast: true, auto-fix: false]
     - ginkgolinter    # enforces standards of using ginkgo and gomega [fast: false, auto-fix: false]
     - gocheckcompilerdirectives    # Checks that go compiler directive comments (//go:) are valid. [fast: true, auto-fix: false]

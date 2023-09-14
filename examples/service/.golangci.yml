@@ -15,6 +15,10 @@ output:
   format: colored-line-number
 
 linters-settings:
+  funlen:
+    lines: 100
+    statements: 50
+    ignore-comments: true
   gocognit:
     min-complexity: 10
   gocyclo:
@@ -47,6 +51,7 @@ issues:
     - path: _test.go
       linters:
         - dupl
+        - funlen
 
 linters:
   enable:
