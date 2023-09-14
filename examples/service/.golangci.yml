@@ -50,7 +50,7 @@ linters:
     - bodyclose    # checks whether HTTP response body is closed successfully [fast: false, auto-fix: false]
     - containedctx    # containedctx is a linter that detects struct contained context.Context field [fast: false, auto-fix: false]
     - contextcheck    # check whether the function uses a non-inherited context [fast: false, auto-fix: false]
-    #- cyclop    # checks function and package cyclomatic complexity [fast: false, auto-fix: false]
+    - cyclop    # checks function and package cyclomatic complexity [fast: false, auto-fix: false]
     - decorder    # check declaration order and count of types, constants, variables and functions [fast: true, auto-fix: false]
     #- depguard    # Go linter that checks if package imports are in a list of acceptable packages [fast: true, auto-fix: false]
     - dogsled    # Checks assignments with too many blank identifiers (e.g. x, _, _, _, := f()) [fast: true, auto-fix: false]
