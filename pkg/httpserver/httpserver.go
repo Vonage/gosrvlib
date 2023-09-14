@@ -31,7 +31,7 @@ func (b *nopBinder) BindHTTP(_ context.Context) []Route { return nil }
 // HTTPServer defines the HTTP Server object.
 type HTTPServer struct {
 	cfg        *config
-	ctx        context.Context
+	ctx        context.Context //nolint:containedctx
 	httpServer *http.Server
 	listener   net.Listener
 	logger     *zap.Logger
