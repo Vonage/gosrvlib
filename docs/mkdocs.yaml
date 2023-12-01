@@ -1,0 +1,17 @@
+site_name: gosrvlib
+site_description: gosrvlib
+site_author: vonage
+repo_url: https://github.com/vonage/gosrvlib
+edit_uri: 'edit/main/docs/documentation'
+copyright: "© Vonage"
+docs_dir: "documentation"
+
+nav:
+  - Introduction: index.md
+
+markdown_extensions:
+  - pymdownx.snippets:
+      base_path: [".", ".."]
+      
+plugins:
+  - techdocs-core

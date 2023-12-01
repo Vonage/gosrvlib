@@ -1,0 +1,15 @@
+name: TechDocs
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'README.md'
+      - 'docs/**'
+      - '.github/workflows/techdocs.yml'
+      
+  workflow_dispatch:
+
+jobs:
+  techdocs:
+    uses: vonage-technology/vcp-github-workflows/.github/workflows/techdocs.yml@main
+    secrets: inherit
