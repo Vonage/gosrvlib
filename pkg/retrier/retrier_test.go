@@ -2,7 +2,7 @@ package retrier
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"testing"
 	"time"
 
@@ -85,21 +85,21 @@ func TestRetrier_Run(t *testing.T) {
 					return nil
 				}
 				count++
-				return fmt.Errorf("ERROR")
+				return errors.New("ERROR")
 			},
 			timeout:               1 * time.Second,
 			wantRemainingAttempts: 1,
 		},
 		{
 			name:                  "fail all attempts",
-			task:                  func(_ context.Context) error { return fmt.Errorf("ERROR") },
+			task:                  func(_ context.Context) error { return errors.New("ERROR") },
 			timeout:               1 * time.Second,
 			wantRemainingAttempts: 0,
 			wantErr:               true,
 		},
 		{
 			name:                  "fail with main timeout",
-			task:                  func(ctx context.Context) error { <-ctx.Done(); return fmt.Errorf("ERROR") },
+			task:                  func(ctx context.Context) error { <-ctx.Done(); return errors.New("ERROR") },
 			timeout:               1 * time.Millisecond,
 			wantRemainingAttempts: 3,
 			wantErr:               true,
@@ -144,7 +144,7 @@ func TestDefaultRetryIf(t *testing.T) {
 	}{
 		{
 			name: "true with error",
-			err:  fmt.Errorf("ERROR"),
+			err:  errors.New("ERROR"),
 			want: true,
 		},
 		{

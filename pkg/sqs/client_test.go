@@ -2,7 +2,7 @@ package sqs
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"testing"
 
 	"github.com/Vonage/gosrvlib/pkg/awsopt"
@@ -130,7 +130,7 @@ func TestSend(t *testing.T) {
 		{
 			name: "error",
 			mock: sqsmock{sendFn: func(ctx context.Context, params *sqs.SendMessageInput, optFns ...func(*sqs.Options)) (*sqs.SendMessageOutput, error) {
-				return nil, fmt.Errorf("some err")
+				return nil, errors.New("some err")
 			}},
 			wantErr: true,
 		},
@@ -198,7 +198,7 @@ func TestReceive(t *testing.T) {
 		{
 			name: "error",
 			mock: sqsmock{receiveFn: func(ctx context.Context, params *sqs.ReceiveMessageInput, optFns ...func(*sqs.Options)) (*sqs.ReceiveMessageOutput, error) {
-				return nil, fmt.Errorf("some err")
+				return nil, errors.New("some err")
 			}},
 			want:    nil,
 			wantErr: true,
@@ -259,7 +259,7 @@ func TestDelete(t *testing.T) {
 			name:          "error",
 			receiptHandle: "7890",
 			mock: sqsmock{deleteFn: func(ctx context.Context, params *sqs.DeleteMessageInput, optFns ...func(*sqs.Options)) (*sqs.DeleteMessageOutput, error) {
-				return nil, fmt.Errorf("some err")
+				return nil, errors.New("some err")
 			}},
 			wantErr: true,
 		},
@@ -355,7 +355,7 @@ func TestReceiveData(t *testing.T) {
 		{
 			name: "error",
 			mock: sqsmock{receiveFn: func(ctx context.Context, params *sqs.ReceiveMessageInput, optFns ...func(*sqs.Options)) (*sqs.ReceiveMessageOutput, error) {
-				return nil, fmt.Errorf("error")
+				return nil, errors.New("error")
 			}},
 			want:    "",
 			wantErr: true,
@@ -437,7 +437,7 @@ func TestHealthCheck(t *testing.T) {
 		{
 			name: "error",
 			mock: sqsmock{getQueueAttributesFn: func(ctx context.Context, params *sqs.GetQueueAttributesInput, optFns ...func(*sqs.Options)) (*sqs.GetQueueAttributesOutput, error) {
-				return &sqs.GetQueueAttributesOutput{}, fmt.Errorf("error")
+				return &sqs.GetQueueAttributesOutput{}, errors.New("error")
 			}},
 			wantErr: true,
 		},

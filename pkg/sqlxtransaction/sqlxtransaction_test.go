@@ -3,7 +3,7 @@ package sqlxtransaction
 import (
 	"context"
 	"database/sql"
-	"fmt"
+	"errors"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
@@ -39,14 +39,14 @@ func Test_Exec(t *testing.T) {
 				mock.ExpectRollback()
 			},
 			run: func(ctx context.Context, tx *sqlx.Tx) error {
-				return fmt.Errorf("db error")
+				return errors.New("db error")
 			},
 			wantErr: true,
 		},
 		{
 			name: "begin error",
 			setupMocks: func(mock sqlmock.Sqlmock) {
-				mock.ExpectBegin().WillReturnError(fmt.Errorf("begin error"))
+				mock.ExpectBegin().WillReturnError(errors.New("begin error"))
 			},
 			run: func(ctx context.Context, tx *sqlx.Tx) error {
 				return nil
@@ -57,7 +57,7 @@ func Test_Exec(t *testing.T) {
 			name: "commit error",
 			setupMocks: func(mock sqlmock.Sqlmock) {
 				mock.ExpectBegin()
-				mock.ExpectCommit().WillReturnError(fmt.Errorf("commit error"))
+				mock.ExpectCommit().WillReturnError(errors.New("commit error"))
 			},
 			run: func(ctx context.Context, tx *sqlx.Tx) error {
 				return nil
@@ -68,10 +68,10 @@ func Test_Exec(t *testing.T) {
 			name: "rollback error",
 			setupMocks: func(mock sqlmock.Sqlmock) {
 				mock.ExpectBegin()
-				mock.ExpectRollback().WillReturnError(fmt.Errorf("rollback error"))
+				mock.ExpectRollback().WillReturnError(errors.New("rollback error"))
 			},
 			run: func(ctx context.Context, tx *sqlx.Tx) error {
-				return fmt.Errorf("db error")
+				return errors.New("db error")
 			},
 			wantErr: true,
 		},

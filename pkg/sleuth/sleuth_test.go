@@ -3,7 +3,7 @@ package sleuth
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -19,12 +19,12 @@ import (
 
 //go:noinline
 func newRequestWithContextPatch(_ context.Context, _, _ string, _ io.Reader) (*http.Request, error) {
-	return nil, fmt.Errorf("ERROR: newRequestWithContextPatch")
+	return nil, errors.New("ERROR: newRequestWithContextPatch")
 }
 
 //go:noinline
 func newHTTPRetrierPatch(httpretrier.HTTPClient, ...httpretrier.Option) (*httpretrier.HTTPRetrier, error) {
-	return nil, fmt.Errorf("ERROR: newHTTPRetrierPatch")
+	return nil, errors.New("ERROR: newHTTPRetrierPatch")
 }
 
 //nolint:gocognit,paralleltest
@@ -40,7 +40,7 @@ func Test_sendRequest(t *testing.T) {
 		{
 			name: "failed to execute request - transport error",
 			setupMocks: func(m *MockHTTPClient) {
-				m.EXPECT().Do(gomock.Any()).Return(nil, fmt.Errorf("transport error")).Times(1)
+				m.EXPECT().Do(gomock.Any()).Return(nil, errors.New("transport error")).Times(1)
 			},
 			wantErr: true,
 		},

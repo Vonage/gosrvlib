@@ -2,7 +2,7 @@ package s3
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"io"
 	"strings"
 	"testing"
@@ -83,7 +83,7 @@ func TestS3Client_DeleteObject(t *testing.T) {
 			key:    "k1",
 			bucket: "bucket",
 			mock: s3mock{delFn: func(ctx context.Context, params *s3.DeleteObjectInput, optFns ...func(*s3.Options)) (*s3.DeleteObjectOutput, error) {
-				return nil, fmt.Errorf("some err")
+				return nil, errors.New("some err")
 			}},
 			wantErr: true,
 		},
@@ -145,7 +145,7 @@ func TestS3Client_GetObject(t *testing.T) {
 			key:    "k1",
 			bucket: "bucket",
 			mock: s3mock{getFn: func(ctx context.Context, params *s3.GetObjectInput, optFns ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
-				return nil, fmt.Errorf("some err")
+				return nil, errors.New("some err")
 			}},
 			want:    nil,
 			wantErr: true,
@@ -229,7 +229,7 @@ func TestS3Client_ListObject(t *testing.T) {
 			prefix: "k1",
 			bucket: "bucket",
 			mock: s3mock{listFn: func(ctx context.Context, params *s3.ListObjectsV2Input, optFns ...func(*s3.Options)) (*s3.ListObjectsV2Output, error) {
-				return nil, fmt.Errorf("some err")
+				return nil, errors.New("some err")
 			}},
 			want:    nil,
 			wantErr: true,
@@ -285,7 +285,7 @@ func TestS3Client_PutObject(t *testing.T) {
 			key:    "k1",
 			bucket: "bucket",
 			mock: s3mock{putFn: func(ctx context.Context, params *s3.PutObjectInput, optFns ...func(*s3.Options)) (*s3.PutObjectOutput, error) {
-				return nil, fmt.Errorf("some err")
+				return nil, errors.New("some err")
 			}},
 			wantErr: true,
 		},

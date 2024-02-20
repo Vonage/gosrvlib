@@ -2,7 +2,7 @@ package prometheus
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -42,7 +42,7 @@ func TestNew(t *testing.T) {
 		},
 		{
 			name:    "fails with invalid option",
-			opts:    []Option{func(c *Client) error { return fmt.Errorf("Error") }},
+			opts:    []Option{func(c *Client) error { return errors.New("Error") }},
 			wantErr: true,
 		},
 		{

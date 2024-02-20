@@ -3,7 +3,7 @@ package sqlconn
 import (
 	"context"
 	"database/sql"
-	"fmt"
+	"errors"
 	"sync"
 	"testing"
 	"time"
@@ -45,14 +45,14 @@ func TestConnect(t *testing.T) {
 		{
 			name:       "fail to open DB connection",
 			connectDSN: "testsql://user:pass@tcp(db.host.invalid:1234)/testdb",
-			connectErr: fmt.Errorf("db open error"),
+			connectErr: errors.New("db open error"),
 			wantErr:    true,
 		},
 		{
 			name:       "success with close error",
 			connectDSN: "testsql://user:pass@tcp(db.host.invalid:1234)/testdb",
 			configMockFunc: func(mock sqlmock.Sqlmock) {
-				mock.ExpectClose().WillReturnError(fmt.Errorf("close error"))
+				mock.ExpectClose().WillReturnError(errors.New("close error"))
 			},
 			wantConn: true,
 		},
@@ -170,7 +170,7 @@ func TestSQLConn_HealthCheck(t *testing.T) {
 			name: "fail with check connection error",
 			configOpts: []Option{
 				WithCheckConnectionFunc(func(ctx context.Context, db *sql.DB) error {
-					return fmt.Errorf("check error")
+					return errors.New("check error")
 				}),
 			},
 			wantErr: true,
@@ -234,7 +234,7 @@ func Test_checkConnection(t *testing.T) {
 		{
 			name: "fail with ping error",
 			configMockFunc: func(m sqlmock.Sqlmock) {
-				m.ExpectPing().WillReturnError(fmt.Errorf("ping error"))
+				m.ExpectPing().WillReturnError(errors.New("ping error"))
 			},
 			wantErr: true,
 		},
@@ -242,7 +242,7 @@ func Test_checkConnection(t *testing.T) {
 			name: "fail with exec error",
 			configMockFunc: func(m sqlmock.Sqlmock) {
 				m.ExpectPing()
-				m.ExpectQuery("SELECT 1").WillReturnError(fmt.Errorf("exec error"))
+				m.ExpectQuery("SELECT 1").WillReturnError(errors.New("exec error"))
 			},
 			wantErr: true,
 		},
@@ -294,7 +294,7 @@ func Test_connectWithBackoff(t *testing.T) {
 			name: "fail with sql error",
 			setupConfig: func(c *config, db *sql.DB) {
 				c.sqlOpenFunc = func(driverName, dataSourceName string) (*sql.DB, error) {
-					return nil, fmt.Errorf("open error")
+					return nil, errors.New("open error")
 				}
 			},
 			wantErr: true,
@@ -306,7 +306,7 @@ func Test_connectWithBackoff(t *testing.T) {
 					return db, nil
 				}
 				c.checkConnectionFunc = func(ctx context.Context, db *sql.DB) error {
-					return fmt.Errorf("check error")
+					return errors.New("check error")
 				}
 			},
 			wantErr: true,

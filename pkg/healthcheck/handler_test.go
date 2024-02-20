@@ -2,7 +2,7 @@ package healthcheck
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -82,7 +82,7 @@ func TestHandler_ServeHTTP(t *testing.T) {
 			name: "success mixed results",
 			checks: []HealthCheck{
 				New("test_31", &testHealthChecker{delay: 100 * time.Millisecond, err: nil}),
-				New("test_32", &testHealthChecker{delay: 200 * time.Millisecond, err: fmt.Errorf("check error")}),
+				New("test_32", &testHealthChecker{delay: 200 * time.Millisecond, err: errors.New("check error")}),
 			},
 			wantStatus:     http.StatusServiceUnavailable,
 			wantBody:       `{"test_31":"OK","test_32":"check error"}`,

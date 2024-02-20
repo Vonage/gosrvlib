@@ -2,7 +2,7 @@ package mysqllock
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"testing"
 	"time"
 
@@ -38,7 +38,7 @@ func TestDB_Acquire(t *testing.T) {
 			name: "error executing get lock",
 			setupMocks: func(mock sqlmock.Sqlmock) {
 				mock.ExpectQuery(sqlGetLock).
-					WillReturnError(fmt.Errorf("database error"))
+					WillReturnError(errors.New("database error"))
 			},
 			wantErr: true,
 		},
@@ -65,7 +65,7 @@ func TestDB_Acquire(t *testing.T) {
 					WillReturnRows(sqlmock.NewRows([]string{"result"}).AddRow(1))
 
 				mock.ExpectExec(sqlReleaseLock).
-					WillReturnError(fmt.Errorf("db error"))
+					WillReturnError(errors.New("db error"))
 			},
 			wantErr:        false,
 			wantReleaseErr: true,
@@ -147,7 +147,7 @@ func Test_keepConnectionAlive(t *testing.T) {
 			name: "error while executing keep alive query",
 			setupMocks: func(mock sqlmock.Sqlmock) {
 				mock.ExpectQuery(keepAliveSQLQuery).
-					WillReturnError(fmt.Errorf("can't execute keep alive query at this time"))
+					WillReturnError(errors.New("can't execute keep alive query at this time"))
 			},
 			ctxFunc: func() (context.Context, context.CancelFunc) {
 				return context.WithTimeout(context.Background(), intervalFullTime)

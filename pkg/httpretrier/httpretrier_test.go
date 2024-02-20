@@ -4,7 +4,7 @@ package httpretrier
 import (
 	"bytes"
 	"context"
-	"fmt"
+	"errors"
 	"io"
 	"net/http"
 	"testing"
@@ -88,7 +88,7 @@ func Test_defaultRetryIf(t *testing.T) {
 	}{
 		{
 			name: "true with error",
-			err:  fmt.Errorf("ERROR"),
+			err:  errors.New("ERROR"),
 			want: true,
 		},
 		{
@@ -122,7 +122,7 @@ func TestRetryIfForWriteRequests(t *testing.T) {
 		{
 			name:   "true with error",
 			status: http.StatusOK,
-			err:    fmt.Errorf("ERROR"),
+			err:    errors.New("ERROR"),
 			want:   true,
 		},
 		{
@@ -179,7 +179,7 @@ func TestRetryIfForReadRequests(t *testing.T) {
 		{
 			name:   "true with error",
 			status: http.StatusOK,
-			err:    fmt.Errorf("ERROR"),
+			err:    errors.New("ERROR"),
 			want:   true,
 		},
 		{
@@ -323,7 +323,7 @@ func TestHTTPRetrier_Do(t *testing.T) {
 					StatusCode: http.StatusOK,
 					Body:       io.NopCloser(bytes.NewReader([]byte{})),
 				}
-				mock.EXPECT().Do(gomock.Any()).Return(nil, fmt.Errorf("network error"))
+				mock.EXPECT().Do(gomock.Any()).Return(nil, errors.New("network error"))
 				mock.EXPECT().Do(gomock.Any()).Return(rErr, nil)
 				mock.EXPECT().Do(gomock.Any()).Return(rOK, nil)
 			},
@@ -337,7 +337,7 @@ func TestHTTPRetrier_Do(t *testing.T) {
 					StatusCode: http.StatusInternalServerError,
 					Body:       io.NopCloser(bytes.NewReader([]byte{})),
 				}
-				mock.EXPECT().Do(gomock.Any()).Return(nil, fmt.Errorf("network error"))
+				mock.EXPECT().Do(gomock.Any()).Return(nil, errors.New("network error"))
 				mock.EXPECT().Do(gomock.Any()).Return(rErr, nil).Times(3)
 			},
 			wantRemainingAttempts: 0,
@@ -395,7 +395,7 @@ func TestHTTPRetrier_Do(t *testing.T) {
 			require.NoError(t, err)
 
 			if tt.requestBodyError {
-				r.GetBody = func() (io.ReadCloser, error) { return nil, fmt.Errorf("ERROR") }
+				r.GetBody = func() (io.ReadCloser, error) { return nil, errors.New("ERROR") }
 			}
 
 			opts := []Option{

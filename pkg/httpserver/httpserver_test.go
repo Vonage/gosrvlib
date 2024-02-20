@@ -5,6 +5,7 @@ package httpserver
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -88,7 +89,7 @@ func Test_defaultIPHandler(t *testing.T) {
 		},
 		{
 			name:    "error response",
-			ipFunc:  func(ctx context.Context) (string, error) { return "ERROR", fmt.Errorf("ERROR") },
+			ipFunc:  func(ctx context.Context) (string, error) { return "ERROR", errors.New("ERROR") },
 			wantIP:  "",
 			wantErr: true,
 		},
@@ -436,11 +437,11 @@ YlAqGKDZ+A+l
 type mockListenerErr struct{}
 
 func (ls mockListenerErr) Accept() (net.Conn, error) {
-	return nil, fmt.Errorf("ERROR")
+	return nil, errors.New("ERROR")
 }
 
 func (ls mockListenerErr) Close() error {
-	return fmt.Errorf("ERROR")
+	return errors.New("ERROR")
 }
 
 func (ls mockListenerErr) Addr() net.Addr {

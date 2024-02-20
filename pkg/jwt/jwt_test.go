@@ -2,7 +2,7 @@ package jwt
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -380,7 +380,7 @@ func TestIsAuthorized(t *testing.T) {
 // testUserHash assumes password = username.
 func testUserHash(username string) ([]byte, error) {
 	if username == "" {
-		return nil, fmt.Errorf("invalid username")
+		return nil, errors.New("invalid username")
 	}
 
 	return bcrypt.GenerateFromPassword([]byte(username), bcrypt.MinCost) //nolint:wrapcheck
@@ -389,11 +389,11 @@ func testUserHash(username string) ([]byte, error) {
 type testSigningMethodError struct{}
 
 func (c *testSigningMethodError) Verify(_, _ string, _ any) error {
-	return fmt.Errorf("VERIFY ERROR")
+	return errors.New("VERIFY ERROR")
 }
 
 func (c *testSigningMethodError) Sign(_ string, _ any) (string, error) {
-	return "", fmt.Errorf("SIGN ERROR")
+	return "", errors.New("SIGN ERROR")
 }
 
 func (c *testSigningMethodError) Alg() string {
