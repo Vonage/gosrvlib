@@ -57,8 +57,10 @@ func TestNew(t *testing.T) {
 			if tt.wantErr {
 				require.Nil(t, c, "New() returned client should be nil")
 				require.Error(t, err, "New() error = %v, wantErr %v", err, tt.wantErr)
+
 				return
 			}
+
 			require.NotNil(t, c, "New() returned client should not be nil")
 			require.NoError(t, err, "New() unexpected error = %v", err)
 			require.Equal(t, tt.wantTimeout, c.timeout, "New() unexpected timeout = %d got %d", tt.wantTimeout, c.timeout)
@@ -120,10 +122,12 @@ func TestClient_GetPublicIP(t *testing.T) {
 
 			mux := testutil.RouterWithHandler(http.MethodGet, "/", tt.getIPHandler)
 			ts := httptest.NewServer(mux)
+
 			defer ts.Close()
 
 			opts := []Option{WithURL(ts.URL)}
 			c, err := New(opts...)
+
 			require.NoError(t, err, "Client.GetPublicIP() create client unexpected error = %v", err)
 
 			ip, err := c.GetPublicIP(testutil.Context())

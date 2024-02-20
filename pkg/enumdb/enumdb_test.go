@@ -94,9 +94,11 @@ func TestNew(t *testing.T) {
 
 			mockDB, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
 			require.NoError(t, err, "Unexpected error while creating sqlmock", err)
+
 			defer func() { _ = mockDB.Close() }()
 
 			mock.MatchExpectationsInOrder(false)
+
 			if tt.setupMock != nil {
 				tt.setupMock(mock)
 			}

@@ -66,6 +66,7 @@ func TestNewLogger(t *testing.T) {
 			opts := tt.opts
 
 			var loggedMetricLevel string
+
 			opts = append(opts, WithIncrementLogMetricsFunc(func(ll string) {
 				loggedMetricLevel = ll
 			}))

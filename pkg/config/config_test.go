@@ -88,6 +88,7 @@ func Test_configureConfigSearchPath(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			ctrl := gomock.NewController(t)
+
 			defer ctrl.Finish()
 
 			tmv := NewMockViper(ctrl)
@@ -223,6 +224,7 @@ func Test_loadLocalConfig(t *testing.T) {
 			if tt.configContent != nil {
 				configDir, err = os.MkdirTemp("", "test-loadLocalConfig-*")
 				require.NoError(t, err, "failed creating temp config dir: %v", err)
+
 				defer func() { _ = os.RemoveAll(configDir) }()
 
 				tmpFilePath := filepath.Join(configDir, "config.json")
@@ -475,6 +477,7 @@ func Test_loadFromEnvVarSource(t *testing.T) {
 			if tt.setupMocks != nil {
 				tt.setupMocks(v)
 			}
+
 			if err := loadFromEnvVarSource(v, tt.setupConfigSource(), "test"); (err != nil) != tt.wantErr {
 				t.Errorf("loadFromEnvVarSource() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -594,12 +597,14 @@ func Test_loadFromRemoteSource(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			ctrl := gomock.NewController(t)
+
 			defer ctrl.Finish()
 
 			v := NewMockViper(ctrl)
 			if tt.setupMocks != nil {
 				tt.setupMocks(v)
 			}
+
 			if err := loadFromRemoteSource(v, tt.setupConfigSource(), "test"); (err != nil) != tt.wantErr {
 				t.Errorf("loadFromRemoteSource() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -607,7 +612,7 @@ func Test_loadFromRemoteSource(t *testing.T) {
 	}
 }
 
-//nolint:gocognit,paralleltest,maintidx
+//nolint:gocognit,maintidx
 func Test_loadConfig(t *testing.T) {
 	tests := []struct {
 		name             string
@@ -1002,7 +1007,6 @@ func Test_loadConfig(t *testing.T) {
 		},
 	}
 
-	//nolint:paralleltest
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
@@ -1010,10 +1014,13 @@ func Test_loadConfig(t *testing.T) {
 			defer ctrl.Finish()
 
 			var tmpConfigDir string
+
 			var err error
+
 			if tt.configContent != nil {
 				tmpConfigDir, err = os.MkdirTemp("", "test-loadConfig-*")
 				require.NoError(t, err, "failed creating temp config dir: %v", err)
+
 				defer func() { _ = os.RemoveAll(tmpConfigDir) }()
 
 				tmpFilePath := filepath.Join(tmpConfigDir, "config.json")
@@ -1048,10 +1055,12 @@ func Test_loadConfig(t *testing.T) {
 					data, _ := json.Marshal(tt.targetConfig)
 					return string(data)
 				}()
+
 				wantCfgStr := func() string {
 					data, _ := json.Marshal(tt.wantConfig)
 					return string(data)
 				}()
+
 				if cfgStr != wantCfgStr {
 					t.Errorf("loadRemoteSourceConfig() got = %s, want = %s", cfgStr, wantCfgStr)
 				}

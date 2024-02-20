@@ -100,7 +100,6 @@ func TestBootstrap(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			// cannot run in parallel because signals are received by all parallel tests
-
 			var ctx context.Context
 			ctx, logs := testutil.ContextWithLogObserver(zap.DebugLevel)
 

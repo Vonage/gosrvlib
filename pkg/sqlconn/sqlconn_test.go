@@ -91,6 +91,7 @@ func TestConnect(t *testing.T) {
 			shutdownSG := make(chan struct{})
 
 			ctx, cancel := context.WithCancel(testutil.Context())
+
 			defer func() {
 				if tt.shutdownSig {
 					close(shutdownSG)
@@ -348,6 +349,7 @@ func Test_connectWithBackoff(t *testing.T) {
 				require.Equal(t, db, got, "connectWithBackoff() got = %v, want %v", got, db)
 				return
 			}
+
 			require.Nil(t, got, "connectWithBackoff() expected nil DB")
 		})
 	}
@@ -400,9 +402,11 @@ func Test_parseConnectionURL(t *testing.T) {
 				t.Errorf("parseConnectionURL() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+
 			if gotDriver != tt.wantDriver {
 				t.Errorf("parseConnectionURL() gotDriver = %v, want %v", gotDriver, tt.wantDriver)
 			}
+
 			if gotDSN != tt.wantDSN {
 				t.Errorf("parseConnectionURL() gotDSN = %v, want %v", gotDSN, tt.wantDSN)
 			}

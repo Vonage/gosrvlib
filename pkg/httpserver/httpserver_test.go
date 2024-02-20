@@ -207,6 +207,7 @@ func (c *customMiddlewareBinder) middleware(ch chan struct{}) MiddlewareFn {
 	return func(_ MiddlewareArgs, next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ch <- struct{}{}
+
 			next.ServeHTTP(w, r)
 		})
 	}
@@ -419,6 +420,7 @@ YlAqGKDZ+A+l
 			if tt.failListenPort != 0 {
 				l, err := net.Listen("tcp", fmt.Sprintf(":%d", tt.failListenPort))
 				require.NoError(t, err, "failed starting pre-listener")
+
 				defer func() { _ = l.Close() }()
 			}
 

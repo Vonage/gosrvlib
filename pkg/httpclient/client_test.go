@@ -147,6 +147,7 @@ func TestClient_Do(t *testing.T) {
 			if tt.wantErr {
 				require.Error(t, err)
 				require.Contains(t, out, `"`+client.logPrefix+`error"`)
+
 				return
 			}
 

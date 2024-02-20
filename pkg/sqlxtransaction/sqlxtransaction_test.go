@@ -83,7 +83,9 @@ func Test_Exec(t *testing.T) {
 			t.Parallel()
 
 			mockDB, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
+
 			require.NoError(t, err)
+
 			defer func() { _ = mockDB.Close() }()
 
 			db := sqlx.NewDb(mockDB, "sqlmock")
@@ -141,6 +143,7 @@ func Test_ExecWithOptions(t *testing.T) {
 
 			mockDB, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
 			require.NoError(t, err)
+
 			defer func() { _ = mockDB.Close() }()
 
 			mock.ExpectBegin()

@@ -64,11 +64,14 @@ func TestNew(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			_, err := New(tt.opts...)
+
 			if tt.wantErr {
 				require.Error(t, err, "New() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+
 			require.NoError(t, err, "New() unexpected error = %v", err)
 		})
 	}

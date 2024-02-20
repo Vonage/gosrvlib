@@ -127,6 +127,7 @@ func statsCenter[S ~[]V, V typeutil.Number](ds *DescStats[V], s, ord S, n int, n
 				ds.Mode = ord[i]
 				ds.ModeFreq = freq
 			}
+
 			freq = 1
 		}
 	}

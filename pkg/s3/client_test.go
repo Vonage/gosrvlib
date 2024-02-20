@@ -14,7 +14,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-//nolint:paralleltest
 func TestNew(t *testing.T) {
 	o := awsopt.Options{}
 	o.WithEndpoint("https://test.endpoint.invalid", true)

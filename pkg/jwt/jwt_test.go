@@ -63,8 +63,10 @@ func TestNew(t *testing.T) {
 			if tt.wantErr {
 				require.Nil(t, c, "New() returned value should be nil")
 				require.Error(t, err, "New() error = %v, wantErr %v", err, tt.wantErr)
+
 				return
 			}
+
 			require.NotNil(t, c, "New() returned value should not be nil")
 			require.NoError(t, err, "New() unexpected error = %v", err)
 		})
@@ -163,6 +165,7 @@ func TestLoginHandler(t *testing.T) {
 			body, _ := io.ReadAll(resp.Body)
 
 			require.Equal(t, tt.status, resp.StatusCode)
+
 			if tt.status != http.StatusOK {
 				require.Equal(t, tt.want, string(body))
 			} else {

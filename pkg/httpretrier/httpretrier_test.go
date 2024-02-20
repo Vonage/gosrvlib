@@ -62,12 +62,16 @@ func TestNew(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			c, err := New(http.DefaultClient, tt.opts...)
+
 			if tt.wantErr {
 				require.Nil(t, c, "New() returned value should be nil")
 				require.Error(t, err, "New() error = %v, wantErr %v", err, tt.wantErr)
+
 				return
 			}
+
 			require.NotNil(t, c, "New() returned value should not be nil")
 			require.NoError(t, err, "New() unexpected error = %v", err)
 		})
@@ -98,7 +102,9 @@ func Test_defaultRetryIf(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			got := defaultRetryIf(nil, tt.err)
+
 			require.Equal(t, tt.want, got)
 		})
 	}
@@ -376,8 +382,10 @@ func TestHTTPRetrier_Do(t *testing.T) {
 			}
 
 			ctx := testutil.Context()
+
 			if tt.ctxTimeout > 0 {
 				timeoutCtx, cancel := context.WithTimeout(testutil.Context(), tt.ctxTimeout)
+
 				defer cancel()
 
 				ctx = timeoutCtx
@@ -405,6 +413,7 @@ func TestHTTPRetrier_Do(t *testing.T) {
 			if resp != nil {
 				_ = resp.Body.Close()
 			}
+
 			require.Equal(t, tt.wantErr, err != nil, "Do() error = %v, wantErr %v", err, tt.wantErr)
 			require.Equal(t, tt.wantRemainingAttempts, retrier.remainingAttempts, "Do() remainingAttempts = %v, wantRemainingAttempts %v", err, tt.wantErr)
 		})
@@ -420,5 +429,6 @@ func TestHTTPRetrier_setTimer(t *testing.T) {
 
 	time.Sleep(2 * time.Millisecond)
 	c.setTimer(2 * time.Millisecond)
+
 	<-c.timer.C
 }

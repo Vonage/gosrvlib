@@ -85,6 +85,7 @@ func TestDB_Acquire(t *testing.T) {
 
 			mockDB, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
 			require.NoError(t, err, "AcquireLock() Unexpected error while creating sqlmock", err)
+
 			defer func() { _ = mockDB.Close() }()
 
 			if tt.closeConn {
@@ -92,6 +93,7 @@ func TestDB_Acquire(t *testing.T) {
 			}
 
 			locker := New(mockDB)
+
 			require.NoError(t, err, "failed to create db conn")
 
 			if tt.setupMocks != nil {
@@ -99,6 +101,7 @@ func TestDB_Acquire(t *testing.T) {
 			}
 
 			release, err := locker.Acquire(testutil.Context(), "key", 2*time.Second)
+
 			var releaseErr error
 
 			if release != nil {

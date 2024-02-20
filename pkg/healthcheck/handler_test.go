@@ -101,7 +101,9 @@ func TestHandler_ServeHTTP(t *testing.T) {
 			h := NewHandler(tt.checks, tt.opts...)
 
 			st := time.Now()
+
 			h.ServeHTTP(rr, req)
+
 			el := time.Since(st)
 
 			resp := rr.Result()

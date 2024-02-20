@@ -44,12 +44,16 @@ func TestNew(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			r, err := New(tt.opts...)
+
 			if tt.wantErr {
 				require.Nil(t, r)
 				require.Error(t, err, "New() error = %v, wantErr %v", err, tt.wantErr)
+
 				return
 			}
+
 			require.NotNil(t, r, "New() returned value should not be nil")
 			require.NoError(t, err)
 		})
@@ -154,7 +158,9 @@ func TestDefaultRetryIf(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			got := DefaultRetryIf(tt.err)
+
 			require.Equal(t, tt.want, got)
 		})
 	}
@@ -169,5 +175,6 @@ func TestRetrier_setTimer(t *testing.T) {
 
 	time.Sleep(2 * time.Millisecond)
 	r.setTimer(2 * time.Millisecond)
+
 	<-r.timer.C
 }

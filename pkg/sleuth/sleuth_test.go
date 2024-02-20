@@ -52,6 +52,7 @@ func Test_sendRequest(t *testing.T) {
 					return nil, err //nolint:wrapcheck
 				}
 				_ = patch.Patch()
+
 				return patch, nil
 			},
 			wantErr: true,
@@ -64,6 +65,7 @@ func Test_sendRequest(t *testing.T) {
 					return nil, err //nolint:wrapcheck
 				}
 				_ = patch.Patch()
+
 				return patch, nil
 			},
 			wantErr: true,
@@ -72,6 +74,7 @@ func Test_sendRequest(t *testing.T) {
 			name: "unexpected http error status code",
 			createMockHandler: func(t *testing.T) http.HandlerFunc {
 				t.Helper()
+
 				return func(w http.ResponseWriter, r *http.Request) {
 					httputil.SendStatus(r.Context(), w, http.StatusInternalServerError)
 				}
@@ -82,6 +85,7 @@ func Test_sendRequest(t *testing.T) {
 			name: "invalid response status < 200",
 			createMockHandler: func(t *testing.T) http.HandlerFunc {
 				t.Helper()
+
 				return func(w http.ResponseWriter, r *http.Request) {
 					httputil.SendText(r.Context(), w, http.StatusSwitchingProtocols, "")
 				}
@@ -99,6 +103,7 @@ func Test_sendRequest(t *testing.T) {
 			name: "success valid response",
 			createMockHandler: func(t *testing.T) http.HandlerFunc {
 				t.Helper()
+
 				return func(w http.ResponseWriter, r *http.Request) {
 					httputil.SendText(r.Context(), w, http.StatusOK, "Success")
 				}
@@ -125,6 +130,7 @@ func Test_sendRequest(t *testing.T) {
 			defer ts.Close()
 
 			clientOpts := []Option{}
+
 			if tt.setupMocks != nil {
 				mc := NewMockHTTPClient(ctrl)
 				tt.setupMocks(mc)
@@ -142,6 +148,7 @@ func Test_sendRequest(t *testing.T) {
 			if tt.setupPatches != nil {
 				patch, err := tt.setupPatches()
 				require.NoError(t, err)
+
 				defer func() {
 					_ = patch.Unpatch()
 				}()

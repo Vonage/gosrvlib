@@ -12,7 +12,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-//nolint:paralleltest
 func TestNew(t *testing.T) {
 	var (
 		wt int32 = 13
@@ -397,6 +396,7 @@ func TestReceiveData(t *testing.T) {
 			if tt.wantErr {
 				require.Error(t, err)
 				require.Equal(t, tt.want, got)
+
 				return
 			}
 
