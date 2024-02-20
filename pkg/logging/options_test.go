@@ -42,7 +42,7 @@ func TestWithFields(t *testing.T) {
 func TestWithIncrementLogMetricsFunc(t *testing.T) {
 	t.Parallel()
 
-	v := func(s string) {
+	v := func(_ string) {
 		// mock function
 	}
 	cfg := &config{}

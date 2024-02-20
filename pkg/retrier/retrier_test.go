@@ -24,7 +24,7 @@ func TestNew(t *testing.T) {
 		{
 			name: "succeeds with custom values",
 			opts: []Option{
-				WithRetryIfFn(func(err error) bool { return true }),
+				WithRetryIfFn(func(_ error) bool { return true }),
 				WithAttempts(5),
 				WithDelay(601 * time.Millisecond),
 				WithDelayFactor(1.3),

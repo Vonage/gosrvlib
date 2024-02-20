@@ -173,7 +173,7 @@ func Test_loadLocalConfig(t *testing.T) {
 		{
 			name:          "succeed from empty file",
 			configContent: []byte(`{}`),
-			setupViper: func(ctrl *gomock.Controller) Viper {
+			setupViper: func(_ *gomock.Controller) Viper {
 				return viper.New()
 			},
 			want: &remoteSourceConfig{
@@ -194,7 +194,7 @@ func Test_loadLocalConfig(t *testing.T) {
   "remoteConfigPath": "/config/path",
   "remoteConfigSecretKeyring": "super_secret"
 }`),
-			setupViper: func(ctrl *gomock.Controller) Viper {
+			setupViper: func(_ *gomock.Controller) Viper {
 				return viper.New()
 			},
 			want: &remoteSourceConfig{
@@ -370,7 +370,7 @@ func Test_loadRemoteConfig(t *testing.T) {
 				mock.EXPECT().Get(keyLogLevel).Return("DEBUG")
 				return mock
 			},
-			setupRemoteViper: func(ctrl *gomock.Controller) Viper {
+			setupRemoteViper: func(_ *gomock.Controller) Viper {
 				return viper.New()
 			},
 			want: &testConfig{

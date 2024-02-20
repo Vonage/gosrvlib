@@ -27,7 +27,7 @@ func Test_Exec(t *testing.T) {
 				mock.ExpectBegin()
 				mock.ExpectCommit()
 			},
-			run: func(ctx context.Context, tx *sqlx.Tx) error {
+			run: func(_ context.Context, _ *sqlx.Tx) error {
 				return nil
 			},
 			wantErr: false,
@@ -38,7 +38,7 @@ func Test_Exec(t *testing.T) {
 				mock.ExpectBegin()
 				mock.ExpectRollback()
 			},
-			run: func(ctx context.Context, tx *sqlx.Tx) error {
+			run: func(_ context.Context, _ *sqlx.Tx) error {
 				return errors.New("db error")
 			},
 			wantErr: true,
@@ -48,7 +48,7 @@ func Test_Exec(t *testing.T) {
 			setupMocks: func(mock sqlmock.Sqlmock) {
 				mock.ExpectBegin().WillReturnError(errors.New("begin error"))
 			},
-			run: func(ctx context.Context, tx *sqlx.Tx) error {
+			run: func(_ context.Context, _ *sqlx.Tx) error {
 				return nil
 			},
 			wantErr: true,
@@ -59,7 +59,7 @@ func Test_Exec(t *testing.T) {
 				mock.ExpectBegin()
 				mock.ExpectCommit().WillReturnError(errors.New("commit error"))
 			},
-			run: func(ctx context.Context, tx *sqlx.Tx) error {
+			run: func(_ context.Context, _ *sqlx.Tx) error {
 				return nil
 			},
 			wantErr: true,
@@ -70,7 +70,7 @@ func Test_Exec(t *testing.T) {
 				mock.ExpectBegin()
 				mock.ExpectRollback().WillReturnError(errors.New("rollback error"))
 			},
-			run: func(ctx context.Context, tx *sqlx.Tx) error {
+			run: func(_ context.Context, _ *sqlx.Tx) error {
 				return errors.New("db error")
 			},
 			wantErr: true,
@@ -150,7 +150,7 @@ func Test_ExecWithOptions(t *testing.T) {
 			mock.ExpectCommit()
 
 			db := &dbMock{DB: sqlx.NewDb(mockDB, "sqlmock")}
-			err = ExecWithOptions(testutil.Context(), db, func(ctx context.Context, tx *sqlx.Tx) error { return nil }, tt.options)
+			err = ExecWithOptions(testutil.Context(), db, func(_ context.Context, _ *sqlx.Tx) error { return nil }, tt.options)
 			require.NoError(t, err)
 			require.Equal(t, tt.options, db.givenOptions)
 		})

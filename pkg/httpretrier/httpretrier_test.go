@@ -30,7 +30,7 @@ func TestNew(t *testing.T) {
 		{
 			name: "succeeds with custom values",
 			opts: []Option{
-				WithRetryIfFn(func(r *http.Response, err error) bool { return true }),
+				WithRetryIfFn(func(_ *http.Response, _ error) bool { return true }),
 				WithAttempts(5),
 				WithDelay(601 * time.Millisecond),
 				WithDelayFactor(1.3),
@@ -350,7 +350,7 @@ func TestHTTPRetrier_Do(t *testing.T) {
 					StatusCode: http.StatusInternalServerError,
 					Body:       io.NopCloser(bytes.NewReader([]byte{})),
 				}
-				mock.EXPECT().Do(gomock.Any()).DoAndReturn(func(r *http.Request) (*http.Response, error) {
+				mock.EXPECT().Do(gomock.Any()).DoAndReturn(func(_ *http.Request) (*http.Response, error) {
 					time.Sleep(500 * time.Millisecond)
 					return rErr, nil
 				})

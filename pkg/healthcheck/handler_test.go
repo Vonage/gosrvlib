@@ -30,7 +30,7 @@ func TestNewHandler(t *testing.T) {
 	require.Equal(t, reflect.ValueOf(httputil.SendJSON).Pointer(), reflect.ValueOf(h1.writeResult).Pointer())
 
 	// With options
-	rw := func(ctx context.Context, w http.ResponseWriter, statusCode int, data any) {}
+	rw := func(_ context.Context, _ http.ResponseWriter, _ int, _ any) {}
 	h2 := NewHandler(testChecks, WithResultWriter(rw))
 	require.Len(t, h2.checks, 2)
 	require.Equal(t, 2, h2.checksCount)

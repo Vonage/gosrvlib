@@ -85,7 +85,7 @@ func TestCheckHttpStatus(t *testing.T) {
 			checkWantStatus: http.StatusOK,
 			checkOpts: []CheckOption{
 				WithConfigureRequest(
-					func(r *http.Request) {},
+					func(_ *http.Request) {},
 				),
 			},
 			handlerMethod:     http.MethodGet,

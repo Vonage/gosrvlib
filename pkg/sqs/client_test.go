@@ -122,14 +122,14 @@ func TestSend(t *testing.T) {
 	}{
 		{
 			name: "success",
-			mock: sqsmock{sendFn: func(ctx context.Context, params *sqs.SendMessageInput, optFns ...func(*sqs.Options)) (*sqs.SendMessageOutput, error) {
+			mock: sqsmock{sendFn: func(_ context.Context, _ *sqs.SendMessageInput, _ ...func(*sqs.Options)) (*sqs.SendMessageOutput, error) {
 				return &sqs.SendMessageOutput{}, nil
 			}},
 			wantErr: false,
 		},
 		{
 			name: "error",
-			mock: sqsmock{sendFn: func(ctx context.Context, params *sqs.SendMessageInput, optFns ...func(*sqs.Options)) (*sqs.SendMessageOutput, error) {
+			mock: sqsmock{sendFn: func(_ context.Context, _ *sqs.SendMessageInput, _ ...func(*sqs.Options)) (*sqs.SendMessageOutput, error) {
 				return nil, errors.New("some err")
 			}},
 			wantErr: true,
@@ -171,7 +171,7 @@ func TestReceive(t *testing.T) {
 	}{
 		{
 			name: "success",
-			mock: sqsmock{receiveFn: func(ctx context.Context, params *sqs.ReceiveMessageInput, optFns ...func(*sqs.Options)) (*sqs.ReceiveMessageOutput, error) {
+			mock: sqsmock{receiveFn: func(_ context.Context, _ *sqs.ReceiveMessageInput, _ ...func(*sqs.Options)) (*sqs.ReceiveMessageOutput, error) {
 				return &sqs.ReceiveMessageOutput{
 					Messages: []types.Message{
 						{
@@ -189,7 +189,7 @@ func TestReceive(t *testing.T) {
 		},
 		{
 			name: "empty",
-			mock: sqsmock{receiveFn: func(ctx context.Context, params *sqs.ReceiveMessageInput, optFns ...func(*sqs.Options)) (*sqs.ReceiveMessageOutput, error) {
+			mock: sqsmock{receiveFn: func(_ context.Context, _ *sqs.ReceiveMessageInput, _ ...func(*sqs.Options)) (*sqs.ReceiveMessageOutput, error) {
 				return &sqs.ReceiveMessageOutput{}, nil
 			}},
 			want:    nil,
@@ -197,7 +197,7 @@ func TestReceive(t *testing.T) {
 		},
 		{
 			name: "error",
-			mock: sqsmock{receiveFn: func(ctx context.Context, params *sqs.ReceiveMessageInput, optFns ...func(*sqs.Options)) (*sqs.ReceiveMessageOutput, error) {
+			mock: sqsmock{receiveFn: func(_ context.Context, _ *sqs.ReceiveMessageInput, _ ...func(*sqs.Options)) (*sqs.ReceiveMessageOutput, error) {
 				return nil, errors.New("some err")
 			}},
 			want:    nil,
@@ -242,7 +242,7 @@ func TestDelete(t *testing.T) {
 		{
 			name:          "success",
 			receiptHandle: "123456",
-			mock: sqsmock{deleteFn: func(ctx context.Context, params *sqs.DeleteMessageInput, optFns ...func(*sqs.Options)) (*sqs.DeleteMessageOutput, error) {
+			mock: sqsmock{deleteFn: func(_ context.Context, _ *sqs.DeleteMessageInput, _ ...func(*sqs.Options)) (*sqs.DeleteMessageOutput, error) {
 				return &sqs.DeleteMessageOutput{}, nil
 			}},
 			wantErr: false,
@@ -250,7 +250,7 @@ func TestDelete(t *testing.T) {
 		{
 			name:          "empty",
 			receiptHandle: "",
-			mock: sqsmock{deleteFn: func(ctx context.Context, params *sqs.DeleteMessageInput, optFns ...func(*sqs.Options)) (*sqs.DeleteMessageOutput, error) {
+			mock: sqsmock{deleteFn: func(_ context.Context, _ *sqs.DeleteMessageInput, _ ...func(*sqs.Options)) (*sqs.DeleteMessageOutput, error) {
 				return &sqs.DeleteMessageOutput{}, nil
 			}},
 			wantErr: false,
@@ -258,7 +258,7 @@ func TestDelete(t *testing.T) {
 		{
 			name:          "error",
 			receiptHandle: "7890",
-			mock: sqsmock{deleteFn: func(ctx context.Context, params *sqs.DeleteMessageInput, optFns ...func(*sqs.Options)) (*sqs.DeleteMessageOutput, error) {
+			mock: sqsmock{deleteFn: func(_ context.Context, _ *sqs.DeleteMessageInput, _ ...func(*sqs.Options)) (*sqs.DeleteMessageOutput, error) {
 				return nil, errors.New("some err")
 			}},
 			wantErr: true,
@@ -297,7 +297,7 @@ func TestSendData(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, cli)
 
-	cli.sqs = sqsmock{sendFn: func(ctx context.Context, params *sqs.SendMessageInput, optFns ...func(*sqs.Options)) (*sqs.SendMessageOutput, error) {
+	cli.sqs = sqsmock{sendFn: func(_ context.Context, _ *sqs.SendMessageInput, _ ...func(*sqs.Options)) (*sqs.SendMessageOutput, error) {
 		return &sqs.SendMessageOutput{}, nil
 	}}
 
@@ -330,7 +330,7 @@ func TestReceiveData(t *testing.T) {
 	}{
 		{
 			name: "success",
-			mock: sqsmock{receiveFn: func(ctx context.Context, params *sqs.ReceiveMessageInput, optFns ...func(*sqs.Options)) (*sqs.ReceiveMessageOutput, error) {
+			mock: sqsmock{receiveFn: func(_ context.Context, _ *sqs.ReceiveMessageInput, _ ...func(*sqs.Options)) (*sqs.ReceiveMessageOutput, error) {
 				return &sqs.ReceiveMessageOutput{
 					Messages: []types.Message{
 						{
@@ -346,7 +346,7 @@ func TestReceiveData(t *testing.T) {
 		},
 		{
 			name: "empty",
-			mock: sqsmock{receiveFn: func(ctx context.Context, params *sqs.ReceiveMessageInput, optFns ...func(*sqs.Options)) (*sqs.ReceiveMessageOutput, error) {
+			mock: sqsmock{receiveFn: func(_ context.Context, _ *sqs.ReceiveMessageInput, _ ...func(*sqs.Options)) (*sqs.ReceiveMessageOutput, error) {
 				return &sqs.ReceiveMessageOutput{}, nil
 			}},
 			want:    "",
@@ -354,7 +354,7 @@ func TestReceiveData(t *testing.T) {
 		},
 		{
 			name: "error",
-			mock: sqsmock{receiveFn: func(ctx context.Context, params *sqs.ReceiveMessageInput, optFns ...func(*sqs.Options)) (*sqs.ReceiveMessageOutput, error) {
+			mock: sqsmock{receiveFn: func(_ context.Context, _ *sqs.ReceiveMessageInput, _ ...func(*sqs.Options)) (*sqs.ReceiveMessageOutput, error) {
 				return nil, errors.New("error")
 			}},
 			want:    "",
@@ -362,7 +362,7 @@ func TestReceiveData(t *testing.T) {
 		},
 		{
 			name: "invalid message",
-			mock: sqsmock{receiveFn: func(ctx context.Context, params *sqs.ReceiveMessageInput, optFns ...func(*sqs.Options)) (*sqs.ReceiveMessageOutput, error) {
+			mock: sqsmock{receiveFn: func(_ context.Context, _ *sqs.ReceiveMessageInput, _ ...func(*sqs.Options)) (*sqs.ReceiveMessageOutput, error) {
 				return &sqs.ReceiveMessageOutput{
 					Messages: []types.Message{
 						{
@@ -420,7 +420,7 @@ func TestHealthCheck(t *testing.T) {
 	}{
 		{
 			name: "success",
-			mock: sqsmock{getQueueAttributesFn: func(ctx context.Context, params *sqs.GetQueueAttributesInput, optFns ...func(*sqs.Options)) (*sqs.GetQueueAttributesOutput, error) {
+			mock: sqsmock{getQueueAttributesFn: func(_ context.Context, _ *sqs.GetQueueAttributesInput, _ ...func(*sqs.Options)) (*sqs.GetQueueAttributesOutput, error) {
 				return &sqs.GetQueueAttributesOutput{
 					Attributes: map[string]string{string(types.QueueAttributeNameLastModifiedTimestamp): "2022-01-02 03:04:05"},
 				}, nil
@@ -429,14 +429,14 @@ func TestHealthCheck(t *testing.T) {
 		},
 		{
 			name: "no queue",
-			mock: sqsmock{getQueueAttributesFn: func(ctx context.Context, params *sqs.GetQueueAttributesInput, optFns ...func(*sqs.Options)) (*sqs.GetQueueAttributesOutput, error) {
+			mock: sqsmock{getQueueAttributesFn: func(_ context.Context, _ *sqs.GetQueueAttributesInput, _ ...func(*sqs.Options)) (*sqs.GetQueueAttributesOutput, error) {
 				return &sqs.GetQueueAttributesOutput{}, nil
 			}},
 			wantErr: true,
 		},
 		{
 			name: "error",
-			mock: sqsmock{getQueueAttributesFn: func(ctx context.Context, params *sqs.GetQueueAttributesInput, optFns ...func(*sqs.Options)) (*sqs.GetQueueAttributesOutput, error) {
+			mock: sqsmock{getQueueAttributesFn: func(_ context.Context, _ *sqs.GetQueueAttributesInput, _ ...func(*sqs.Options)) (*sqs.GetQueueAttributesOutput, error) {
 				return &sqs.GetQueueAttributesOutput{}, errors.New("error")
 			}},
 			wantErr: true,

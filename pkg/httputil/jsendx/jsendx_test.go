@@ -215,13 +215,13 @@ func TestDefaultIPHandler(t *testing.T) {
 	}{
 		{
 			name:    "success response",
-			ipFunc:  func(ctx context.Context) (string, error) { return "0.0.0.0", nil },
+			ipFunc:  func(_ context.Context) (string, error) { return "0.0.0.0", nil },
 			wantIP:  "0.0.0.0",
 			wantErr: false,
 		},
 		{
 			name:    "error response",
-			ipFunc:  func(ctx context.Context) (string, error) { return "ERROR", errors.New("ERROR") },
+			ipFunc:  func(_ context.Context) (string, error) { return "ERROR", errors.New("ERROR") },
 			wantIP:  "",
 			wantErr: true,
 		},

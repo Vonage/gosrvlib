@@ -42,7 +42,7 @@ func TestNew(t *testing.T) {
 		},
 		{
 			name:    "fails with invalid option",
-			opts:    []Option{func(c *Client) error { return errors.New("Error") }},
+			opts:    []Option{func(_ *Client) error { return errors.New("Error") }},
 			wantErr: true,
 		},
 		{
@@ -111,7 +111,7 @@ func TestInstrumentRoundTripper(t *testing.T) {
 
 	server := httptest.NewServer(
 		http.HandlerFunc(
-			func(w http.ResponseWriter, r *http.Request) {
+			func(w http.ResponseWriter, _ *http.Request) {
 				w.WriteHeader(http.StatusOK)
 				_, _ = w.Write([]byte(`OK`))
 			},

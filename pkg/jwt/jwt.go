@@ -224,7 +224,7 @@ func (c *JWT) checkToken(r *http.Request) (*Claims, error) {
 	_, err := jwt.ParseWithClaims(
 		signedToken,
 		claims,
-		func(token *jwt.Token) (any, error) {
+		func(_ *jwt.Token) (any, error) {
 			return c.key, nil
 		},
 	)

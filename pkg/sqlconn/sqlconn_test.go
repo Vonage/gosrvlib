@@ -14,7 +14,7 @@ import (
 )
 
 func newMockConnectFunc(db *sql.DB, err error) ConnectFunc {
-	return func(ctx context.Context, cfg *config) (*sql.DB, error) {
+	return func(_ context.Context, _ *config) (*sql.DB, error) {
 		return db, err
 	}
 }
@@ -169,7 +169,7 @@ func TestSQLConn_HealthCheck(t *testing.T) {
 		{
 			name: "fail with check connection error",
 			configOpts: []Option{
-				WithCheckConnectionFunc(func(ctx context.Context, db *sql.DB) error {
+				WithCheckConnectionFunc(func(_ context.Context, _ *sql.DB) error {
 					return errors.New("check error")
 				}),
 			},
@@ -178,7 +178,7 @@ func TestSQLConn_HealthCheck(t *testing.T) {
 		{
 			name: "success",
 			configOpts: []Option{
-				WithCheckConnectionFunc(func(ctx context.Context, db *sql.DB) error {
+				WithCheckConnectionFunc(func(_ context.Context, _ *sql.DB) error {
 					return nil
 				}),
 			},
@@ -292,8 +292,8 @@ func Test_connectWithBackoff(t *testing.T) {
 	}{
 		{
 			name: "fail with sql error",
-			setupConfig: func(c *config, db *sql.DB) {
-				c.sqlOpenFunc = func(driverName, dataSourceName string) (*sql.DB, error) {
+			setupConfig: func(c *config, _ *sql.DB) {
+				c.sqlOpenFunc = func(_, _ string) (*sql.DB, error) {
 					return nil, errors.New("open error")
 				}
 			},
@@ -302,10 +302,10 @@ func Test_connectWithBackoff(t *testing.T) {
 		{
 			name: "fail with connection check error",
 			setupConfig: func(c *config, db *sql.DB) {
-				c.sqlOpenFunc = func(driverName, dataSourceName string) (*sql.DB, error) {
+				c.sqlOpenFunc = func(_, _ string) (*sql.DB, error) {
 					return db, nil
 				}
-				c.checkConnectionFunc = func(ctx context.Context, db *sql.DB) error {
+				c.checkConnectionFunc = func(_ context.Context, _ *sql.DB) error {
 					return errors.New("check error")
 				}
 			},
@@ -314,10 +314,10 @@ func Test_connectWithBackoff(t *testing.T) {
 		{
 			name: "succeed",
 			setupConfig: func(c *config, db *sql.DB) {
-				c.sqlOpenFunc = func(driverName, dataSourceName string) (*sql.DB, error) {
+				c.sqlOpenFunc = func(_, _ string) (*sql.DB, error) {
 					return db, nil
 				}
-				c.checkConnectionFunc = func(ctx context.Context, db *sql.DB) error {
+				c.checkConnectionFunc = func(_ context.Context, _ *sql.DB) error {
 					return nil
 				}
 			},

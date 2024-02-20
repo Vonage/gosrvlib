@@ -137,7 +137,7 @@ func Test_Consumer_HealthCheck(t *testing.T) {
 	err = consumer.HealthCheck(ctx)
 	require.Error(t, err)
 
-	consumer.checkFn = func(ctx context.Context, address string) error {
+	consumer.checkFn = func(_ context.Context, _ string) error {
 		return nil
 	}
 

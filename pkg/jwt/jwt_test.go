@@ -28,23 +28,23 @@ func TestNew(t *testing.T) {
 		{
 			name:       "success with default options",
 			key:        []byte("test-key-01"),
-			userHashFn: func(username string) ([]byte, error) { return []byte("hash-01"), nil },
+			userHashFn: func(_ string) ([]byte, error) { return []byte("hash-01"), nil },
 			wantErr:    false,
 		},
 		{
 			name:       "success with custom options",
 			key:        []byte("test-key-02"),
-			userHashFn: func(username string) ([]byte, error) { return []byte("hash-02"), nil },
+			userHashFn: func(_ string) ([]byte, error) { return []byte("hash-02"), nil },
 			opts: []Option{
 				WithExpirationTime(1 * time.Minute),
 				WithRenewTime(10 * time.Second),
-				WithSendResponseFn(func(ctx context.Context, w http.ResponseWriter, statusCode int, data string) {}),
+				WithSendResponseFn(func(_ context.Context, _ http.ResponseWriter, _ int, _ string) {}),
 			},
 			wantErr: false,
 		},
 		{
 			name:       "failure with empty key",
-			userHashFn: func(username string) ([]byte, error) { return []byte("hash-01"), nil },
+			userHashFn: func(_ string) ([]byte, error) { return []byte("hash-01"), nil },
 			wantErr:    true,
 		},
 		{

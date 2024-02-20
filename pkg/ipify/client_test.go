@@ -82,7 +82,7 @@ func TestClient_GetPublicIP(t *testing.T) {
 	}{
 		{
 			name: "fails because status not OK",
-			getIPHandler: func(w http.ResponseWriter, r *http.Request) {
+			getIPHandler: func(w http.ResponseWriter, _ *http.Request) {
 				httputil.SendStatus(testutil.Context(), w, http.StatusInternalServerError)
 			},
 			wantIP:  "",
@@ -90,7 +90,7 @@ func TestClient_GetPublicIP(t *testing.T) {
 		},
 		{
 			name: "fails because of timeout",
-			getIPHandler: func(w http.ResponseWriter, r *http.Request) {
+			getIPHandler: func(w http.ResponseWriter, _ *http.Request) {
 				time.Sleep(5 * time.Second)
 				httputil.SendStatus(testutil.Context(), w, http.StatusOK)
 			},
@@ -98,14 +98,14 @@ func TestClient_GetPublicIP(t *testing.T) {
 		},
 		{
 			name: "fails because of bad content",
-			getIPHandler: func(w http.ResponseWriter, r *http.Request) {
+			getIPHandler: func(w http.ResponseWriter, _ *http.Request) {
 				w.Header().Set("Content-Length", "1")
 			},
 			wantErr: true,
 		},
 		{
 			name: "succeed with valid response",
-			getIPHandler: func(w http.ResponseWriter, r *http.Request) {
+			getIPHandler: func(w http.ResponseWriter, _ *http.Request) {
 				w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 				w.WriteHeader(http.StatusOK)
 				_, err := w.Write([]byte("0.0.0.0"))
