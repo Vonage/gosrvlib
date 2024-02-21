@@ -1,4 +1,7 @@
-// Package sliceutil provides a collection of slice functions.
+/*
+Package sliceutil provides a collection of slice utility functions,
+including statistics for numerical slices.
+*/
 package sliceutil
 
 // Filter returns a new slice containing
