@@ -1,5 +1,5 @@
 /*
-Package randkey provides utility functions to generate random uint64 keys.
+Package randkey provides utility functions to generate random uint64 keys in different formats.
 */
 package randkey
 
