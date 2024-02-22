@@ -1,6 +1,5 @@
 /*
-Package sliceutil provides a collection of slice utility functions,
-including statistics for numerical slices.
+Package sliceutil provides a collection of slice utility functions, including descriptive statistics functions for numerical slices.
 */
 package sliceutil
 
