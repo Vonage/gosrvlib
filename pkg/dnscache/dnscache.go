@@ -14,7 +14,7 @@ import (
 
 // dnsItem represents a DNS cache entry for a host.
 type dnsItem struct {
-	// expireAt is the UTC time in nanoseconds when the DNS item will be expired.
+	// expireAt is the expiration time in seconds elapsed since January 1, 1970 UTC.
 	expireAt int64
 
 	// addrs is the list of IP addresses associated with the host by the DNS.
@@ -94,7 +94,7 @@ func (r *Resolver) DialContext(ctx context.Context, network, address string) (ne
 // Resolver and caches the obtained addresses for future use.
 func (r *Resolver) LookupHost(ctx context.Context, host string) ([]string, error) {
 	item, ok := tsmap.GetOK(r.mux, r.cache, host)
-	if ok && (item.expireAt > time.Now().UTC().UnixNano()) {
+	if ok && (item.expireAt > time.Now().UTC().Unix()) {
 		return item.addrs, nil
 	}
 
@@ -120,7 +120,7 @@ func (r *Resolver) set(host string, addrs []string) {
 		r.cache,
 		host,
 		&dnsItem{
-			expireAt: time.Now().UTC().Add(r.ttl).UnixNano(),
+			expireAt: time.Now().UTC().Add(r.ttl).Unix(),
 			addrs:    addrs,
 		},
 	)
@@ -128,7 +128,7 @@ func (r *Resolver) set(host string, addrs []string) {
 
 // evict removes either the oldest entry or the first expired one from the DNS cache.
 func (r *Resolver) evict() {
-	cuttime := time.Now().UTC().UnixNano()
+	cuttime := time.Now().UTC().Unix()
 	oldest := int64(1<<63 - 1)
 	oldestHost := ""
 
