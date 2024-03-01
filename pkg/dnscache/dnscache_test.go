@@ -264,15 +264,23 @@ func Test_Reset(t *testing.T) {
 func Test_RemoveEntry(t *testing.T) {
 	t.Parallel()
 
-	r := New(nil, 1, 1*time.Second)
+	r := New(nil, 3, 1*time.Second)
 
 	r.cache = map[string]*dnsItem{
 		"example.com": {
 			expireAt: time.Now().UTC().Unix(),
 		},
+		"example.net": {
+			expireAt: time.Now().UTC().Unix(),
+		},
+		"example.org": {
+			expireAt: time.Now().UTC().Unix(),
+		},
 	}
 
-	r.RemoveEntry("example.com")
+	r.RemoveEntry("example.net")
 
-	require.Empty(t, r.cache)
+	require.Len(t, r.cache, 2)
+	require.Contains(t, r.cache, "example.com")
+	require.Contains(t, r.cache, "example.org")
 }
