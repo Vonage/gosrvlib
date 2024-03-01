@@ -21,10 +21,15 @@ type dnsItem struct {
 	addrs []string
 }
 
-// Resolver represents a cache for DNS items.
-type Resolver struct {
+// Resolver is a net.Resolver interface for DNS lookups.
+type Resolver interface {
+	LookupHost(ctx context.Context, host string) (addrs []string, err error)
+}
+
+// CacheResolver represents a cache for DNS items.
+type CacheResolver struct {
 	// resolver is the net.resolver used to resolve DNS queries.
-	resolver *net.Resolver
+	resolver Resolver
 
 	// mux is the mutex for the cache.
 	mux *sync.RWMutex
@@ -32,7 +37,7 @@ type Resolver struct {
 	// ttl is the time-to-live for DNS items.
 	ttl time.Duration
 
-	// size is the maximum size of the cache.
+	// size is the maximum size of the cache (min = 1).
 	size int
 
 	// cache maps a host name to a DNS item.
@@ -41,14 +46,19 @@ type Resolver struct {
 
 // New creates a new DNS resolver with a cache of the specified size and TTL.
 // If the resolver parameter is nil, a default resolver will be used.
-// The size parameter determines the maximum number of DNS entries that can be cached.
+// The size parameter determines the maximum number of DNS entries that can be cached (min = 1).
+// If the size is less than or equal to zero, the cache will have a default size of 1.
 // The ttl parameter specifies the time-to-live for each cached DNS entry.
-func New(resolver *net.Resolver, size int, ttl time.Duration) *Resolver {
+func New(resolver Resolver, size int, ttl time.Duration) *CacheResolver {
 	if resolver == nil {
 		resolver = &net.Resolver{}
 	}
 
-	return &Resolver{
+	if size <= 0 {
+		size = 1
+	}
+
+	return &CacheResolver{
 		resolver: resolver,
 		mux:      &sync.RWMutex{},
 		ttl:      ttl,
@@ -62,7 +72,7 @@ func New(resolver *net.Resolver, size int, ttl time.Duration) *Resolver {
 // It then attempts to establish a connection to each resolved IP address until a successful connection is made.
 // If all connection attempts fail, it returns an error.
 // The function returns the established net.Conn and any error encountered during the process.
-func (r *Resolver) DialContext(ctx context.Context, network, address string) (net.Conn, error) {
+func (r *CacheResolver) DialContext(ctx context.Context, network, address string) (net.Conn, error) {
 	host, port, err := net.SplitHostPort(address)
 	if err != nil {
 		return nil, fmt.Errorf("failed to extract host and port from %s: %w", address, err)
@@ -92,9 +102,9 @@ func (r *Resolver) DialContext(ctx context.Context, network, address string) (ne
 // It first checks if the host is already cached and not expired. If so, it returns
 // the cached addresses. Otherwise, it performs a DNS lookup using the underlying
 // Resolver and caches the obtained addresses for future use.
-func (r *Resolver) LookupHost(ctx context.Context, host string) ([]string, error) {
-	item, ok := tsmap.GetOK(r.mux, r.cache, host)
-	if ok && (item.expireAt > time.Now().UTC().Unix()) {
+func (r *CacheResolver) LookupHost(ctx context.Context, host string) ([]string, error) {
+	item, exist := tsmap.GetOK(r.mux, r.cache, host)
+	if exist && (item.expireAt > time.Now().UTC().Unix()) {
 		return item.addrs, nil
 	}
 
@@ -103,15 +113,16 @@ func (r *Resolver) LookupHost(ctx context.Context, host string) ([]string, error
 		return nil, fmt.Errorf("failed DNS lookup for the host %s : %w", host, err)
 	}
 
-	r.set(host, addrs)
+	r.set(host, addrs, exist)
 
 	return addrs, nil
 }
 
 // set adds or updates the cache entry for the given host with the provided addresses.
 // If the cache is full, it will free up space by removing expired or old entries.
-func (r *Resolver) set(host string, addrs []string) {
-	if len(r.cache) >= r.size {
+// If the host already exists in the cache, it will update the entry with the new addresses.
+func (r *CacheResolver) set(host string, addrs []string, exist bool) {
+	if (!exist) && (len(r.cache) >= r.size) {
 		r.evict()
 	}
 
@@ -127,7 +138,7 @@ func (r *Resolver) set(host string, addrs []string) {
 }
 
 // evict removes either the oldest entry or the first expired one from the DNS cache.
-func (r *Resolver) evict() {
+func (r *CacheResolver) evict() {
 	cuttime := time.Now().UTC().Unix()
 	oldest := int64(1<<63 - 1)
 	oldestHost := ""
@@ -144,7 +155,5 @@ func (r *Resolver) evict() {
 		}
 	}
 
-	if oldestHost != "" {
-		tsmap.Delete(r.mux, r.cache, oldestHost)
-	}
+	tsmap.Delete(r.mux, r.cache, oldestHost)
 }
