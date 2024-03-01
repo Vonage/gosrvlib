@@ -34,21 +34,21 @@ func TestNew(t *testing.T) {
 func Test_evict_expired(t *testing.T) {
 	t.Parallel()
 
-	curtime := time.Now().UTC().Unix()
-
-	r := New(nil, 3, 30*time.Second)
+	r := New(nil, 3, 1*time.Minute)
 
 	r.cache = map[string]*dnsItem{
 		"example.com": {
-			expireAt: (curtime - 2),
+			expireAt: time.Now().UTC().Add(-2 * time.Second).Unix(),
 		},
 		"example.org": {
-			expireAt: (curtime + 11),
+			expireAt: time.Now().UTC().Add(11 * time.Second).Unix(),
 		},
 		"example.net": {
-			expireAt: (curtime + 13),
+			expireAt: time.Now().UTC().Add(13 * time.Second).Unix(),
 		},
 	}
+
+	require.Len(t, r.cache, 3)
 
 	r.evict()
 
@@ -60,19 +60,17 @@ func Test_evict_expired(t *testing.T) {
 func Test_evict_oldest(t *testing.T) {
 	t.Parallel()
 
-	curtime := time.Now().UTC().Unix()
-
 	r := New(nil, 3, 1*time.Second)
 
 	r.cache = map[string]*dnsItem{
 		"example.com": {
-			expireAt: (curtime + 11),
+			expireAt: time.Now().UTC().Add(11 * time.Second).Unix(),
 		},
 		"example.org": {
-			expireAt: (curtime + 7),
+			expireAt: time.Now().UTC().Add(7 * time.Second).Unix(),
 		},
 		"example.net": {
-			expireAt: (curtime + 13),
+			expireAt: time.Now().UTC().Add(13 * time.Second).Unix(),
 		},
 	}
 
@@ -245,4 +243,36 @@ func Test_DialContext(t *testing.T) {
 	conn, err := r.DialContext(context.TODO(), network, address)
 	require.NoError(t, err)
 	require.NotNil(t, conn)
+}
+
+func Test_Reset(t *testing.T) {
+	t.Parallel()
+
+	r := New(nil, 1, 1*time.Second)
+
+	r.cache = map[string]*dnsItem{
+		"example.com": {
+			expireAt: time.Now().UTC().Unix(),
+		},
+	}
+
+	r.Reset()
+
+	require.Empty(t, r.cache)
+}
+
+func Test_RemoveEntry(t *testing.T) {
+	t.Parallel()
+
+	r := New(nil, 1, 1*time.Second)
+
+	r.cache = map[string]*dnsItem{
+		"example.com": {
+			expireAt: time.Now().UTC().Unix(),
+		},
+	}
+
+	r.RemoveEntry("example.com")
+
+	require.Empty(t, r.cache)
 }

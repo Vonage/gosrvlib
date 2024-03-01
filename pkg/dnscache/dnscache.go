@@ -67,6 +67,19 @@ func New(resolver Resolver, size int, ttl time.Duration) *CacheResolver {
 	}
 }
 
+// Reset clears the whole cache and initializes it with a new map of the specified size.
+func (r *CacheResolver) Reset() {
+	r.mux.Lock()
+	defer r.mux.Unlock()
+
+	r.cache = make(map[string]*dnsItem, r.size)
+}
+
+// RemoveEntry removes the cache entry for the specified host.
+func (r *CacheResolver) RemoveEntry(host string) {
+	tsmap.Delete(r.mux, r.cache, host)
+}
+
 // LookupHost performs a DNS lookup for the given host using the DNSCacheResolver.
 // It first checks if the host is already cached and not expired. If so, it returns
 // the cached addresses. Otherwise, it performs a DNS lookup using the underlying
@@ -146,8 +159,8 @@ func (r *CacheResolver) evict() {
 
 	for h, d := range r.cache {
 		if d.expireAt < cuttime {
-			tsmap.Delete(r.mux, r.cache, h)
-			break
+			r.RemoveEntry(h)
+			return
 		}
 
 		if d.expireAt < oldest {
@@ -156,5 +169,5 @@ func (r *CacheResolver) evict() {
 		}
 	}
 
-	tsmap.Delete(r.mux, r.cache, oldestHost)
+	r.RemoveEntry(oldestHost)
 }
