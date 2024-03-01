@@ -67,11 +67,32 @@ func New(resolver Resolver, size int, ttl time.Duration) *CacheResolver {
 	}
 }
 
+// LookupHost performs a DNS lookup for the given host using the DNSCacheResolver.
+// It first checks if the host is already cached and not expired. If so, it returns
+// the cached addresses. Otherwise, it performs a DNS lookup using the underlying
+// Resolver and caches the obtained addresses for future use.
+func (r *CacheResolver) LookupHost(ctx context.Context, host string) ([]string, error) {
+	item, exist := tsmap.GetOK(r.mux, r.cache, host)
+	if exist && (item.expireAt > time.Now().UTC().Unix()) {
+		return item.addrs, nil
+	}
+
+	addrs, err := r.resolver.LookupHost(ctx, host)
+	if err != nil {
+		return nil, fmt.Errorf("failed DNS lookup for the host %s : %w", host, err)
+	}
+
+	r.set(host, addrs, exist)
+
+	return addrs, nil
+}
+
 // DialContext dials the network and address specified by the parameters.
 // It resolves the host from the address using the LookupHost method of the Resolver.
 // It then attempts to establish a connection to each resolved IP address until a successful connection is made.
 // If all connection attempts fail, it returns an error.
 // The function returns the established net.Conn and any error encountered during the process.
+// This function can replace the DialContext in http.Transport.
 func (r *CacheResolver) DialContext(ctx context.Context, network, address string) (net.Conn, error) {
 	host, port, err := net.SplitHostPort(address)
 	if err != nil {
@@ -96,26 +117,6 @@ func (r *CacheResolver) DialContext(ctx context.Context, network, address string
 	}
 
 	return nil, fmt.Errorf("failed to dial %s: %w", address, err)
-}
-
-// LookupHost performs a DNS lookup for the given host using the DNSCacheResolver.
-// It first checks if the host is already cached and not expired. If so, it returns
-// the cached addresses. Otherwise, it performs a DNS lookup using the underlying
-// Resolver and caches the obtained addresses for future use.
-func (r *CacheResolver) LookupHost(ctx context.Context, host string) ([]string, error) {
-	item, exist := tsmap.GetOK(r.mux, r.cache, host)
-	if exist && (item.expireAt > time.Now().UTC().Unix()) {
-		return item.addrs, nil
-	}
-
-	addrs, err := r.resolver.LookupHost(ctx, host)
-	if err != nil {
-		return nil, fmt.Errorf("failed DNS lookup for the host %s : %w", host, err)
-	}
-
-	r.set(host, addrs, exist)
-
-	return addrs, nil
 }
 
 // set adds or updates the cache entry for the given host with the provided addresses.
