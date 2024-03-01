@@ -4,10 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/require"
+	"golang.org/x/net/nettest"
 )
 
 func TestNew(t *testing.T) {
@@ -34,7 +36,7 @@ func Test_evict_expired(t *testing.T) {
 
 	curtime := time.Now().UTC().Unix()
 
-	r := New(nil, 3, 1*time.Second)
+	r := New(nil, 3, 30*time.Second)
 
 	r.cache = map[string]*dnsItem{
 		"example.com": {
@@ -126,7 +128,7 @@ func Test_LookupHost_error(t *testing.T) {
 	t.Parallel()
 
 	resolver := &mockResolver{
-		lookupHost: func(ctx context.Context, host string) ([]string, error) {
+		lookupHost: func(_ context.Context, _ string) ([]string, error) {
 			return nil, errors.New("mock error")
 		},
 	}
@@ -144,7 +146,7 @@ func Test_LookupHost(t *testing.T) {
 	var i int
 
 	resolver := &mockResolver{
-		lookupHost: func(ctx context.Context, host string) ([]string, error) {
+		lookupHost: func(_ context.Context, _ string) ([]string, error) {
 			i++
 			ip := fmt.Sprintf("192.0.2.%d", i)
 			return []string{ip}, nil
@@ -174,4 +176,73 @@ func Test_LookupHost(t *testing.T) {
 	addrs, err = r.LookupHost(context.TODO(), "example.net")
 	require.NoError(t, err)
 	require.Equal(t, []string{"192.0.2.3"}, addrs)
+}
+
+func Test_DialContext_lookup_errors(t *testing.T) {
+	t.Parallel()
+
+	resolver := &mockResolver{
+		lookupHost: func(_ context.Context, _ string) ([]string, error) {
+			return nil, errors.New("mock error")
+		},
+	}
+
+	r := New(resolver, 1, 1*time.Second)
+
+	// SplitHostPort error
+	conn, err := r.DialContext(context.TODO(), "tcp", "~~~")
+	require.Error(t, err)
+	require.Nil(t, conn)
+
+	// LookupHost error
+	conn, err = r.DialContext(context.TODO(), "tcp", "example.com:80")
+	require.Error(t, err)
+	require.Nil(t, conn)
+}
+
+func Test_DialContext_ip_error(t *testing.T) {
+	t.Parallel()
+
+	resolver := &mockResolver{
+		lookupHost: func(_ context.Context, _ string) ([]string, error) {
+			return []string{"1"}, nil
+		},
+	}
+
+	r := New(resolver, 1, 1*time.Second)
+
+	conn, err := r.DialContext(context.TODO(), "tcp", "example.com:80")
+	require.Error(t, err)
+	require.Nil(t, conn)
+}
+
+func Test_DialContext(t *testing.T) {
+	t.Parallel()
+
+	network := "tcp"
+
+	listener, err := nettest.NewLocalListener(network)
+	require.NoError(t, err)
+	require.NotNil(t, listener)
+
+	defer func() {
+		err := listener.Close()
+		require.NoError(t, err)
+	}()
+
+	address := listener.Addr().String()
+	addrparts := strings.Split(address, ":")
+	ip := addrparts[0]
+
+	resolver := &mockResolver{
+		lookupHost: func(_ context.Context, _ string) ([]string, error) {
+			return []string{ip}, nil
+		},
+	}
+
+	r := New(resolver, 1, 1*time.Second)
+
+	conn, err := r.DialContext(context.TODO(), network, address)
+	require.NoError(t, err)
+	require.NotNil(t, conn)
 }
