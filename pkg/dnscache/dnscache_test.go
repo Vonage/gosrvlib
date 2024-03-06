@@ -5,9 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/net/nettest"
 )
@@ -136,6 +138,23 @@ func Test_LookupHost_error(t *testing.T) {
 	addrs, err := r.LookupHost(context.TODO(), "example.com")
 	require.Error(t, err)
 	require.Nil(t, addrs)
+
+	nlookup := 100
+	wg := &sync.WaitGroup{}
+
+	wg.Add(nlookup)
+
+	for i := 0; i < nlookup; i++ {
+		go func() {
+			defer wg.Done()
+
+			addrs, err := r.LookupHost(context.TODO(), "example.net")
+			assert.Error(t, err)
+			assert.Nil(t, addrs)
+		}()
+	}
+
+	wg.Wait()
 }
 
 func Test_LookupHost(t *testing.T) {
@@ -174,6 +193,25 @@ func Test_LookupHost(t *testing.T) {
 	addrs, err = r.LookupHost(context.TODO(), "example.net")
 	require.NoError(t, err)
 	require.Equal(t, []string{"192.0.2.3"}, addrs)
+
+	nlookup := 100
+	wg := &sync.WaitGroup{}
+
+	wg.Add(nlookup)
+
+	for i := 0; i < nlookup; i++ {
+		go func() {
+			defer wg.Done()
+
+			addrs, err := r.LookupHost(context.TODO(), "example.org")
+			assert.NoError(t, err)
+			assert.NotNil(t, addrs)
+			assert.Len(t, addrs, 1)
+			assert.Contains(t, r.cache, "example.org")
+		}()
+	}
+
+	wg.Wait()
 }
 
 func Test_DialContext_lookup_errors(t *testing.T) {
