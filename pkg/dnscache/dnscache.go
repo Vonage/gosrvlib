@@ -92,17 +92,17 @@ func (r *CacheResolver) RemoveEntry(host string) {
 // the cached addresses. Otherwise, it performs a DNS lookup using the underlying
 // Resolver and caches the obtained addresses for future use.
 func (r *CacheResolver) LookupHost(ctx context.Context, host string) ([]string, error) {
-	r.mux.Lock()
-
 	var (
 		used      chan struct{}
 		cachedErr error
 	)
 
+	r.mux.RLock()
 	item, ok := r.cache[host]
+	r.mux.RUnlock()
+
 	if ok {
 		if item.expireAt > time.Now().UTC().Unix() {
-			r.mux.Unlock()
 			return item.addrs, item.err
 		}
 
@@ -111,8 +111,6 @@ func (r *CacheResolver) LookupHost(ctx context.Context, host string) ([]string, 
 	}
 
 	if used != nil {
-		r.mux.Unlock()
-
 		// an external DNS lookup is already in progress,
 		// waiting for completion and return values from cache.
 		select {
@@ -122,9 +120,8 @@ func (r *CacheResolver) LookupHost(ctx context.Context, host string) ([]string, 
 		}
 
 		r.mux.RLock()
-		defer r.mux.RUnlock()
-
 		item := r.cache[host]
+		r.mux.RUnlock()
 
 		return item.addrs, item.err
 	}
@@ -134,12 +131,8 @@ func (r *CacheResolver) LookupHost(ctx context.Context, host string) ([]string, 
 
 	// mark the host as being used for an external DNS lookup
 	r.set(host, nil, cachedErr, used)
-	r.mux.Unlock()
 
 	addrs, err := r.resolver.LookupHost(ctx, host)
-
-	r.mux.Lock()
-	defer r.mux.Unlock()
 
 	r.set(host, addrs, err, nil)
 
@@ -181,11 +174,13 @@ func (r *CacheResolver) DialContext(ctx context.Context, network, address string
 // set adds or updates the cache entry for the given host with the provided addresses.
 // If the cache is full, it will free up space by removing expired or old entries.
 // If the host already exists in the cache, it will update the entry with the new addresses.
-// NOTE: this is not thread-safe, it should be called within a mutex lock.
 func (r *CacheResolver) set(host string, addrs []string, err error, used chan struct{}) {
+	r.mux.Lock()
+	defer r.mux.Unlock()
+
 	_, ok := r.cache[host]
 	if (!ok) && (len(r.cache) >= r.size) {
-		// free up space
+		// free up space for a new entry
 		r.evict()
 	}
 

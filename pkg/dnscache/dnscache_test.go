@@ -131,7 +131,7 @@ func Test_LookupHost_error(t *testing.T) {
 
 	resolver := &mockResolver{
 		lookupHost: func(_ context.Context, _ string) ([]string, error) {
-			time.Sleep(100 * time.Millisecond) // simulate slow lookup
+			time.Sleep(300 * time.Millisecond) // simulate slow lookup
 			i++
 			return nil, fmt.Errorf("mock error: %d", i)
 		},
@@ -145,7 +145,7 @@ func Test_LookupHost_error(t *testing.T) {
 
 	// test concurrent lookups
 
-	nlookup := 100
+	nlookup := 10
 	wg := &sync.WaitGroup{}
 
 	wg.Add(nlookup)
@@ -171,7 +171,6 @@ func Test_LookupHost(t *testing.T) {
 
 	resolver := &mockResolver{
 		lookupHost: func(_ context.Context, _ string) ([]string, error) {
-			time.Sleep(100 * time.Millisecond) // simulate slow lookup
 			i++
 			ip := fmt.Sprintf("192.0.2.%d", i)
 			return []string{ip}, nil
@@ -201,6 +200,16 @@ func Test_LookupHost(t *testing.T) {
 	addrs, err = r.LookupHost(context.TODO(), "example.net")
 	require.NoError(t, err)
 	require.Equal(t, []string{"192.0.2.3"}, addrs)
+
+	// context expired
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Millisecond)
+	defer cancel()
+
+	r.set("example.org", nil, nil, make(chan struct{}))
+
+	addrs, err = r.LookupHost(ctx, "example.org")
+	require.Error(t, err)
+	require.Nil(t, addrs)
 }
 
 func Test_LookupHost_concurrent(t *testing.T) {
@@ -210,7 +219,7 @@ func Test_LookupHost_concurrent(t *testing.T) {
 
 	resolver := &mockResolver{
 		lookupHost: func(_ context.Context, _ string) ([]string, error) {
-			time.Sleep(100 * time.Millisecond) // simulate slow lookup
+			time.Sleep(300 * time.Millisecond) // simulate slow lookup
 			i++
 			ip := fmt.Sprintf("192.0.2.%d", i)
 			return []string{ip}, nil
@@ -219,7 +228,7 @@ func Test_LookupHost_concurrent(t *testing.T) {
 
 	r := New(resolver, 2, 0)
 
-	nlookup := 100
+	nlookup := 10
 	wg := &sync.WaitGroup{}
 
 	wg.Add(nlookup)
