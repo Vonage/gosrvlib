@@ -17,8 +17,8 @@ type Resolver interface {
 
 // entry represents a DNS cache entry for a host.
 type entry struct {
-	// wg wait for each duplicate lookup call for the same host.
-	wg *sync.WaitGroup
+	// wait for each duplicate lookup call for the same host.
+	wait chan struct{}
 
 	// err is the error returned by the external DNS lookup.
 	err error
@@ -104,19 +104,13 @@ func (c *Cache) LookupHost(ctx context.Context, host string) ([]string, error) {
 			return item.addrs, item.err
 		}
 
-		if item.wg != nil {
+		if item.wait != nil {
 			// another external DNS lookup is already in progress,
 			// waiting for completion and return values from cache.
 			c.mux.Unlock()
 
-			done := make(chan struct{})
-			go func() {
-				item.wg.Wait()
-				close(done)
-			}()
-
 			select {
-			case <-done:
+			case <-item.wait:
 			case <-ctx.Done():
 				return nil, fmt.Errorf("context canceled: %w", ctx.Err())
 			}
@@ -135,11 +129,10 @@ func (c *Cache) LookupHost(ctx context.Context, host string) ([]string, error) {
 		}
 	}
 
-	wg := &sync.WaitGroup{}
-	wg.Add(1)
-	defer wg.Done()
+	wait := make(chan struct{})
+	defer close(wait)
 
-	c.set(host, nil, nil, wg)
+	c.set(host, nil, nil, wait)
 	c.mux.Unlock()
 
 	addrs, err := c.resolver.LookupHost(ctx, host)
@@ -186,7 +179,7 @@ func (c *Cache) DialContext(ctx context.Context, network, address string) (net.C
 // set adds or updates the cache entry for the given host with the provided addresses.
 // If the cache is full, it will free up space by removing expired or old entries.
 // If the host already exists in the cache, it will update the entry with the new addresses.
-func (c *Cache) set(host string, addrs []string, err error, wg *sync.WaitGroup) {
+func (c *Cache) set(host string, addrs []string, err error, wait chan struct{}) {
 	if len(c.hostmap) >= c.size {
 		if _, ok := c.hostmap[host]; !ok {
 			// free up space for a new entry
@@ -201,7 +194,7 @@ func (c *Cache) set(host string, addrs []string, err error, wg *sync.WaitGroup) 
 	}
 
 	c.hostmap[host] = &entry{
-		wg:       wg,
+		wait:     wait,
 		err:      err,
 		expireAt: now,
 		addrs:    addrs,
