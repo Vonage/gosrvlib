@@ -201,7 +201,7 @@ func Test_LookupHost(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, []string{"192.0.2.3"}, addrs)
 
-	// context expired
+	// context expired on duplicate lookup
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Millisecond)
 	defer cancel()
 
@@ -210,6 +210,21 @@ func Test_LookupHost(t *testing.T) {
 	addrs, err = r.LookupHost(ctx, "example.org")
 	require.Error(t, err)
 	require.Nil(t, addrs)
+
+	// deleted entry on duplicate lookup
+	used := make(chan struct{})
+
+	r.set("example.org", nil, nil, used)
+
+	go func() {
+		time.Sleep(5 * time.Millisecond)
+		r.RemoveEntry("example.org")
+		close(used)
+	}()
+
+	addrs, err = r.LookupHost(context.TODO(), "example.org")
+	require.NoError(t, err)
+	require.Equal(t, []string{"192.0.2.4"}, addrs)
 }
 
 func Test_LookupHost_concurrent(t *testing.T) {

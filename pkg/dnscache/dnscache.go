@@ -120,10 +120,12 @@ func (r *CacheResolver) LookupHost(ctx context.Context, host string) ([]string, 
 		}
 
 		r.mux.RLock()
-		item := r.cache[host]
+		item, ok := r.cache[host]
 		r.mux.RUnlock()
 
-		return item.addrs, item.err
+		if ok {
+			return item.addrs, item.err
+		}
 	}
 
 	used = make(chan struct{})
