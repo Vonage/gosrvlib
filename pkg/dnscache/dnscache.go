@@ -17,7 +17,7 @@ type Resolver interface {
 
 // entry represents a DNS cache entry for a host.
 type entry struct {
-	// wg wait for ech duplicate lookup call for the same host.
+	// wg wait for each duplicate lookup call for the same host.
 	wg *sync.WaitGroup
 
 	// err is the error returned by the external DNS lookup.
@@ -71,7 +71,7 @@ func New(resolver Resolver, size int, ttl time.Duration) *Cache {
 	}
 }
 
-// Reset clears the whole cache and initializes it with a new map of the specified size.
+// Reset clears the whole cache.
 func (c *Cache) Reset() {
 	c.mux.Lock()
 	defer c.mux.Unlock()
@@ -91,6 +91,7 @@ func (c *Cache) Remove(host string) {
 // It first checks if the host is already cached and not expired. If so, it returns
 // the cached addresses. Otherwise, it performs a DNS lookup using the underlying
 // Resolver and caches the obtained addresses for future use.
+// Duplicate lookup calls for the same host will wait for the first lookup to complete.
 func (c *Cache) LookupHost(ctx context.Context, host string) ([]string, error) {
 	c.mux.Lock()
 	item, ok := c.hostmap[host]
@@ -115,6 +116,8 @@ func (c *Cache) LookupHost(ctx context.Context, host string) ([]string, error) {
 				return item.addrs, item.err
 			}
 
+			// the cache entry was removed during the wait,
+			// move on to perform a new DNS lookup.
 			c.mux.Lock()
 		}
 	}
