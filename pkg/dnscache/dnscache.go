@@ -4,7 +4,6 @@ package dnscache
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net"
 	"sync"
@@ -95,7 +94,10 @@ func (r *CacheResolver) RemoveEntry(host string) {
 func (r *CacheResolver) LookupHost(ctx context.Context, host string) ([]string, error) {
 	r.mux.Lock()
 
-	var used chan struct{}
+	var (
+		used      chan struct{}
+		cachedErr error
+	)
 
 	item, ok := r.cache[host]
 	if ok {
@@ -105,6 +107,7 @@ func (r *CacheResolver) LookupHost(ctx context.Context, host string) ([]string, 
 		}
 
 		used = item.used
+		cachedErr = item.err
 	}
 
 	if used != nil {
@@ -112,7 +115,11 @@ func (r *CacheResolver) LookupHost(ctx context.Context, host string) ([]string, 
 
 		// an external DNS lookup is already in progress,
 		// waiting for completion and return values from cache.
-		<-used
+		select {
+		case <-ctx.Done():
+			return nil, fmt.Errorf("context has been canceled: %w", ctx.Err())
+		case <-used:
+		}
 
 		r.mux.RLock()
 		defer r.mux.RUnlock()
@@ -126,7 +133,7 @@ func (r *CacheResolver) LookupHost(ctx context.Context, host string) ([]string, 
 	defer close(used)
 
 	// mark the host as being used for an external DNS lookup
-	r.set(host, nil, errors.New("lookup in progress"), used)
+	r.set(host, nil, cachedErr, used)
 	r.mux.Unlock()
 
 	addrs, err := r.resolver.LookupHost(ctx, host)
@@ -175,7 +182,7 @@ func (r *CacheResolver) DialContext(ctx context.Context, network, address string
 // If the cache is full, it will free up space by removing expired or old entries.
 // If the host already exists in the cache, it will update the entry with the new addresses.
 // NOTE: this is not thread-safe, it should be called within a mutex lock.
-func (r *CacheResolver) set(host string, addrs []string, err error, ch chan struct{}) {
+func (r *CacheResolver) set(host string, addrs []string, err error, used chan struct{}) {
 	_, ok := r.cache[host]
 	if (!ok) && (len(r.cache) >= r.size) {
 		// free up space
@@ -189,7 +196,7 @@ func (r *CacheResolver) set(host string, addrs []string, err error, ch chan stru
 	}
 
 	r.cache[host] = &dnsItem{
-		used:     ch,
+		used:     used,
 		err:      err,
 		expireAt: now,
 		addrs:    addrs,

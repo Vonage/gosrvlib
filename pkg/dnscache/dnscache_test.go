@@ -127,9 +127,13 @@ func (m *mockResolver) LookupHost(ctx context.Context, host string) ([]string, e
 func Test_LookupHost_error(t *testing.T) {
 	t.Parallel()
 
+	var i int
+
 	resolver := &mockResolver{
 		lookupHost: func(_ context.Context, _ string) ([]string, error) {
-			return nil, errors.New("mock error")
+			time.Sleep(100 * time.Millisecond) // simulate slow lookup
+			i++
+			return nil, fmt.Errorf("mock error: %d", i)
 		},
 	}
 
@@ -139,17 +143,20 @@ func Test_LookupHost_error(t *testing.T) {
 	require.Error(t, err)
 	require.Nil(t, addrs)
 
-	nlookup := 1000
+	// test concurrent lookups
+
+	nlookup := 100
 	wg := &sync.WaitGroup{}
 
 	wg.Add(nlookup)
 
-	for i := 0; i < nlookup; i++ {
+	for j := 0; j < nlookup; j++ {
 		go func() {
 			defer wg.Done()
 
 			addrs, err := r.LookupHost(context.TODO(), "example.net")
 			assert.Error(t, err)
+			assert.Equal(t, "mock error: 2", err.Error())
 			assert.Nil(t, addrs)
 		}()
 	}
@@ -164,6 +171,7 @@ func Test_LookupHost(t *testing.T) {
 
 	resolver := &mockResolver{
 		lookupHost: func(_ context.Context, _ string) ([]string, error) {
+			time.Sleep(100 * time.Millisecond) // simulate slow lookup
 			i++
 			ip := fmt.Sprintf("192.0.2.%d", i)
 			return []string{ip}, nil
@@ -193,15 +201,30 @@ func Test_LookupHost(t *testing.T) {
 	addrs, err = r.LookupHost(context.TODO(), "example.net")
 	require.NoError(t, err)
 	require.Equal(t, []string{"192.0.2.3"}, addrs)
+}
 
-	r = New(resolver, 1, 10*time.Second)
+func Test_LookupHost_concurrent(t *testing.T) {
+	t.Parallel()
 
-	nlookup := 1000
+	var i int
+
+	resolver := &mockResolver{
+		lookupHost: func(_ context.Context, _ string) ([]string, error) {
+			time.Sleep(100 * time.Millisecond) // simulate slow lookup
+			i++
+			ip := fmt.Sprintf("192.0.2.%d", i)
+			return []string{ip}, nil
+		},
+	}
+
+	r := New(resolver, 2, 0)
+
+	nlookup := 100
 	wg := &sync.WaitGroup{}
 
 	wg.Add(nlookup)
 
-	for i := 0; i < nlookup; i++ {
+	for j := 0; j < nlookup; j++ {
 		go func() {
 			defer wg.Done()
 
@@ -209,7 +232,7 @@ func Test_LookupHost(t *testing.T) {
 			assert.NoError(t, err)
 			assert.NotNil(t, addrs)
 			assert.Len(t, addrs, 1)
-			assert.Equal(t, []string{"192.0.2.4"}, addrs)
+			assert.Equal(t, []string{"192.0.2.1"}, addrs)
 			assert.Contains(t, r.cache, "example.org")
 		}()
 	}
