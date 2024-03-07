@@ -218,6 +218,23 @@ func Test_LookupHost(t *testing.T) {
 	addrs, err = c.LookupHost(context.TODO(), "example.org")
 	require.NoError(t, err)
 	require.Equal(t, []string{"192.0.2.4"}, addrs)
+
+	// context expired on duplicate lookup
+	wg = &sync.WaitGroup{}
+	wg.Add(1)
+
+	c.mux.Lock()
+	c.set("example.org", nil, nil, wg)
+	c.mux.Unlock()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Millisecond)
+	defer cancel()
+
+	c.set("example.org", nil, nil, wg)
+
+	addrs, err = c.LookupHost(ctx, "example.org")
+	require.Error(t, err)
+	require.Nil(t, addrs)
 }
 
 func Test_LookupHost_concurrent(t *testing.T) {
@@ -236,7 +253,7 @@ func Test_LookupHost_concurrent(t *testing.T) {
 
 	c := New(resolver, 2, 0)
 
-	nlookup := 10
+	nlookup := 100
 	wg := &sync.WaitGroup{}
 
 	wg.Add(nlookup)

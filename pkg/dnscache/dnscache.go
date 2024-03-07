@@ -92,6 +92,8 @@ func (c *Cache) Remove(host string) {
 // the cached addresses. Otherwise, it performs a DNS lookup using the underlying
 // Resolver and caches the obtained addresses for future use.
 // Duplicate lookup calls for the same host will wait for the first lookup to complete.
+//
+//nolint:gocognit
 func (c *Cache) LookupHost(ctx context.Context, host string) ([]string, error) {
 	c.mux.Lock()
 	item, ok := c.hostmap[host]
@@ -106,7 +108,18 @@ func (c *Cache) LookupHost(ctx context.Context, host string) ([]string, error) {
 			// another external DNS lookup is already in progress,
 			// waiting for completion and return values from cache.
 			c.mux.Unlock()
-			item.wg.Wait()
+
+			done := make(chan struct{})
+			go func() {
+				item.wg.Wait()
+				close(done)
+			}()
+
+			select {
+			case <-done:
+			case <-ctx.Done():
+				return nil, fmt.Errorf("context canceled: %w", ctx.Err())
+			}
 
 			c.mux.RLock()
 			item, ok := c.hostmap[host]
