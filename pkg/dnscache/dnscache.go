@@ -1,5 +1,6 @@
 // Package dnscache provides a local DNS cache for LookupHost.
 // The cache has a maximum size and a time-to-live (TTL) for each DNS entry.
+// Duplicate LookupHost calls for the same host will wait for the first lookup to complete and return the same value.
 package dnscache
 
 import (
