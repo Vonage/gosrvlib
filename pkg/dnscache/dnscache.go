@@ -4,16 +4,21 @@ package dnscache
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"sync"
 	"time"
-
-	"github.com/Vonage/gosrvlib/pkg/threadsafe/tsmap"
 )
 
 // dnsItem represents a DNS cache entry for a host.
 type dnsItem struct {
+	// used is the channel used to signal the completion of an external DNS lookup.
+	used chan struct{}
+
+	// err is the error returned by the external DNS lookup.
+	err error
+
 	// expireAt is the expiration time in seconds elapsed since January 1, 1970 UTC.
 	expireAt int64
 
@@ -28,6 +33,9 @@ type Resolver interface {
 
 // CacheResolver represents a cache for DNS items.
 type CacheResolver struct {
+	// cache maps a host name to a DNS item.
+	cache map[string]*dnsItem
+
 	// resolver is the net.resolver used to resolve DNS queries.
 	resolver Resolver
 
@@ -39,9 +47,6 @@ type CacheResolver struct {
 
 	// size is the maximum size of the cache (min = 1).
 	size int
-
-	// cache maps a host name to a DNS item.
-	cache map[string]*dnsItem
 }
 
 // New creates a new DNS resolver with a cache of the specified size and TTL.
@@ -77,7 +82,10 @@ func (r *CacheResolver) Reset() {
 
 // RemoveEntry removes the cache entry for the specified host.
 func (r *CacheResolver) RemoveEntry(host string) {
-	tsmap.Delete(r.mux, r.cache, host)
+	r.mux.Lock()
+	defer r.mux.Unlock()
+
+	delete(r.cache, host)
 }
 
 // LookupHost performs a DNS lookup for the given host using the DNSCacheResolver.
@@ -85,19 +93,50 @@ func (r *CacheResolver) RemoveEntry(host string) {
 // the cached addresses. Otherwise, it performs a DNS lookup using the underlying
 // Resolver and caches the obtained addresses for future use.
 func (r *CacheResolver) LookupHost(ctx context.Context, host string) ([]string, error) {
-	item, exist := tsmap.GetOK(r.mux, r.cache, host)
-	if exist && (item.expireAt > time.Now().UTC().Unix()) {
-		return item.addrs, nil
+	r.mux.Lock()
+
+	var used chan struct{}
+
+	item, ok := r.cache[host]
+	if ok {
+		if item.expireAt > time.Now().UTC().Unix() {
+			r.mux.Unlock()
+			return item.addrs, item.err
+		}
+
+		used = item.used
 	}
+
+	if used != nil {
+		r.mux.Unlock()
+
+		// an external DNS lookup is already in progress,
+		// waiting for completion and return values from cache.
+		<-used
+
+		r.mux.RLock()
+		defer r.mux.RUnlock()
+
+		item := r.cache[host]
+
+		return item.addrs, item.err
+	}
+
+	used = make(chan struct{})
+	defer close(used)
+
+	// mark the host as being used for an external DNS lookup
+	r.set(host, nil, errors.New("lookup in progress"), used)
+	r.mux.Unlock()
 
 	addrs, err := r.resolver.LookupHost(ctx, host)
-	if err != nil {
-		return nil, fmt.Errorf("failed DNS lookup for the host %s : %w", host, err)
-	}
 
-	r.set(host, addrs, exist)
+	r.mux.Lock()
+	defer r.mux.Unlock()
 
-	return addrs, nil
+	r.set(host, addrs, err, nil)
+
+	return addrs, err //nolint:wrapcheck
 }
 
 // DialContext dials the network and address specified by the parameters.
@@ -135,23 +174,30 @@ func (r *CacheResolver) DialContext(ctx context.Context, network, address string
 // set adds or updates the cache entry for the given host with the provided addresses.
 // If the cache is full, it will free up space by removing expired or old entries.
 // If the host already exists in the cache, it will update the entry with the new addresses.
-func (r *CacheResolver) set(host string, addrs []string, exist bool) {
-	if (!exist) && (len(r.cache) >= r.size) {
+// NOTE: this is not thread-safe, it should be called within a mutex lock.
+func (r *CacheResolver) set(host string, addrs []string, err error, ch chan struct{}) {
+	_, ok := r.cache[host]
+	if (!ok) && (len(r.cache) >= r.size) {
+		// free up space
 		r.evict()
 	}
 
-	tsmap.Set(
-		r.mux,
-		r.cache,
-		host,
-		&dnsItem{
-			expireAt: time.Now().UTC().Add(r.ttl).Unix(),
-			addrs:    addrs,
-		},
-	)
+	var now int64
+
+	if addrs != nil {
+		now = time.Now().UTC().Add(r.ttl).Unix()
+	}
+
+	r.cache[host] = &dnsItem{
+		used:     ch,
+		err:      err,
+		expireAt: now,
+		addrs:    addrs,
+	}
 }
 
 // evict removes either the oldest entry or the first expired one from the DNS cache.
+// NOTE: this is not thread-safe, it should be called within a mutex lock.
 func (r *CacheResolver) evict() {
 	cuttime := time.Now().UTC().Unix()
 	oldest := int64(1<<63 - 1)
@@ -159,7 +205,7 @@ func (r *CacheResolver) evict() {
 
 	for h, d := range r.cache {
 		if d.expireAt < cuttime {
-			r.RemoveEntry(h)
+			delete(r.cache, h)
 			return
 		}
 
@@ -169,5 +215,5 @@ func (r *CacheResolver) evict() {
 		}
 	}
 
-	r.RemoveEntry(oldestHost)
+	delete(r.cache, oldestHost)
 }

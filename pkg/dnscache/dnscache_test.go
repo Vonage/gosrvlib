@@ -94,21 +94,21 @@ func Test_set(t *testing.T) {
 
 	r := New(nil, 2, 10*time.Second)
 
-	r.set("example.com", []string{"192.0.2.1"}, false)
+	r.set("example.com", []string{"192.0.2.1"}, nil, nil)
 	time.Sleep(1 * time.Second)
-	r.set("example.org", []string{"192.0.2.2", "198.51.100.2"}, false)
+	r.set("example.org", []string{"192.0.2.2", "198.51.100.2"}, nil, nil)
 
 	require.Len(t, r.cache, 2)
 	require.Contains(t, r.cache, "example.com")
 	require.Contains(t, r.cache, "example.org")
 
-	r.set("example.net", []string{"192.0.2.3", "198.51.100.3", "203.0.113.3"}, false)
+	r.set("example.net", []string{"192.0.2.3", "198.51.100.3", "203.0.113.3"}, nil, nil)
 
 	require.Len(t, r.cache, 2)
 	require.Contains(t, r.cache, "example.org")
 	require.Contains(t, r.cache, "example.net")
 
-	r.set("example.net", []string{"198.51.100.4"}, true)
+	r.set("example.net", []string{"198.51.100.4"}, nil, nil)
 
 	require.Len(t, r.cache, 2)
 	require.Contains(t, r.cache, "example.org")
@@ -133,13 +133,13 @@ func Test_LookupHost_error(t *testing.T) {
 		},
 	}
 
-	r := New(resolver, 1, 1*time.Second)
+	r := New(resolver, 2, 10*time.Second)
 
 	addrs, err := r.LookupHost(context.TODO(), "example.com")
 	require.Error(t, err)
 	require.Nil(t, addrs)
 
-	nlookup := 100
+	nlookup := 1000
 	wg := &sync.WaitGroup{}
 
 	wg.Add(nlookup)
@@ -194,7 +194,9 @@ func Test_LookupHost(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, []string{"192.0.2.3"}, addrs)
 
-	nlookup := 100
+	r = New(resolver, 1, 10*time.Second)
+
+	nlookup := 1000
 	wg := &sync.WaitGroup{}
 
 	wg.Add(nlookup)
@@ -207,6 +209,7 @@ func Test_LookupHost(t *testing.T) {
 			assert.NoError(t, err)
 			assert.NotNil(t, addrs)
 			assert.Len(t, addrs, 1)
+			assert.Equal(t, []string{"192.0.2.4"}, addrs)
 			assert.Contains(t, r.cache, "example.org")
 		}()
 	}
