@@ -187,10 +187,11 @@ func (c *Cache) DialContext(ctx context.Context, network, address string) (net.C
 // If the cache is full, it will free up space by removing expired or old entries.
 // If the host already exists in the cache, it will update the entry with the new addresses.
 func (c *Cache) set(host string, addrs []string, err error, wg *sync.WaitGroup) {
-	_, ok := c.hostmap[host]
-	if (!ok) && (len(c.hostmap) >= c.size) {
-		// free up space for a new entry
-		c.evict()
+	if len(c.hostmap) >= c.size {
+		if _, ok := c.hostmap[host]; !ok {
+			// free up space for a new entry
+			c.evict()
+		}
 	}
 
 	var now int64
