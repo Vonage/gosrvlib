@@ -156,12 +156,12 @@ func Test_Consumer_HealthCheck(t *testing.T) {
 }
 
 type consumerMock struct {
-	readMessages func(ctx context.Context) (kafka.Message, error)
-	close        func() error
+	readMessage func(ctx context.Context) (kafka.Message, error)
+	close       func() error
 }
 
 func (c consumerMock) ReadMessage(ctx context.Context) (kafka.Message, error) {
-	return c.readMessages(ctx)
+	return c.readMessage(ctx)
 }
 
 func (c consumerMock) Close() error {
@@ -180,13 +180,12 @@ func TestReceiveData(t *testing.T) {
 		name    string
 		mock    consumerClient
 		data    TestData
-		want    string
 		wantErr bool
 	}{
 		{
 			name: "success",
 			mock: consumerMock{
-				readMessages: func(_ context.Context) (kafka.Message, error) {
+				readMessage: func(_ context.Context) (kafka.Message, error) {
 					return kafka.Message{
 						Value: []byte("Kf+BAwEBCFRlc3REYXRhAf+CAAECAQVBbHBoYQEMAAEEQmV0YQEEAAAAD/+CAQZhYmMxMjMB/gLtAA=="),
 					}, nil
@@ -199,30 +198,29 @@ func TestReceiveData(t *testing.T) {
 		{
 			name: "empty",
 			mock: consumerMock{
-				readMessages: func(_ context.Context) (kafka.Message, error) { return kafka.Message{Value: []byte{}}, nil },
-				close:        func() error { return nil },
+				readMessage: func(_ context.Context) (kafka.Message, error) { return kafka.Message{Value: []byte{}}, nil },
+				close:       func() error { return nil },
 			},
 			wantErr: true,
 		},
 		{
 			name: "error",
 			mock: consumerMock{
-				readMessages: func(_ context.Context) (kafka.Message, error) { return kafka.Message{}, errors.New("error") },
-				close:        func() error { return nil },
+				readMessage: func(_ context.Context) (kafka.Message, error) { return kafka.Message{}, errors.New("error") },
+				close:       func() error { return nil },
 			},
 			wantErr: true,
 		},
 		{
 			name: "invalid message",
 			mock: consumerMock{
-				readMessages: func(_ context.Context) (kafka.Message, error) {
+				readMessage: func(_ context.Context) (kafka.Message, error) {
 					return kafka.Message{
 						Value: []byte("你好世界"),
 					}, nil
 				},
 				close: func() error { return nil },
 			},
-			want:    "TestReceiptHandle03",
 			wantErr: true,
 		},
 	}
