@@ -18,10 +18,10 @@ const (
 	regexMessageGroupID = `^[[:graph:]]{1,128}$`
 )
 
-// TEncodeFunc is the type of function used to replace the default MessageEncode function used by SendData().
+// TEncodeFunc is the type of function used to replace the default message encoding function used by SendData().
 type TEncodeFunc func(ctx context.Context, data any) (string, error)
 
-// TDecodeFunc is the type of function used to replace the default MessageDecode function used by ReceiveData().
+// TDecodeFunc is the type of function used to replace the default message decoding function used by ReceiveData().
 type TDecodeFunc func(ctx context.Context, msg string, data any) error
 
 // SQS represents the mockable functions in the AWS SDK SQS client.
@@ -182,12 +182,12 @@ func MessageDecode(msg string, data any) error {
 	return typeutil.Decode(msg, data) //nolint:wrapcheck
 }
 
-// DefaultMessageEncodeFunc is the default function to encode and serialize the input data to a string compatible with SQS.
+// DefaultMessageEncodeFunc is the default function to encode and serialize the input data for SendData().
 func DefaultMessageEncodeFunc(_ context.Context, data any) (string, error) {
 	return MessageEncode(data)
 }
 
-// DefaultMessageDecodeFunc is the default function to decode a message encoded with MessageEncode to the provided data object.
+// DefaultMessageDecodeFunc is the default function to decode a message for ReceiveData().
 // The value underlying data must be a pointer to the correct type for the next data item received.
 func DefaultMessageDecodeFunc(_ context.Context, msg string, data any) error {
 	return MessageDecode(msg, data)
