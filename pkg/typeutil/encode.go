@@ -46,7 +46,7 @@ func ByteEncode(data any) ([]byte, error) {
 		return nil, err
 	}
 
-	return buf.Bytes(), err
+	return buf.Bytes(), nil
 }
 
 // Encode encodes the input data to gob/base64 format into a string.
@@ -56,7 +56,7 @@ func Encode(data any) (string, error) {
 		return "", err
 	}
 
-	return buf.String(), err
+	return buf.String(), nil
 }
 
 func bufferDecode(reader io.Reader, data any) error {
@@ -96,7 +96,7 @@ func ByteSerialize(data any) ([]byte, error) {
 		return nil, err
 	}
 
-	return buf.Bytes(), err
+	return buf.Bytes(), nil
 }
 
 // Serialize encodes the input data to JSON/base64 format into a string.
@@ -106,7 +106,7 @@ func Serialize(data any) (string, error) {
 		return "", err
 	}
 
-	return buf.String(), err
+	return buf.String(), nil
 }
 
 func bufferDeserialize(reader io.Reader, data any) error {
