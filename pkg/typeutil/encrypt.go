@@ -30,7 +30,7 @@ func Encrypt(key, data []byte) ([]byte, error) {
 	return aesgcm.Seal(nonce, nonce, data, nil), nil
 }
 
-// Decrypt decrypts data encrypted with ByteEncrypt().
+// Decrypt decrypts data encrypted with Encrypt().
 // The key argument must be the same used to encrypt the data:
 // either 16, 24, or 32 bytes to select AES-128, AES-192, or AES-256.
 func Decrypt(key, data []byte) ([]byte, error) {
