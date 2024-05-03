@@ -89,8 +89,10 @@ func (r *Rnd) RandString(n int) (string, error) {
 		return "", err
 	}
 
+	cmlen := len(r.chrMap)
+
 	for i, v := range b {
-		b[i] = r.chrMap[(int(v)*len(chrMap))>>8]
+		b[i] = r.chrMap[(int(v)*cmlen)>>8]
 	}
 
 	return string(b), nil
