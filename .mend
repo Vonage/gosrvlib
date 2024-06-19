@@ -23,8 +23,8 @@
     },
     "packageRules": [
       {
-        "groupName": "Java (major)",
-        "groupSlug": "java-dependencies-major",
+        "groupName": "Go (major)",
+        "groupSlug": "go-dependencies-major",
         "labels": [
           "mend",
           "minor release"
@@ -33,12 +33,12 @@
           "major"
         ],
         "matchManagers": [
-          "java"
+          "gomod"
         ]
       },
       {
-        "groupName": "Java (non-major)",
-        "groupSlug": "java-dependencies-non-major",
+        "groupName": "Go (non-major)",
+        "groupSlug": "go-dependencies-non-major",
         "labels": [
           "mend",
           "patch release"
@@ -54,7 +54,7 @@
           "replacement"
         ],
         "matchManagers": [
-          "java"
+          "gomod"
         ]
       },
       {
