@@ -6,6 +6,7 @@ toolchain go1.22.4
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
+	github.com/aperturerobotics/go-brotli-decoder v0.1.1
 	github.com/aws/aws-sdk-go-v2 v1.30.0
 	github.com/aws/aws-sdk-go-v2/config v1.27.22
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.57.0
