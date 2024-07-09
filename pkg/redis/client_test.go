@@ -551,3 +551,91 @@ func TestHealthCheck(t *testing.T) {
 		})
 	}
 }
+
+func TestReceive(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name        string
+		rPubSubMock RPubSub
+		ctxTimeout  time.Duration
+		wantErr     bool
+	}{
+		{
+			name: "success",
+			rPubSubMock: redisPubSubMock{
+				channelFn: func(_ ...libredis.ChannelOption) <-chan *libredis.Message {
+					ch := make(chan *libredis.Message)
+					go func() {
+						ch <- &libredis.Message{
+							Channel: "channel_4",
+							Payload: "message_4",
+						}
+					}()
+					return ch
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "error closed channel",
+			rPubSubMock: redisPubSubMock{
+				channelFn: func(_ ...libredis.ChannelOption) <-chan *libredis.Message {
+					ch := make(chan *libredis.Message)
+					go func() {
+						close(ch)
+					}()
+					return ch
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "error context timeout",
+			rPubSubMock: redisPubSubMock{
+				channelFn: func(_ ...libredis.ChannelOption) <-chan *libredis.Message {
+					return make(chan *libredis.Message)
+				},
+			},
+			ctxTimeout: 1 * time.Millisecond,
+			wantErr:    true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			srvOpts := &SrvOptions{
+				Addr:     "test.redis.invalid:6379",
+				Username: "test_user",
+				Password: "test_password",
+				DB:       0,
+			}
+
+			ctx := context.TODO()
+			cli, err := New(ctx, srvOpts)
+			require.NoError(t, err)
+			require.NotNil(t, cli)
+
+			cli.rpubsub = tt.rPubSubMock
+			cli.subch = cli.rpubsub.Channel()
+
+			if tt.ctxTimeout > 0 {
+				cctx, cancel := context.WithTimeout(ctx, tt.ctxTimeout)
+				ctx = cctx
+				defer cancel()
+			}
+
+			ch, val, err := cli.Receive(ctx)
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
+			require.Equal(t, "channel_4", ch)
+			require.Equal(t, "message_4", val)
+		})
+	}
+}
