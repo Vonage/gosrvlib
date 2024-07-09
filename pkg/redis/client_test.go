@@ -76,25 +76,55 @@ func (m redisClientMock) Subscribe(ctx context.Context, channels ...string) *lib
 	return m.subscribeFn(ctx, channels...)
 }
 
+type redisPubSubMock struct {
+	channelFn func(opts ...libredis.ChannelOption) <-chan *libredis.Message
+	closeFn   func() error
+}
+
+func (m redisPubSubMock) Channel(opts ...libredis.ChannelOption) <-chan *libredis.Message {
+	return m.channelFn(opts...)
+}
+
+func (m redisPubSubMock) Close() error {
+	return m.closeFn()
+}
+
 func TestClose(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name    string
-		mock    RClient
-		wantErr bool
+		name        string
+		rClientMock RClient
+		rPubSubMock RPubSub
+		wantErr     bool
 	}{
 		{
 			name: "success",
-			mock: redisClientMock{closeFn: func() error {
+			rClientMock: redisClientMock{closeFn: func() error {
+				return nil
+			}},
+			rPubSubMock: redisPubSubMock{closeFn: func() error {
 				return nil
 			}},
 			wantErr: false,
 		},
 		{
-			name: "error",
-			mock: redisClientMock{closeFn: func() error {
+			name: "error PubSub",
+			rClientMock: redisClientMock{closeFn: func() error {
+				return nil
+			}},
+			rPubSubMock: redisPubSubMock{closeFn: func() error {
 				return errors.New("test error")
+			}},
+			wantErr: true,
+		},
+		{
+			name: "error Client",
+			rClientMock: redisClientMock{closeFn: func() error {
+				return errors.New("test error")
+			}},
+			rPubSubMock: redisPubSubMock{closeFn: func() error {
+				return nil
 			}},
 			wantErr: true,
 		},
@@ -116,7 +146,8 @@ func TestClose(t *testing.T) {
 			require.NoError(t, err)
 			require.NotNil(t, cli)
 
-			cli.rclient = tt.mock
+			cli.rclient = tt.rClientMock
+			cli.rpubsub = tt.rPubSubMock
 
 			err = cli.Close()
 			if tt.wantErr {
@@ -133,20 +164,20 @@ func TestSet(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name    string
-		mock    RClient
-		wantErr bool
+		name        string
+		rClientMock RClient
+		wantErr     bool
 	}{
 		{
 			name: "success",
-			mock: redisClientMock{setFn: func(_ context.Context, _ string, _ any, _ time.Duration) *libredis.StatusCmd {
+			rClientMock: redisClientMock{setFn: func(_ context.Context, _ string, _ any, _ time.Duration) *libredis.StatusCmd {
 				return libredis.NewStatusResult("", nil)
 			}},
 			wantErr: false,
 		},
 		{
 			name: "error",
-			mock: redisClientMock{setFn: func(_ context.Context, _ string, _ any, _ time.Duration) *libredis.StatusCmd {
+			rClientMock: redisClientMock{setFn: func(_ context.Context, _ string, _ any, _ time.Duration) *libredis.StatusCmd {
 				return libredis.NewStatusResult("", errors.New("test error"))
 			}},
 			wantErr: true,
@@ -169,7 +200,7 @@ func TestSet(t *testing.T) {
 			require.NoError(t, err)
 			require.NotNil(t, cli)
 
-			cli.rclient = tt.mock
+			cli.rclient = tt.rClientMock
 
 			err = cli.Set(ctx, "key_1", "value_1", time.Second)
 			if tt.wantErr {
@@ -186,20 +217,20 @@ func TestGet(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name    string
-		mock    RClient
-		wantErr bool
+		name        string
+		rClientMock RClient
+		wantErr     bool
 	}{
 		{
 			name: "success",
-			mock: redisClientMock{getFn: func(_ context.Context, _ string) *libredis.StringCmd {
+			rClientMock: redisClientMock{getFn: func(_ context.Context, _ string) *libredis.StringCmd {
 				return libredis.NewStringResult("value_2", nil)
 			}},
 			wantErr: false,
 		},
 		{
 			name: "error",
-			mock: redisClientMock{getFn: func(_ context.Context, _ string) *libredis.StringCmd {
+			rClientMock: redisClientMock{getFn: func(_ context.Context, _ string) *libredis.StringCmd {
 				return libredis.NewStringResult("", errors.New("test error"))
 			}},
 			wantErr: true,
@@ -222,7 +253,7 @@ func TestGet(t *testing.T) {
 			require.NoError(t, err)
 			require.NotNil(t, cli)
 
-			cli.rclient = tt.mock
+			cli.rclient = tt.rClientMock
 
 			var got string
 
@@ -242,20 +273,20 @@ func TestDel(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name    string
-		mock    RClient
-		wantErr bool
+		name        string
+		rClientMock RClient
+		wantErr     bool
 	}{
 		{
 			name: "success",
-			mock: redisClientMock{delFn: func(_ context.Context, _ ...string) *libredis.IntCmd {
+			rClientMock: redisClientMock{delFn: func(_ context.Context, _ ...string) *libredis.IntCmd {
 				return libredis.NewIntResult(0, nil)
 			}},
 			wantErr: false,
 		},
 		{
 			name: "error",
-			mock: redisClientMock{delFn: func(_ context.Context, _ ...string) *libredis.IntCmd {
+			rClientMock: redisClientMock{delFn: func(_ context.Context, _ ...string) *libredis.IntCmd {
 				return libredis.NewIntResult(0, errors.New("test error"))
 			}},
 			wantErr: true,
@@ -278,7 +309,7 @@ func TestDel(t *testing.T) {
 			require.NoError(t, err)
 			require.NotNil(t, cli)
 
-			cli.rclient = tt.mock
+			cli.rclient = tt.rClientMock
 
 			err = cli.Del(ctx, "key_3")
 			if tt.wantErr {
@@ -295,20 +326,20 @@ func TestSend(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name    string
-		mock    RClient
-		wantErr bool
+		name        string
+		rClientMock RClient
+		wantErr     bool
 	}{
 		{
 			name: "success",
-			mock: redisClientMock{publishFn: func(_ context.Context, _ string, _ any) *libredis.IntCmd {
+			rClientMock: redisClientMock{publishFn: func(_ context.Context, _ string, _ any) *libredis.IntCmd {
 				return libredis.NewIntResult(0, nil)
 			}},
 			wantErr: false,
 		},
 		{
 			name: "error",
-			mock: redisClientMock{publishFn: func(_ context.Context, _ string, _ any) *libredis.IntCmd {
+			rClientMock: redisClientMock{publishFn: func(_ context.Context, _ string, _ any) *libredis.IntCmd {
 				return libredis.NewIntResult(0, errors.New("test error"))
 			}},
 			wantErr: true,
@@ -331,7 +362,7 @@ func TestSend(t *testing.T) {
 			require.NoError(t, err)
 			require.NotNil(t, cli)
 
-			cli.rclient = tt.mock
+			cli.rclient = tt.rClientMock
 
 			err = cli.Send(ctx, "channel_1", "message_1")
 			if tt.wantErr {
@@ -384,20 +415,20 @@ func TestGetData(t *testing.T) {
 	}
 
 	tests := []struct {
-		name    string
-		mock    RClient
-		wantErr bool
+		name        string
+		rClientMock RClient
+		wantErr     bool
 	}{
 		{
 			name: "success",
-			mock: redisClientMock{getFn: func(_ context.Context, _ string) *libredis.StringCmd {
+			rClientMock: redisClientMock{getFn: func(_ context.Context, _ string) *libredis.StringCmd {
 				return libredis.NewStringResult("Kf+BAwEBCFRlc3REYXRhAf+CAAECAQVBbHBoYQEMAAEEQmV0YQEEAAAAD/+CAQZhYmMxMjMB/gLtAA==", nil)
 			}},
 			wantErr: false,
 		},
 		{
 			name: "error",
-			mock: redisClientMock{getFn: func(_ context.Context, _ string) *libredis.StringCmd {
+			rClientMock: redisClientMock{getFn: func(_ context.Context, _ string) *libredis.StringCmd {
 				return libredis.NewStringResult("", errors.New("test error"))
 			}},
 			wantErr: true,
@@ -420,7 +451,7 @@ func TestGetData(t *testing.T) {
 			require.NoError(t, err)
 			require.NotNil(t, cli)
 
-			cli.rclient = tt.mock
+			cli.rclient = tt.rClientMock
 
 			var data TestData
 
@@ -472,20 +503,20 @@ func TestHealthCheck(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name    string
-		mock    RClient
-		wantErr bool
+		name        string
+		rClientMock RClient
+		wantErr     bool
 	}{
 		{
 			name: "success",
-			mock: redisClientMock{pingFn: func(_ context.Context) *libredis.StatusCmd {
+			rClientMock: redisClientMock{pingFn: func(_ context.Context) *libredis.StatusCmd {
 				return libredis.NewStatusResult("", nil)
 			}},
 			wantErr: false,
 		},
 		{
 			name: "error",
-			mock: redisClientMock{pingFn: func(_ context.Context) *libredis.StatusCmd {
+			rClientMock: redisClientMock{pingFn: func(_ context.Context) *libredis.StatusCmd {
 				return libredis.NewStatusResult("", errors.New("test error"))
 			}},
 			wantErr: true,
@@ -508,7 +539,7 @@ func TestHealthCheck(t *testing.T) {
 			require.NoError(t, err)
 			require.NotNil(t, cli)
 
-			cli.rclient = tt.mock
+			cli.rclient = tt.rClientMock
 
 			err = cli.HealthCheck(ctx)
 			if tt.wantErr {
