@@ -1,5 +1,6 @@
 /*
-Package sqs provides a simple client to interact with a AWS SQS (Amazon Simple Queue Service), including the ability to send, receive, and delete messages.
+Package sqs provides a simple client to interact with a AWS SQS (Amazon Simple Queue Service),
+including the ability to send, receive, and delete messages.
 
 It is based on the official aws-sdk-go-v2 library.
 
