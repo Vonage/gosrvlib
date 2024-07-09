@@ -139,7 +139,7 @@ func (c *Client) Send(ctx context.Context, channel string, message any) error {
 	return nil
 }
 
-// Receive receives a raw string message from the subscribed channels.
+// Receive receives a raw string message from a subscribed channel.
 // Returns the channel name and the message value.
 func (c *Client) Receive(ctx context.Context) (string, string, error) {
 	select {
@@ -209,7 +209,7 @@ func (c *Client) SendData(ctx context.Context, channel string, data any) error {
 	return c.Send(ctx, channel, message)
 }
 
-// ReceiveData receives an encoded message from the subscribed channels,
+// ReceiveData receives an encoded message from a subscribed channel,
 // and extract its content in the data parameter.
 // Returns the channel name in case of success.
 func (c *Client) ReceiveData(ctx context.Context, data any) (string, error) {

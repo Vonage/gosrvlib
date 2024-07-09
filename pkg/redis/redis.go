@@ -1,9 +1,12 @@
 /*
-Package redis provides a simple basic client to interact with Redis (in-memory data store),
-including the ability to set, get, and delete key/values entries.
+Package redis provides a simple and basic wrapper client for interacting with Redis, an in-memory data store.
+It includes functions for setting, getting, and deleting key/value entries.
+Additionally, it supports sending and receiving messages from channels.
+The package also allows for custom message encoding and decoding functions.
 
-It is based on the official go-redis library.
+This package is based on the official go-redis library.
 
-Ref.: https://redis.io, https://github.com/redis/go-redis
+For more information, please refer to the official Redis website: https://redis.io
+And the go-redis library on GitHub: https://github.com/redis/go-redis
 */
 package redis
