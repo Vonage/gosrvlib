@@ -116,7 +116,7 @@ func TestClose(t *testing.T) {
 			require.NoError(t, err)
 			require.NotNil(t, cli)
 
-			cli.rdb = tt.mock
+			cli.rclient = tt.mock
 
 			err = cli.Close()
 			if tt.wantErr {
@@ -169,7 +169,7 @@ func TestSet(t *testing.T) {
 			require.NoError(t, err)
 			require.NotNil(t, cli)
 
-			cli.rdb = tt.mock
+			cli.rclient = tt.mock
 
 			err = cli.Set(ctx, "key_1", "value_1", time.Second)
 			if tt.wantErr {
@@ -222,9 +222,11 @@ func TestGet(t *testing.T) {
 			require.NoError(t, err)
 			require.NotNil(t, cli)
 
-			cli.rdb = tt.mock
+			cli.rclient = tt.mock
 
-			got, err := cli.Get(ctx, "key_2")
+			var got string
+
+			err = cli.Get(ctx, "key_2", &got)
 			if tt.wantErr {
 				require.Error(t, err)
 				return
@@ -276,7 +278,7 @@ func TestDel(t *testing.T) {
 			require.NoError(t, err)
 			require.NotNil(t, cli)
 
-			cli.rdb = tt.mock
+			cli.rclient = tt.mock
 
 			err = cli.Del(ctx, "key_3")
 			if tt.wantErr {
@@ -329,7 +331,7 @@ func TestSend(t *testing.T) {
 			require.NoError(t, err)
 			require.NotNil(t, cli)
 
-			cli.rdb = tt.mock
+			cli.rclient = tt.mock
 
 			err = cli.Send(ctx, "channel_1", "message_1")
 			if tt.wantErr {
@@ -357,7 +359,7 @@ func TestSetData(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, cli)
 
-	cli.rdb = redisClientMock{setFn: func(_ context.Context, _ string, _ any, _ time.Duration) *libredis.StatusCmd {
+	cli.rclient = redisClientMock{setFn: func(_ context.Context, _ string, _ any, _ time.Duration) *libredis.StatusCmd {
 		return libredis.NewStatusResult("", nil)
 	}}
 
@@ -418,7 +420,7 @@ func TestGetData(t *testing.T) {
 			require.NoError(t, err)
 			require.NotNil(t, cli)
 
-			cli.rdb = tt.mock
+			cli.rclient = tt.mock
 
 			var data TestData
 
@@ -450,7 +452,7 @@ func TestSendData(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, cli)
 
-	cli.rdb = redisClientMock{publishFn: func(_ context.Context, _ string, _ any) *libredis.IntCmd {
+	cli.rclient = redisClientMock{publishFn: func(_ context.Context, _ string, _ any) *libredis.IntCmd {
 		return libredis.NewIntResult(0, nil)
 	}}
 
@@ -506,7 +508,7 @@ func TestHealthCheck(t *testing.T) {
 			require.NoError(t, err)
 			require.NotNil(t, cli)
 
-			cli.rdb = tt.mock
+			cli.rclient = tt.mock
 
 			err = cli.HealthCheck(ctx)
 			if tt.wantErr {

@@ -19,3 +19,17 @@ func WithMessageDecodeFunc(f TDecodeFunc) Option {
 		c.messageDecodeFunc = f
 	}
 }
+
+// WithSubscrChannels sets the channels to subscribe to and receive data from.
+func WithSubscrChannels(channels ...string) Option {
+	return func(c *cfg) {
+		c.subChannels = channels
+	}
+}
+
+// WithSubscrChannelOptions sets options for the subscribed channels.
+func WithSubscrChannelOptions(opts ...ChannelOption) Option {
+	return func(c *cfg) {
+		c.subChannelOpts = opts
+	}
+}

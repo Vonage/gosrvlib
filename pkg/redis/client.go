@@ -2,6 +2,7 @@ package redis
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -15,8 +16,14 @@ type TEncodeFunc func(ctx context.Context, data any) (string, error)
 // TDecodeFunc is the type of function used to replace the default message decoding function used by ReceiveData().
 type TDecodeFunc func(ctx context.Context, msg string, data any) error
 
-// SrvOptions is an alias for the parent service client options.
+// SrvOptions is an alias for the parent library client options.
 type SrvOptions = libredis.Options
+
+// RMessage is an alias for the parent library Message type.
+type RMessage = libredis.Message
+
+// ChannelOption is an alias for the parent library ChannelOption.
+type ChannelOption = libredis.ChannelOption
 
 // RClient represents the mockable functions in the parent Redis Client.
 type RClient interface {
@@ -29,10 +36,22 @@ type RClient interface {
 	Subscribe(ctx context.Context, channels ...string) *libredis.PubSub
 }
 
+// RPubSub represents the mockable functions in the parent Redis PubSub.
+type RPubSub interface {
+	Channel(opts ...libredis.ChannelOption) <-chan *libredis.Message
+	Close() error
+}
+
 // Client is a wrapper for the Redis Client.
 type Client struct {
-	// rdb is the interface for the upstream Client functions.
-	rdb RClient
+	// rclient is the upstream Client.
+	rclient RClient
+
+	// rpubsub is the upstream PubSub.
+	rpubsub RPubSub
+
+	// subch is a Go channel for concurrently receiving messages from the subscribed channels.
+	subch <-chan *RMessage
 
 	// messageEncodeFunc is the function used by SendData()
 	// to encode and serialize the input data to a string compatible with Redis.
@@ -51,18 +70,29 @@ func New(ctx context.Context, srvopt *SrvOptions, opts ...Option) (*Client, erro
 		return nil, fmt.Errorf("cannot create a new redis client: %w", err)
 	}
 
+	rclient := libredis.NewClient(cfg.srvOpts)
+	rpubsub := rclient.Subscribe(ctx, cfg.subChannels...)
+	subch := rpubsub.Channel(cfg.subChannelOpts...)
+
 	return &Client{
-		rdb:               libredis.NewClient(cfg.srvOpts),
+		rclient:           rclient,
+		rpubsub:           rpubsub,
+		subch:             subch,
 		messageEncodeFunc: cfg.messageEncodeFunc,
 		messageDecodeFunc: cfg.messageDecodeFunc,
 	}, nil
 }
 
-// Close closes the client, releasing any open resources.
+// Close closes the parent client, releasing any open resources.
 func (c *Client) Close() error {
-	err := c.rdb.Close()
+	err := c.rpubsub.Close()
 	if err != nil {
-		return fmt.Errorf("failed to close Redis client: %w", err)
+		return fmt.Errorf("failed to close Redis PubSub: %w", err)
+	}
+
+	err = c.rclient.Close()
+	if err != nil {
+		return fmt.Errorf("failed to close Redis Client: %w", err)
 	}
 
 	return nil
@@ -71,7 +101,7 @@ func (c *Client) Close() error {
 // Set a raw value for the specified key with an expiration time.
 // Zero expiration means the key has no expiration time.
 func (c *Client) Set(ctx context.Context, key string, value any, exp time.Duration) error {
-	err := c.rdb.Set(ctx, key, value, exp).Err()
+	err := c.rclient.Set(ctx, key, value, exp).Err()
 	if err != nil {
 		return fmt.Errorf("cannot set key %s: %w", key, err)
 	}
@@ -79,19 +109,19 @@ func (c *Client) Set(ctx context.Context, key string, value any, exp time.Durati
 	return nil
 }
 
-// Get retrieves the raw value of the specified key.
-func (c *Client) Get(ctx context.Context, key string) (string, error) {
-	val, err := c.rdb.Get(ctx, key).Result()
+// Get retrieves the raw value of the specified key and extract its content in the value parameter.
+func (c *Client) Get(ctx context.Context, key string, value any) error {
+	err := c.rclient.Get(ctx, key).Scan(value)
 	if err != nil {
-		return "", fmt.Errorf("cannot retrieve key %s: %w", key, err)
+		return fmt.Errorf("cannot retrieve key %s: %w", key, err)
 	}
 
-	return val, nil
+	return nil
 }
 
 // Del deletes the specified key from the datastore.
 func (c *Client) Del(ctx context.Context, key string) error {
-	err := c.rdb.Del(ctx, key).Err()
+	err := c.rclient.Del(ctx, key).Err()
 	if err != nil {
 		return fmt.Errorf("cannot delete key: %s %w", key, err)
 	}
@@ -101,12 +131,27 @@ func (c *Client) Del(ctx context.Context, key string) error {
 
 // Send publish a raw value to the specified channel.
 func (c *Client) Send(ctx context.Context, channel string, message any) error {
-	err := c.rdb.Publish(ctx, channel, message).Err()
+	err := c.rclient.Publish(ctx, channel, message).Err()
 	if err != nil {
 		return fmt.Errorf("cannot send message to %s channel: %w", channel, err)
 	}
 
 	return nil
+}
+
+// Receive receives a raw string message from the subscribed channels.
+// Returns the channel name and the message value.
+func (c *Client) Receive(ctx context.Context) (string, string, error) {
+	select {
+	case <-ctx.Done():
+		return "", "", fmt.Errorf("context has been canceled: %w", ctx.Err())
+	case msg, ok := <-c.subch:
+		if ok && (msg != nil) {
+			return msg.Channel, msg.Payload, nil
+		}
+	}
+
+	return "", "", errors.New("the receiving channel is closed")
 }
 
 // MessageEncode encodes and serialize the input data to a string.
@@ -142,9 +187,11 @@ func (c *Client) SetData(ctx context.Context, key string, data any, exp time.Dur
 	return c.Set(ctx, key, value, exp)
 }
 
-// GetData retrieves an encoded value of the specified key.
+// GetData retrieves an encoded value of the specified key and extract its content in the data parameter.
 func (c *Client) GetData(ctx context.Context, key string, data any) error {
-	value, err := c.Get(ctx, key)
+	var value string
+
+	err := c.Get(ctx, key, &value)
 	if err != nil {
 		return err
 	}
@@ -162,9 +209,21 @@ func (c *Client) SendData(ctx context.Context, channel string, data any) error {
 	return c.Send(ctx, channel, message)
 }
 
+// ReceiveData receives an encoded message from the subscribed channels,
+// and extract its content in the data parameter.
+// Returns the channel name in case of success.
+func (c *Client) ReceiveData(ctx context.Context, data any) (string, error) {
+	channel, value, err := c.Receive(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	return channel, c.messageDecodeFunc(ctx, value, data)
+}
+
 // HealthCheck checks if the current data-store is alive.
 func (c *Client) HealthCheck(ctx context.Context) error {
-	err := c.rdb.Ping(ctx).Err()
+	err := c.rclient.Ping(ctx).Err()
 	if err != nil {
 		return fmt.Errorf("unable to connect to Redis: %w", err)
 	}

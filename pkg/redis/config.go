@@ -13,16 +13,18 @@ const (
 var regexHostPort = regexp.MustCompile(regexPatternHostPort)
 
 type cfg struct {
-	srvOpts           *SrvOptions
 	messageEncodeFunc TEncodeFunc
 	messageDecodeFunc TDecodeFunc
+	srvOpts           *SrvOptions
+	subChannels       []string
+	subChannelOpts    []ChannelOption
 }
 
 func loadConfig(_ context.Context, srvOpts *SrvOptions, opts ...Option) (*cfg, error) {
 	c := &cfg{
-		srvOpts:           srvOpts,
 		messageEncodeFunc: DefaultMessageEncodeFunc,
 		messageDecodeFunc: DefaultMessageDecodeFunc,
+		srvOpts:           srvOpts,
 	}
 
 	if (srvOpts == nil) || (!regexHostPort.MatchString(srvOpts.Addr)) {

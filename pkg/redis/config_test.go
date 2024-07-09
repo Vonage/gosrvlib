@@ -20,6 +20,9 @@ func Test_loadConfig(t *testing.T) {
 	got, err := loadConfig(
 		context.TODO(),
 		srvOpts,
+		WithMessageEncodeFunc(DefaultMessageEncodeFunc),
+		WithMessageDecodeFunc(DefaultMessageDecodeFunc),
+		WithSubscrChannels("test_channel_1", "test_channel_2"),
 	)
 
 	require.NoError(t, err)

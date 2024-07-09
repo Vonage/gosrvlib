@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	libredis "github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/require"
 )
 
@@ -33,4 +34,26 @@ func Test_WithMessageDecodeFunc(t *testing.T) {
 	conf := &cfg{}
 	WithMessageDecodeFunc(f)(conf)
 	require.NoError(t, conf.messageDecodeFunc(context.TODO(), "", ""))
+}
+
+func Test_WithSubscriptionChannels(t *testing.T) {
+	t.Parallel()
+
+	chns := []string{"alpha", "beta", "gamma"}
+
+	conf := &cfg{}
+	WithSubscrChannels(chns...)(conf)
+	require.Len(t, conf.subChannels, 3)
+}
+
+func Test_WithSubscrChannelOptions(t *testing.T) {
+	t.Parallel()
+
+	opts := []ChannelOption{
+		libredis.WithChannelSize(1),
+	}
+
+	conf := &cfg{}
+	WithSubscrChannelOptions(opts...)(conf)
+	require.Len(t, conf.subChannelOpts, 1)
 }
