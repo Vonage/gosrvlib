@@ -261,10 +261,6 @@ ifeq ($(DEPLOY_ENV), prod)
 	API_TEST_FILE=*.yaml
 endif
 
-
-# Get the main version of aws-cli
-AWSCLI_MAIN_VERSION=$(shell aws --version 2>&1 | cut -d " " -f1 | cut -d "/" -f2 | cut -d "." -f1)
-
 # Display general help about this command
 .PHONY: help
 help:
@@ -443,8 +439,9 @@ ecrlogin:
 ifeq ($(ECR_REGISTRY),)
     # skip login
 else
-ifeq ($(AWSCLI_MAIN_VERSION), 1)
-	$$(aws $(ECR_PROFILE) ecr get-login --no-include-email --region $(AWS_DEFAULT_REGION) | sed 's|https://||')
+# check the main version of aws-cli
+ifeq ($(shell aws --version 2>&1 | cut -d " " -f1 | cut -d "/" -f2 | cut -d "." -f1), 1)
+	$(shell aws $(ECR_PROFILE) ecr get-login --no-include-email --region $(AWS_DEFAULT_REGION) | sed 's|https://||')
 else
 	aws $(ECR_PROFILE) ecr get-login-password --region $(AWS_DEFAULT_REGION) | $(DOCKER) login --password-stdin --username AWS $(ECR_REGISTRY)
 endif
