@@ -1,0 +1,954 @@
+package countrycode
+
+import (
+	"testing"
+
+	"github.com/stretchr/testify/require"
+)
+
+func Test_countryByAlpha2ID(t *testing.T) {
+	t.Parallel()
+
+	data := New()
+
+	tests := []struct {
+		name    string
+		in      uint16
+		exp     *CountryData
+		wantErr bool
+	}{
+		{
+			name: "valid",
+			in:   0x0357,
+			exp: &CountryData{
+				StatusCode:             1,
+				Status:                 "Officially assigned",
+				Alpha2Code:             "ZW",
+				Alpha3Code:             "ZWE",
+				NumericCode:            "716",
+				NameEnglish:            "Zimbabwe",
+				NameFrench:             "Zimbabwe (le)",
+				Region:                 "Africa",
+				SubRegion:              "Sub-Saharan Africa",
+				IntermediateRegion:     "Eastern Africa",
+				RegionCode:             "002",
+				SubRegionCode:          "202",
+				IntermediateRegionCode: "014",
+				TLD:                    "zw",
+			},
+			wantErr: false,
+		},
+		{
+			name:    "invalid key",
+			in:      0,
+			exp:     nil,
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got, err := data.countryByAlpha2ID(tt.in)
+
+			require.Equal(t, tt.exp, got)
+
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
+		})
+	}
+}
+
+func Test_EnumStatus(t *testing.T) {
+	t.Parallel()
+
+	data := New()
+	got := data.EnumStatus()
+
+	require.Len(t, got, lenEnumStatus)
+}
+
+func Test_EnumRegion(t *testing.T) {
+	t.Parallel()
+
+	data := New()
+	got := data.EnumRegion()
+
+	require.Len(t, got, lenEnumRegion)
+}
+
+func Test_EnumSubRegion(t *testing.T) {
+	t.Parallel()
+
+	data := New()
+	got := data.EnumSubRegion()
+
+	require.Len(t, got, lenEnumSubRegion)
+}
+
+func Test_EnumIntermediateRegion(t *testing.T) {
+	t.Parallel()
+
+	data := New()
+	got := data.EnumIntermediateRegion()
+
+	require.Len(t, got, lenEnumIntRegion)
+}
+
+func Test_CountryByAlpha2Code(t *testing.T) {
+	t.Parallel()
+
+	data := New()
+
+	tests := []struct {
+		name    string
+		in      string
+		exp     *CountryData
+		wantErr bool
+	}{
+		{
+			name: "valid",
+			in:   "ZW",
+			exp: &CountryData{
+				StatusCode:             1,
+				Status:                 "Officially assigned",
+				Alpha2Code:             "ZW",
+				Alpha3Code:             "ZWE",
+				NumericCode:            "716",
+				NameEnglish:            "Zimbabwe",
+				NameFrench:             "Zimbabwe (le)",
+				Region:                 "Africa",
+				SubRegion:              "Sub-Saharan Africa",
+				IntermediateRegion:     "Eastern Africa",
+				RegionCode:             "002",
+				SubRegionCode:          "202",
+				IntermediateRegionCode: "014",
+				TLD:                    "zw",
+			},
+			wantErr: false,
+		},
+		{
+			name:    "invalid key",
+			in:      "",
+			exp:     nil,
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got, err := data.CountryByAlpha2Code(tt.in)
+
+			require.Equal(t, tt.exp, got)
+
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
+		})
+	}
+}
+
+func Test_CountryByAlpha3Code(t *testing.T) {
+	t.Parallel()
+
+	data := New()
+
+	tests := []struct {
+		name    string
+		in      string
+		exp     *CountryData
+		wantErr bool
+	}{
+		{
+			name: "valid",
+			in:   "ZWE",
+			exp: &CountryData{
+				StatusCode:             1,
+				Status:                 "Officially assigned",
+				Alpha2Code:             "ZW",
+				Alpha3Code:             "ZWE",
+				NumericCode:            "716",
+				NameEnglish:            "Zimbabwe",
+				NameFrench:             "Zimbabwe (le)",
+				Region:                 "Africa",
+				SubRegion:              "Sub-Saharan Africa",
+				IntermediateRegion:     "Eastern Africa",
+				RegionCode:             "002",
+				SubRegionCode:          "202",
+				IntermediateRegionCode: "014",
+				TLD:                    "zw",
+			},
+			wantErr: false,
+		},
+		{
+			name:    "invalid key",
+			in:      "",
+			exp:     nil,
+			wantErr: true,
+		},
+		{
+			name:    "wrong key",
+			in:      "AAA",
+			exp:     nil,
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got, err := data.CountryByAlpha3Code(tt.in)
+
+			require.Equal(t, tt.exp, got)
+
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
+		})
+	}
+}
+
+func Test_CountryByNumericCode(t *testing.T) {
+	t.Parallel()
+
+	data := New()
+
+	tests := []struct {
+		name    string
+		in      string
+		exp     *CountryData
+		wantErr bool
+	}{
+		{
+			name: "valid",
+			in:   "716",
+			exp: &CountryData{
+				StatusCode:             1,
+				Status:                 "Officially assigned",
+				Alpha2Code:             "ZW",
+				Alpha3Code:             "ZWE",
+				NumericCode:            "716",
+				NameEnglish:            "Zimbabwe",
+				NameFrench:             "Zimbabwe (le)",
+				Region:                 "Africa",
+				SubRegion:              "Sub-Saharan Africa",
+				IntermediateRegion:     "Eastern Africa",
+				RegionCode:             "002",
+				SubRegionCode:          "202",
+				IntermediateRegionCode: "014",
+				TLD:                    "zw",
+			},
+			wantErr: false,
+		},
+		{
+			name:    "invalid key",
+			in:      "",
+			exp:     nil,
+			wantErr: true,
+		},
+		{
+			name:    "wrong key",
+			in:      "999",
+			exp:     nil,
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got, err := data.CountryByNumericCode(tt.in)
+
+			require.Equal(t, tt.exp, got)
+
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
+		})
+	}
+}
+
+func Test_countriesByAlpha2IDs(t *testing.T) {
+	t.Parallel()
+
+	data := New()
+
+	tests := []struct {
+		name    string
+		in      []uint16
+		exp     int
+		wantErr bool
+	}{
+		{
+			name:    "empty",
+			in:      []uint16{},
+			exp:     0,
+			wantErr: false,
+		},
+		{
+			name:    "valid",
+			in:      []uint16{0x0357, 0x0358},
+			exp:     2,
+			wantErr: false,
+		},
+		{
+			name:    "invalid",
+			in:      []uint16{0x0357, 0x0000},
+			exp:     0,
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got, err := data.countriesByAlpha2IDs(tt.in)
+
+			require.Len(t, got, tt.exp)
+
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
+		})
+	}
+}
+
+func Test_countriesByRegionID(t *testing.T) {
+	t.Parallel()
+
+	data := New()
+
+	tests := []struct {
+		name    string
+		in      uint8
+		exp     int
+		wantErr bool
+	}{
+		{
+			name:    "first",
+			in:      0,
+			exp:     429,
+			wantErr: false,
+		},
+		{
+			name:    "last",
+			in:      lenEnumRegion - 1,
+			exp:     51,
+			wantErr: false,
+		},
+		{
+			name:    "invalid",
+			in:      lenEnumRegion,
+			exp:     0,
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got, err := data.countriesByRegionID(tt.in)
+
+			require.Len(t, got, tt.exp)
+
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
+		})
+	}
+}
+
+func Test_CountriesByRegionCode(t *testing.T) {
+	t.Parallel()
+
+	data := New()
+
+	tests := []struct {
+		name    string
+		in      string
+		exp     int
+		wantErr bool
+	}{
+		{
+			name:    "first",
+			in:      "",
+			exp:     429,
+			wantErr: false,
+		},
+		{
+			name:    "last",
+			in:      "150",
+			exp:     51,
+			wantErr: false,
+		},
+		{
+			name:    "invalid",
+			in:      "999",
+			exp:     0,
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got, err := data.CountriesByRegionCode(tt.in)
+
+			require.Len(t, got, tt.exp)
+
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
+		})
+	}
+}
+
+func Test_CountriesByRegionName(t *testing.T) {
+	t.Parallel()
+
+	data := New()
+
+	tests := []struct {
+		name    string
+		in      string
+		exp     int
+		wantErr bool
+	}{
+		{
+			name:    "first",
+			in:      "",
+			exp:     429,
+			wantErr: false,
+		},
+		{
+			name:    "last",
+			in:      "Europe",
+			exp:     51,
+			wantErr: false,
+		},
+		{
+			name:    "invalid",
+			in:      "INVALID",
+			exp:     0,
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got, err := data.CountriesByRegionName(tt.in)
+
+			require.Len(t, got, tt.exp)
+
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
+		})
+	}
+}
+
+func Test_countriesBySubRegionID(t *testing.T) {
+	t.Parallel()
+
+	data := New()
+
+	tests := []struct {
+		name    string
+		in      uint8
+		exp     int
+		wantErr bool
+	}{
+		{
+			name:    "first",
+			in:      0,
+			exp:     429,
+			wantErr: false,
+		},
+		{
+			name:    "last",
+			in:      lenEnumSubRegion - 1,
+			exp:     52,
+			wantErr: false,
+		},
+		{
+			name:    "invalid",
+			in:      lenEnumSubRegion,
+			exp:     0,
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got, err := data.countriesBySubRegionID(tt.in)
+
+			require.Len(t, got, tt.exp)
+
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
+		})
+	}
+}
+
+func Test_CountriesBySubRegionCode(t *testing.T) {
+	t.Parallel()
+
+	data := New()
+
+	tests := []struct {
+		name    string
+		in      string
+		exp     int
+		wantErr bool
+	}{
+		{
+			name:    "first",
+			in:      "",
+			exp:     429,
+			wantErr: false,
+		},
+		{
+			name:    "last",
+			in:      "419",
+			exp:     52,
+			wantErr: false,
+		},
+		{
+			name:    "invalid",
+			in:      "INVALID",
+			exp:     0,
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got, err := data.CountriesBySubRegionCode(tt.in)
+
+			require.Len(t, got, tt.exp)
+
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
+		})
+	}
+}
+
+func Test_CountriesBySubRegionName(t *testing.T) {
+	t.Parallel()
+
+	data := New()
+
+	tests := []struct {
+		name    string
+		in      string
+		exp     int
+		wantErr bool
+	}{
+		{
+			name:    "first",
+			in:      "",
+			exp:     429,
+			wantErr: false,
+		},
+		{
+			name:    "last",
+			in:      "Latin America and the Caribbean",
+			exp:     52,
+			wantErr: false,
+		},
+		{
+			name:    "invalid",
+			in:      "INVALID",
+			exp:     0,
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got, err := data.CountriesBySubRegionName(tt.in)
+
+			require.Len(t, got, tt.exp)
+
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
+		})
+	}
+}
+
+func Test_countriesByIntermediateRegionID(t *testing.T) {
+	t.Parallel()
+
+	data := New()
+
+	tests := []struct {
+		name    string
+		in      uint8
+		exp     int
+		wantErr bool
+	}{
+		{
+			name:    "first",
+			in:      0,
+			exp:     571,
+			wantErr: false,
+		},
+		{
+			name:    "last",
+			in:      lenEnumIntRegion - 1,
+			exp:     28,
+			wantErr: false,
+		},
+		{
+			name:    "invalid",
+			in:      lenEnumIntRegion,
+			exp:     0,
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got, err := data.countriesByIntermediateRegionID(tt.in)
+
+			require.Len(t, got, tt.exp)
+
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
+		})
+	}
+}
+
+func Test_CountriesByIntermediateRegionCode(t *testing.T) {
+	t.Parallel()
+
+	data := New()
+
+	tests := []struct {
+		name    string
+		in      string
+		exp     int
+		wantErr bool
+	}{
+		{
+			name:    "first",
+			in:      "",
+			exp:     571,
+			wantErr: false,
+		},
+		{
+			name:    "last",
+			in:      "029",
+			exp:     28,
+			wantErr: false,
+		},
+		{
+			name:    "invalid",
+			in:      "999",
+			exp:     0,
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got, err := data.CountriesByIntermediateRegionCode(tt.in)
+
+			require.Len(t, got, tt.exp)
+
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
+		})
+	}
+}
+
+func Test_CountriesByIntermediateRegionName(t *testing.T) {
+	t.Parallel()
+
+	data := New()
+
+	tests := []struct {
+		name    string
+		in      string
+		exp     int
+		wantErr bool
+	}{
+		{
+			name:    "first",
+			in:      "",
+			exp:     571,
+			wantErr: false,
+		},
+		{
+			name:    "last",
+			in:      "Caribbean",
+			exp:     28,
+			wantErr: false,
+		},
+		{
+			name:    "invalid",
+			in:      "INVALID",
+			exp:     0,
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got, err := data.CountriesByIntermediateRegionName(tt.in)
+
+			require.Len(t, got, tt.exp)
+
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
+		})
+	}
+}
+
+func Test_CountriesByStatusID(t *testing.T) {
+	t.Parallel()
+
+	data := New()
+
+	tests := []struct {
+		name    string
+		in      uint8
+		exp     int
+		wantErr bool
+	}{
+		{
+			name:    "first",
+			in:      0,
+			exp:     321,
+			wantErr: false,
+		},
+		{
+			name:    "last",
+			in:      lenEnumStatus - 1,
+			exp:     14,
+			wantErr: false,
+		},
+		{
+			name:    "official",
+			in:      1,
+			exp:     249,
+			wantErr: false,
+		},
+		{
+			name:    "invalid",
+			in:      lenEnumStatus,
+			exp:     0,
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got, err := data.CountriesByStatusID(tt.in)
+
+			require.Len(t, got, tt.exp)
+
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
+		})
+	}
+}
+
+func Test_CountriesByStatusName(t *testing.T) {
+	t.Parallel()
+
+	data := New()
+
+	tests := []struct {
+		name    string
+		in      string
+		exp     int
+		wantErr bool
+	}{
+		{
+			name:    "first",
+			in:      "Unassigned",
+			exp:     321,
+			wantErr: false,
+		},
+		{
+			name:    "last",
+			in:      "Formerly assigned",
+			exp:     14,
+			wantErr: false,
+		},
+		{
+			name:    "official",
+			in:      "Officially assigned",
+			exp:     249,
+			wantErr: false,
+		},
+		{
+			name:    "invalid",
+			in:      "",
+			exp:     0,
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got, err := data.CountriesByStatusName(tt.in)
+
+			require.Len(t, got, tt.exp)
+
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
+		})
+	}
+}
+
+func Test_CountriesByTLD(t *testing.T) {
+	t.Parallel()
+
+	data := New()
+
+	tests := []struct {
+		name    string
+		in      string
+		exp     int
+		wantErr bool
+	}{
+		{
+			name:    "it",
+			in:      "it",
+			exp:     1,
+			wantErr: false,
+		},
+		{
+			name:    "zw",
+			in:      "zw",
+			exp:     1,
+			wantErr: false,
+		},
+		{
+			name:    "us",
+			in:      "us",
+			exp:     2,
+			wantErr: false,
+		},
+		{
+			name:    "invalid zero",
+			in:      "",
+			exp:     0,
+			wantErr: true,
+		},
+		{
+			name:    "invalid max",
+			in:      "ZZZ",
+			exp:     0,
+			wantErr: true,
+		},
+		{
+			name:    "wrong tld",
+			in:      "zz",
+			exp:     0,
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got, err := data.CountriesByTLD(tt.in)
+
+			require.Len(t, got, tt.exp)
+
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
+		})
+	}
+}
