@@ -1,5 +1,7 @@
 /*
-Package countrycode provides a list of countries and their codes in various formats.
+Package countrycode provides a information about countries and their ISO-3166 Codes.
+The data originates from multiple sources, including ISO-3166, CIA, United Nations, and Wikipedia.
+The data is stored in a binary format for fast access and small memory footprint.
 */
 package countrycode
 
@@ -131,7 +133,7 @@ func (d *Data) EnumIntermediateRegion() map[string]string {
 	return m
 }
 
-// CountryByAlpha2Code returns the country data for the given alpha-2 code (e.g. "IT" for Italy).
+// CountryByAlpha2Code returns the country data for the given ISO-3166 Alpha-2 code (e.g. "IT" for Italy).
 func (d *Data) CountryByAlpha2Code(alpha2 string) (*CountryData, error) {
 	a2, err := encodeAlpha2(alpha2)
 	if err != nil {
@@ -141,7 +143,7 @@ func (d *Data) CountryByAlpha2Code(alpha2 string) (*CountryData, error) {
 	return d.countryByAlpha2ID(a2)
 }
 
-// CountryByAlpha3Code returns the country data for the given alpha-3 code (e.g. "ITA" for Italy).
+// CountryByAlpha3Code returns the country data for the given ISO-3166 Alpha-3 code (e.g. "ITA" for Italy).
 func (d *Data) CountryByAlpha3Code(alpha3 string) (*CountryData, error) {
 	a3, err := encodeAlpha3(alpha3)
 	if err != nil {
@@ -156,7 +158,7 @@ func (d *Data) CountryByAlpha3Code(alpha3 string) (*CountryData, error) {
 	return d.countryByAlpha2ID(a2)
 }
 
-// CountryByNumericCode returns the country data for the given numeric code (e.g. "380" for Italy).
+// CountryByNumericCode returns the country data for the given ISO-3166 Numeric code (e.g. "380" for Italy).
 func (d *Data) CountryByNumericCode(num string) (*CountryData, error) {
 	nid, err := encodeNumeric(num)
 	if err != nil {

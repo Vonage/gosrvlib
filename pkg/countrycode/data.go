@@ -46,7 +46,21 @@ type Data struct {
 	dAlpha2IDsByTLD                  map[uint16][]uint16
 }
 
-// New generate the country data, including various indexes.
+// New generates the country data, including various indexes.
+// The generated object should be reused to avoid regenerating the data.
+//
+// Data sources:
+//   - https://www.iso.org/iso-3166-country-codes.html
+//   - https://www.cia.gov/the-world-factbook/references/country-data-codes/
+//   - https://unstats.un.org/unsd/methodology/m49/overview/
+//   - https://en.wikipedia.org/wiki/ISO_3166
+//   - https://en.wikipedia.org/wiki/ISO_3166-1
+//   - https://en.wikipedia.org/wiki/ISO_3166-2
+//   - https://en.wikipedia.org/wiki/ISO_3166-3
+//   - https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
+//   - https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3
+//   - https://en.wikipedia.org/wiki/ISO_3166-1_numeric
+//
 // Data updated at: 2024-07-17.
 //
 //nolint:funlen,maintidx
