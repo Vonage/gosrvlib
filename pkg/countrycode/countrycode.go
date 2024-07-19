@@ -26,8 +26,6 @@ type CountryData struct {
 }
 
 // countryByAlpha2ID returns the country data for the given alpha-2 internal ID.
-//
-//nolint:gocognit
 func (d *Data) countryByAlpha2ID(a2 uint16) (*CountryData, error) {
 	ck, err := d.countryKeyByAlpha2ID(a2)
 	if err != nil {
@@ -75,10 +73,8 @@ func (d *Data) countryByAlpha2ID(a2 uint16) (*CountryData, error) {
 		cd.SubRegionCode = subregion.code
 		cd.SubRegion = subregion.name
 
-		intregion, err := d.intermediateRegionByID(int(el.intregion))
-		if err != nil {
-			return nil, err
-		}
+		// no error check because el.intregion is max 3 bit and always valid
+		intregion, _ := d.intermediateRegionByID(int(el.intregion))
 
 		cd.IntermediateRegionCode = intregion.code
 		cd.IntermediateRegion = intregion.name

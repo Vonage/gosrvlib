@@ -64,6 +64,47 @@ func Test_countryByAlpha2ID(t *testing.T) {
 	}
 }
 
+func Test_countryByAlpha2ID_errors(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		key  uint64
+	}{
+		{
+			name: "invalid status",
+			key:  0xFD5F572D98613570,
+		},
+		{
+			name: "invalid alpha2",
+			key:  0x1FFF572D98613570,
+		},
+		{
+			name: "invalid region",
+			key:  0x1D5F572D99E13570,
+		},
+		{
+			name: "invalid sub-region",
+			key:  0x1D5F572D987F3570,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			data := New()
+
+			data.dCountryKeyByAlpha2ID[1] = tt.key
+
+			got, err := data.countryByAlpha2ID(1)
+
+			require.Error(t, err)
+			require.Nil(t, got)
+		})
+	}
+}
+
 func Test_EnumStatus(t *testing.T) {
 	t.Parallel()
 
