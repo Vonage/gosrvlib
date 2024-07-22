@@ -16,15 +16,15 @@ type names struct {
 
 // Data contains the internal country Data and various indexes.
 type Data struct {
-	dStatusByID                      []*enumData
+	dStatusByID                      [7]*enumData
 	dStatusIDByName                  map[string]uint8
-	dRegionByID                      []*enumData
+	dRegionByID                      [6]*enumData
 	dRegionIDByCode                  map[string]uint8
 	dRegionIDByName                  map[string]uint8
-	dSubRegionByID                   []*enumData
+	dSubRegionByID                   [18]*enumData
 	dSubRegionIDByCode               map[string]uint8
 	dSubRegionIDByName               map[string]uint8
-	dIntermediateRegionByID          []*enumData
+	dIntermediateRegionByID          [8]*enumData
 	dIntermediateRegionIDByCode      map[string]uint8
 	dIntermediateRegionIDByName      map[string]uint8
 	dCountryNamesByAlpha2ID          map[uint16]*names
@@ -58,7 +58,7 @@ type Data struct {
 //nolint:funlen,maintidx
 func New() *Data {
 	d := &Data{
-		dStatusByID: []*enumData{
+		dStatusByID: [...]*enumData{
 			{"0", "Unassigned"},
 			{"1", "Officially assigned"},
 			{"2", "User-assigned"},
@@ -67,7 +67,7 @@ func New() *Data {
 			{"5", "Indeterminately reserved"},
 			{"6", "Formerly assigned"},
 		},
-		dRegionByID: []*enumData{
+		dRegionByID: [...]*enumData{
 			{"", ""},
 			{"002", "Africa"},
 			{"009", "Oceania"},
@@ -75,7 +75,7 @@ func New() *Data {
 			{"142", "Asia"},
 			{"150", "Europe"},
 		},
-		dSubRegionByID: []*enumData{
+		dSubRegionByID: [...]*enumData{
 			{"", ""},
 			{"015", "Northern Africa"},
 			{"021", "Northern America"},
@@ -95,7 +95,7 @@ func New() *Data {
 			{"202", "Sub-Saharan Africa"},
 			{"419", "Latin America and the Caribbean"},
 		},
-		dIntermediateRegionByID: []*enumData{
+		dIntermediateRegionByID: [...]*enumData{
 			{"", ""},
 			{"005", "South America"},
 			{"011", "Western Africa"},
