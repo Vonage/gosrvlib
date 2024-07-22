@@ -1,7 +1,7 @@
 /*
-Package countrycode provides a information about countries and their ISO-3166 Codes.
+Package countrycode provides information about countries and their ISO-3166 Codes.
 The data originates from multiple sources, including ISO-3166, CIA, United Nations, and Wikipedia.
-The data is stored in a binary format for fast access and small memory footprint.
+The data is stored in a compact binary format for fast access and small memory footprint.
 */
 package countrycode
 
@@ -54,8 +54,8 @@ func (d *Data) countryByAlpha2ID(a2 uint16) (*CountryData, error) {
 			return nil, err
 		}
 
-		cd.NameEnglish = name.en
-		cd.NameFrench = name.fr
+		cd.NameEnglish = name.EN
+		cd.NameFrench = name.FR
 
 		region, err := d.regionByID(int(el.region))
 		if err != nil {
@@ -322,8 +322,8 @@ func (d *Data) CountriesByTLD(tld string) ([]*CountryData, error) {
 
 // CountryKey returns the internal binary representation for the given country data.
 // This function can be used to rebuild the internal binary data from the exported data.
-// It returns the CountryKey and the internal Aplha2 ID.
-func (d *Data) CountryKey(data *CountryData) (uint64, uint16, error) {
+// It returns the internal Aplha2 ID and the CountryKey.
+func (d *Data) CountryKey(data *CountryData) (uint16, uint64, error) {
 	status, err := d.statusIDByName(data.Status)
 	if err != nil {
 		return 0, 0, err
@@ -334,35 +334,12 @@ func (d *Data) CountryKey(data *CountryData) (uint64, uint16, error) {
 		return 0, 0, err
 	}
 
-	alpha3, err := encodeAlpha3(data.Alpha3Code)
-	if err != nil {
-		return 0, 0, err
-	}
-
-	numeric, err := encodeNumeric(data.NumericCode)
-	if err != nil {
-		return 0, 0, err
-	}
-
-	region, err := d.regionIDByName(data.Region)
-	if err != nil {
-		return 0, 0, err
-	}
-
-	subregion, err := d.subRegionIDByName(data.SubRegion)
-	if err != nil {
-		return 0, 0, err
-	}
-
-	intregion, err := d.intermediateRegionIDByName(data.IntermediateRegion)
-	if err != nil {
-		return 0, 0, err
-	}
-
-	tld, err := encodeTLD(data.TLD)
-	if err != nil {
-		return 0, 0, err
-	}
+	alpha3, _ := encodeAlpha3(data.Alpha3Code)
+	numeric, _ := encodeNumeric(data.NumericCode)
+	region, _ := d.regionIDByName(data.Region)
+	subregion, _ := d.subRegionIDByName(data.SubRegion)
+	intregion, _ := d.intermediateRegionIDByName(data.IntermediateRegion)
+	tld, _ := encodeTLD(data.TLD)
 
 	ck := &countryKeyElem{
 		status:    status,
@@ -375,5 +352,5 @@ func (d *Data) CountryKey(data *CountryData) (uint64, uint16, error) {
 		tld:       tld,
 	}
 
-	return ck.encodeCountryKey(), ck.alpha2, nil
+	return ck.alpha2, ck.encodeCountryKey(), nil
 }

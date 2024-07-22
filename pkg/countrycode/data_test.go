@@ -606,24 +606,24 @@ func Test_countryNamesByAlpha2ID(t *testing.T) {
 	tests := []struct {
 		name    string
 		in      uint16
-		exp     *names
+		exp     *Names
 		wantErr bool
 	}{
 		{
 			name: "first",
 			in:   0x0024,
-			exp: &names{
-				en: "Andorra",
-				fr: "Andorre (l')",
+			exp: &Names{
+				EN: "Andorra",
+				FR: "Andorre (l')",
 			},
 			wantErr: false,
 		},
 		{
 			name: "last",
 			in:   0x0357,
-			exp: &names{
-				en: "Zimbabwe",
-				fr: "Zimbabwe (le)",
+			exp: &Names{
+				EN: "Zimbabwe",
+				FR: "Zimbabwe (le)",
 			},
 			wantErr: false,
 		},

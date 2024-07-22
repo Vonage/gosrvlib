@@ -99,6 +99,8 @@ func decodeCountryKey(key uint64) *countryKeyElem {
 }
 
 // encodeCountryKey encodes the country data into a uint64.
+// The returned Country key is an RNCK, see:
+// "Reversible Numeric Composite Key (RNCK), N Asuni - arXiv preprint arXiv:2306.04353, 2023".
 func (e *countryKeyElem) encodeCountryKey() uint64 {
 	return ((uint64(e.status&0x07) << bitPosStatus) |
 		(uint64(e.alpha2&0x03FF) << bitPosAlpha2) |

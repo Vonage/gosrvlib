@@ -73,19 +73,19 @@ func Test_countryByAlpha2ID_errors(t *testing.T) {
 	}{
 		{
 			name: "invalid status",
-			key:  0xFD5F572D98613570,
+			key:  0x7D5F572D98181357, // 0 | 111 | 11010 10111 | 11010 10111 00101 | 1011001100 | 00001 | 10000 | 00100 | 11010 10111
 		},
 		{
 			name: "invalid alpha2",
-			key:  0x1FFF572D98613570,
+			key:  0x1FFF572D98181357, // 0 | 001 | 11111 11111 | 11010 10111 00101 | 1011001100 | 00001 | 10000 | 00100 | 11010 10111
 		},
 		{
 			name: "invalid region",
-			key:  0x1D5F572D99E13570,
+			key:  0x1D5F572D99F81357, // 0 | 001 | 11010 10111 | 11010 10111 00101 | 1011001100 | 11111 | 10000 | 00100 | 11010 10111
 		},
 		{
 			name: "invalid sub-region",
-			key:  0x1D5F572D987F3570,
+			key:  0x1D5F572D981F9357, // 0 | 001 | 11010 10111 | 11010 10111 00101 | 1011001100 | 00001 | 11111 | 00100 | 11010 10111
 		},
 	}
 
@@ -1069,139 +1069,13 @@ func TestCountryKey(t *testing.T) {
 			expA2:   0,
 			wantErr: true,
 		},
-		{
-			name: "error - Alpha3Code",
-			in: &CountryData{
-				Status:                 "Officially assigned",
-				Alpha2Code:             "ZW",
-				Alpha3Code:             "",
-				NumericCode:            "716",
-				NameEnglish:            "Zimbabwe",
-				NameFrench:             "Zimbabwe (le)",
-				Region:                 "Africa",
-				SubRegion:              "Sub-Saharan Africa",
-				IntermediateRegion:     "Eastern Africa",
-				RegionCode:             "002",
-				SubRegionCode:          "202",
-				IntermediateRegionCode: "014",
-				TLD:                    "zw",
-			},
-			exp:     0,
-			expA2:   0,
-			wantErr: true,
-		},
-		{
-			name: "error - NumericCode",
-			in: &CountryData{
-				Status:                 "Officially assigned",
-				Alpha2Code:             "ZW",
-				Alpha3Code:             "ZWE",
-				NumericCode:            "",
-				NameEnglish:            "Zimbabwe",
-				NameFrench:             "Zimbabwe (le)",
-				Region:                 "Africa",
-				SubRegion:              "Sub-Saharan Africa",
-				IntermediateRegion:     "Eastern Africa",
-				RegionCode:             "002",
-				SubRegionCode:          "202",
-				IntermediateRegionCode: "014",
-				TLD:                    "zw",
-			},
-			exp:     0,
-			expA2:   0,
-			wantErr: true,
-		},
-		{
-			name: "error - Region",
-			in: &CountryData{
-				Status:                 "Officially assigned",
-				Alpha2Code:             "ZW",
-				Alpha3Code:             "ZWE",
-				NumericCode:            "716",
-				NameEnglish:            "Zimbabwe",
-				NameFrench:             "Zimbabwe (le)",
-				Region:                 "INVALID",
-				SubRegion:              "Sub-Saharan Africa",
-				IntermediateRegion:     "Eastern Africa",
-				RegionCode:             "002",
-				SubRegionCode:          "202",
-				IntermediateRegionCode: "014",
-				TLD:                    "zw",
-			},
-			exp:     0,
-			expA2:   0,
-			wantErr: true,
-		},
-		{
-			name: "error - SubRegion",
-			in: &CountryData{
-				Status:                 "Officially assigned",
-				Alpha2Code:             "ZW",
-				Alpha3Code:             "ZWE",
-				NumericCode:            "716",
-				NameEnglish:            "Zimbabwe",
-				NameFrench:             "Zimbabwe (le)",
-				Region:                 "Africa",
-				SubRegion:              "INVALID",
-				IntermediateRegion:     "Eastern Africa",
-				RegionCode:             "002",
-				SubRegionCode:          "202",
-				IntermediateRegionCode: "014",
-				TLD:                    "zw",
-			},
-			exp:     0,
-			expA2:   0,
-			wantErr: true,
-		},
-		{
-			name: "error - IntermediateRegion",
-			in: &CountryData{
-				Status:                 "Officially assigned",
-				Alpha2Code:             "ZW",
-				Alpha3Code:             "ZWE",
-				NumericCode:            "716",
-				NameEnglish:            "Zimbabwe",
-				NameFrench:             "Zimbabwe (le)",
-				Region:                 "Africa",
-				SubRegion:              "Sub-Saharan Africa",
-				IntermediateRegion:     "INVALID",
-				RegionCode:             "002",
-				SubRegionCode:          "202",
-				IntermediateRegionCode: "014",
-				TLD:                    "zw",
-			},
-			exp:     0,
-			expA2:   0,
-			wantErr: true,
-		},
-		{
-			name: "error - TLD",
-			in: &CountryData{
-				Status:                 "Officially assigned",
-				Alpha2Code:             "ZW",
-				Alpha3Code:             "ZWE",
-				NumericCode:            "716",
-				NameEnglish:            "Zimbabwe",
-				NameFrench:             "Zimbabwe (le)",
-				Region:                 "Africa",
-				SubRegion:              "Sub-Saharan Africa",
-				IntermediateRegion:     "Eastern Africa",
-				RegionCode:             "002",
-				SubRegionCode:          "202",
-				IntermediateRegionCode: "014",
-				TLD:                    "",
-			},
-			exp:     0,
-			expA2:   0,
-			wantErr: true,
-		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			ck, a2, err := data.CountryKey(tt.in)
+			a2, ck, err := data.CountryKey(tt.in)
 
 			require.Equal(t, tt.exp, ck)
 			require.Equal(t, tt.expA2, a2)
