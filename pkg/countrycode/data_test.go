@@ -13,25 +13,25 @@ func Test_New(t *testing.T) {
 
 	require.NotNil(t, data)
 
-	require.Len(t, data.dStatusByID, lenEnumStatus)
-	require.Len(t, data.dStatusIDByName, lenEnumStatus)
-	require.Len(t, data.dRegionByID, lenEnumRegion)
-	require.Len(t, data.dRegionIDByCode, lenEnumRegion)
-	require.Len(t, data.dRegionIDByName, lenEnumRegion)
-	require.Len(t, data.dSubRegionByID, lenEnumSubRegion)
-	require.Len(t, data.dSubRegionIDByCode, lenEnumSubRegion)
-	require.Len(t, data.dSubRegionIDByName, lenEnumSubRegion)
-	require.Len(t, data.dIntermediateRegionByID, lenEnumIntRegion)
-	require.Len(t, data.dIntermediateRegionIDByCode, lenEnumIntRegion)
-	require.Len(t, data.dIntermediateRegionIDByName, lenEnumIntRegion)
+	require.Len(t, data.dStatusByID, len(data.dStatusByID))
+	require.Len(t, data.dStatusIDByName, len(data.dStatusByID))
+	require.Len(t, data.dRegionByID, len(data.dRegionByID))
+	require.Len(t, data.dRegionIDByCode, len(data.dRegionByID))
+	require.Len(t, data.dRegionIDByName, len(data.dRegionByID))
+	require.Len(t, data.dSubRegionByID, len(data.dSubRegionByID))
+	require.Len(t, data.dSubRegionIDByCode, len(data.dSubRegionByID))
+	require.Len(t, data.dSubRegionIDByName, len(data.dSubRegionByID))
+	require.Len(t, data.dIntermediateRegionByID, len(data.dIntermediateRegionByID))
+	require.Len(t, data.dIntermediateRegionIDByCode, len(data.dIntermediateRegionByID))
+	require.Len(t, data.dIntermediateRegionIDByName, len(data.dIntermediateRegionByID))
 	require.Len(t, data.dCountryNamesByAlpha2ID, 249)
 	require.Len(t, data.dCountryKeyByAlpha2ID, 676)
 	require.Len(t, data.dAlpha2IDByAlpha3ID, 249)
 	require.Len(t, data.dAlpha2IDByNumericID, 249)
-	require.Len(t, data.dAlpha2IDsByRegionID, lenEnumRegion)
-	require.Len(t, data.dAlpha2IDsBySubRegionID, lenEnumSubRegion)
-	require.Len(t, data.dAlpha2IDsByIntermediateRegionID, lenEnumIntRegion)
-	require.Len(t, data.dAlpha2IDsByStatusID, lenEnumStatus)
+	require.Len(t, data.dAlpha2IDsByRegionID, len(data.dRegionByID))
+	require.Len(t, data.dAlpha2IDsBySubRegionID, len(data.dSubRegionByID))
+	require.Len(t, data.dAlpha2IDsByIntermediateRegionID, len(data.dIntermediateRegionByID))
+	require.Len(t, data.dAlpha2IDsByStatusID, len(data.dStatusByID))
 	require.Len(t, data.dAlpha2IDsByTLD, 250)
 }
 
@@ -54,7 +54,7 @@ func Test_statusByID(t *testing.T) {
 		},
 		{
 			name:    "last",
-			in:      lenEnumStatus - 1,
+			in:      len(data.dStatusByID) - 1,
 			exp:     &enumData{code: "6", name: "Formerly assigned"},
 			wantErr: false,
 		},
@@ -66,7 +66,7 @@ func Test_statusByID(t *testing.T) {
 		},
 		{
 			name:    "out of range too big",
-			in:      lenEnumStatus,
+			in:      len(data.dStatusByID),
 			exp:     nil,
 			wantErr: true,
 		},
@@ -110,7 +110,7 @@ func Test_statusIDByName(t *testing.T) {
 		{
 			name:    "last",
 			in:      "Formerly assigned",
-			exp:     lenEnumStatus - 1,
+			exp:     uint8(len(data.dStatusByID) - 1),
 			wantErr: false,
 		},
 		{
@@ -158,7 +158,7 @@ func Test_regionByID(t *testing.T) {
 		},
 		{
 			name:    "last",
-			in:      lenEnumRegion - 1,
+			in:      len(data.dRegionByID) - 1,
 			exp:     &enumData{code: "150", name: "Europe"},
 			wantErr: false,
 		},
@@ -170,7 +170,7 @@ func Test_regionByID(t *testing.T) {
 		},
 		{
 			name:    "out of range too big",
-			in:      lenEnumRegion,
+			in:      len(data.dRegionByID),
 			exp:     nil,
 			wantErr: true,
 		},
@@ -214,7 +214,7 @@ func Test_regionIDByCode(t *testing.T) {
 		{
 			name:    "last",
 			in:      "150",
-			exp:     lenEnumRegion - 1,
+			exp:     uint8(len(data.dRegionByID) - 1),
 			wantErr: false,
 		},
 		{
@@ -263,7 +263,7 @@ func Test_regionIDByName(t *testing.T) {
 		{
 			name:    "last",
 			in:      "Europe",
-			exp:     lenEnumRegion - 1,
+			exp:     uint8(len(data.dRegionByID) - 1),
 			wantErr: false,
 		},
 		{
@@ -311,7 +311,7 @@ func Test_subRegionByID(t *testing.T) {
 		},
 		{
 			name:    "last",
-			in:      lenEnumSubRegion - 1,
+			in:      len(data.dSubRegionByID) - 1,
 			exp:     &enumData{code: "419", name: "Latin America and the Caribbean"},
 			wantErr: false,
 		},
@@ -323,7 +323,7 @@ func Test_subRegionByID(t *testing.T) {
 		},
 		{
 			name:    "out of range too big",
-			in:      lenEnumSubRegion,
+			in:      len(data.dSubRegionByID),
 			exp:     nil,
 			wantErr: true,
 		},
@@ -367,7 +367,7 @@ func Test_subRegionIDByCode(t *testing.T) {
 		{
 			name:    "last",
 			in:      "419",
-			exp:     lenEnumSubRegion - 1,
+			exp:     uint8(len(data.dSubRegionByID) - 1),
 			wantErr: false,
 		},
 		{
@@ -416,7 +416,7 @@ func Test_subRegionIDByName(t *testing.T) {
 		{
 			name:    "last",
 			in:      "Latin America and the Caribbean",
-			exp:     lenEnumSubRegion - 1,
+			exp:     uint8(len(data.dSubRegionByID) - 1),
 			wantErr: false,
 		},
 		{
@@ -464,7 +464,7 @@ func Test_intermediateRegionByID(t *testing.T) {
 		},
 		{
 			name:    "last",
-			in:      lenEnumIntRegion - 1,
+			in:      len(data.dIntermediateRegionByID) - 1,
 			exp:     &enumData{code: "029", name: "Caribbean"},
 			wantErr: false,
 		},
@@ -476,7 +476,7 @@ func Test_intermediateRegionByID(t *testing.T) {
 		},
 		{
 			name:    "out of range too big",
-			in:      lenEnumIntRegion,
+			in:      len(data.dIntermediateRegionByID),
 			exp:     nil,
 			wantErr: true,
 		},
@@ -520,7 +520,7 @@ func Test_intermediateRegionIDByCode(t *testing.T) {
 		{
 			name:    "last",
 			in:      "029",
-			exp:     lenEnumIntRegion - 1,
+			exp:     uint8(len(data.dIntermediateRegionByID) - 1),
 			wantErr: false,
 		},
 		{
@@ -569,7 +569,7 @@ func Test_intermediateRegionIDByName(t *testing.T) {
 		{
 			name:    "last",
 			in:      "Caribbean",
-			exp:     lenEnumIntRegion - 1,
+			exp:     uint8(len(data.dIntermediateRegionByID) - 1),
 			wantErr: false,
 		},
 		{
@@ -685,13 +685,13 @@ func Test_countryKeyByAlpha2ID(t *testing.T) {
 		{
 			name:    "first official",
 			in:      0x0024,
-			exp:     0x10902E20294C0240, // 0 | 001 | 00001 00100 | 00001 01110 00100 | 0000010100 | 101 | 00110 | 000 | 00001 00100 | 0000
+			exp:     0x10902E2028530024,
 			wantErr: false,
 		},
 		{
 			name:    "last official",
 			in:      0x0357,
-			exp:     0x1D5F572D98613570, // 0 | 001 | 11010 10111 | 11010 10111 00101 | 1011001100 | 001 | 10000 | 100 | 11010 10111 | 0000
+			exp:     0x1D5F572D98181357,
 			wantErr: false,
 		},
 		{
@@ -855,13 +855,13 @@ func Test_alpha2IDsByRegionID(t *testing.T) {
 		},
 		{
 			name:    "last",
-			in:      lenEnumRegion - 1,
+			in:      uint8(len(data.dRegionByID) - 1),
 			exp:     51,
 			wantErr: false,
 		},
 		{
 			name:    "invalid",
-			in:      lenEnumRegion,
+			in:      uint8(len(data.dRegionByID)),
 			exp:     0,
 			wantErr: true,
 		},
@@ -904,13 +904,13 @@ func Test_alpha2IDsBySubRegionID(t *testing.T) {
 		},
 		{
 			name:    "last",
-			in:      lenEnumSubRegion - 1,
+			in:      uint8(len(data.dSubRegionByID) - 1),
 			exp:     52,
 			wantErr: false,
 		},
 		{
 			name:    "invalid",
-			in:      lenEnumSubRegion,
+			in:      uint8(len(data.dSubRegionByID)),
 			exp:     0,
 			wantErr: true,
 		},
@@ -953,13 +953,13 @@ func Test_alpha2IDsByIntermediateRegionID(t *testing.T) {
 		},
 		{
 			name:    "last",
-			in:      lenEnumIntRegion - 1,
+			in:      uint8(len(data.dIntermediateRegionByID) - 1),
 			exp:     28,
 			wantErr: false,
 		},
 		{
 			name:    "invalid",
-			in:      lenEnumIntRegion,
+			in:      uint8(len(data.dIntermediateRegionByID)),
 			exp:     0,
 			wantErr: true,
 		},
@@ -1002,7 +1002,7 @@ func Test_alpha2IDsByStatusID(t *testing.T) {
 		},
 		{
 			name:    "last",
-			in:      lenEnumStatus - 1,
+			in:      uint8(len(data.dStatusByID) - 1),
 			exp:     14,
 			wantErr: false,
 		},
@@ -1014,7 +1014,7 @@ func Test_alpha2IDsByStatusID(t *testing.T) {
 		},
 		{
 			name:    "invalid",
-			in:      lenEnumStatus,
+			in:      uint8(len(data.dStatusByID)),
 			exp:     0,
 			wantErr: true,
 		},

@@ -27,37 +27,37 @@ func Test_decodeCountryKey(t *testing.T) {
 				alpha2:    0x3FF,
 				alpha3:    0x7FFF,
 				numeric:   0x3FF,
-				region:    0x07,
+				region:    0x1F,
 				subregion: 0x1F,
-				intregion: 0x07,
+				intregion: 0x1F,
 				tld:       0x3FF,
 			},
 		},
-		{
+		{ // 0x0165
 			name:  "Kenya",
-			input: 0x1595657328615650,
+			input: 0x1595657328181165, // 0 | 001 | 01011 00101 | 01011 00101 01110 | 0110010100 | 00001 | 10000 | 00100 | 01011 00101
 			exp: &countryKeyElem{
-				status:    0x01,   // 1 = "Officially assigned"
-				alpha2:    0x0165, // 00 01011 00101 => [11,5] => 11+64=75=K 5+64=69=E =>"KE"
-				alpha3:    0x2CAE, // 0 01011 00101 01110 => [11,5,14] => 11+64=75=K 5+64=69=E 14+64=78=N => "KEN"
-				numeric:   0x0194, // "404"
-				region:    0x01,   // 1 = {"002", "Africa"}
-				subregion: 0x10,   // 16 = {"202", "Sub-Saharan Africa"}
-				intregion: 0x05,   // 5 = {"017", "Middle Africa"}
-				tld:       0x0165, // 000000 01011 00101 => [11,5] => 11+96=107=k 5+96=101=e => "ke"
+				status:    0x01,   // 001 = "Officially assigned"
+				alpha2:    0x0165, // 01011 00101 => [11,5] => 11+64=75=K 5+64=69=E =>"KE"
+				alpha3:    0x2CAE, // 01011 00101 01110 => [11,5,14] => 11+64=75=K 5+64=69=E 14+64=78=N => "KEN"
+				numeric:   0x0194, // 0110010100 => "404"
+				region:    0x01,   // 00001 => 1 => {"002", "Africa"}
+				subregion: 0x10,   // 10000 => 16 = {"202", "Sub-Saharan Africa"}
+				intregion: 0x04,   // 00100 => 4 => {"014", "Eastern Africa"}
+				tld:       0x0165, // 01011 00101 => [11,5] => 11+96=107=k 5+96=101=e => "ke"
 			},
 		},
-		{
+		{ // 0x0268
 			name:  "Saint Helena, Ascension and Tristan da Cunha",
-			input: 0x19A268751C60A680,
+			input: 0x19A268751C180A68, // 0 | 001 | 10011 01000 | 10011 01000 01110 | 1010001110 | 00001 | 10000 | 00010 | 10011 01000
 			exp: &countryKeyElem{
 				status:    0x01,   // 1 = "Officially assigned"
 				alpha2:    0x0268, // 10011 01000 => [19,8] => 19+64=83=S 8+64=72=H => "SH"
 				alpha3:    0x4D0E, // 10011 01000 01110 => [19,8,14] => 19+64=83=S 8+64=72=H 14+64=78=N => "SHN"
 				numeric:   0x028E, // 1010001110 => "654"
-				region:    0x01,   // 001 = {"002", "Africa"}
-				subregion: 0x10,   // 10000 = 16 => {"202", "Sub-Saharan Africa"},
-				intregion: 0x02,   // 010 = 2 => {"011", "Western Africa"}
+				region:    0x01,   // 00001 => 1 => {"002", "Africa"}
+				subregion: 0x10,   // 10000 => 16 => {"202", "Sub-Saharan Africa"}
+				intregion: 0x02,   // 00010 => 2 => {"011", "Western Africa"}
 				tld:       0x0268, // 10011 01000 => [19,8] => 19+96=115=s 8+96=104=h => "sh"
 			},
 		},

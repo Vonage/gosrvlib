@@ -111,7 +111,7 @@ func Test_EnumStatus(t *testing.T) {
 	data := New()
 	got := data.EnumStatus()
 
-	require.Len(t, got, lenEnumStatus)
+	require.Len(t, got, len(data.dStatusByID))
 }
 
 func Test_EnumRegion(t *testing.T) {
@@ -120,7 +120,7 @@ func Test_EnumRegion(t *testing.T) {
 	data := New()
 	got := data.EnumRegion()
 
-	require.Len(t, got, lenEnumRegion)
+	require.Len(t, got, len(data.dRegionByID))
 }
 
 func Test_EnumSubRegion(t *testing.T) {
@@ -129,7 +129,7 @@ func Test_EnumSubRegion(t *testing.T) {
 	data := New()
 	got := data.EnumSubRegion()
 
-	require.Len(t, got, lenEnumSubRegion)
+	require.Len(t, got, len(data.dSubRegionByID))
 }
 
 func Test_EnumIntermediateRegion(t *testing.T) {
@@ -138,7 +138,7 @@ func Test_EnumIntermediateRegion(t *testing.T) {
 	data := New()
 	got := data.EnumIntermediateRegion()
 
-	require.Len(t, got, lenEnumIntRegion)
+	require.Len(t, got, len(data.dIntermediateRegionByID))
 }
 
 func Test_CountryByAlpha2Code(t *testing.T) {
@@ -395,13 +395,13 @@ func Test_countriesByRegionID(t *testing.T) {
 		},
 		{
 			name:    "last",
-			in:      lenEnumRegion - 1,
+			in:      uint8(len(data.dRegionByID) - 1),
 			exp:     51,
 			wantErr: false,
 		},
 		{
 			name:    "invalid",
-			in:      lenEnumRegion,
+			in:      uint8(len(data.dRegionByID)),
 			exp:     0,
 			wantErr: true,
 		},
@@ -542,13 +542,13 @@ func Test_countriesBySubRegionID(t *testing.T) {
 		},
 		{
 			name:    "last",
-			in:      lenEnumSubRegion - 1,
+			in:      uint8(len(data.dSubRegionByID) - 1),
 			exp:     52,
 			wantErr: false,
 		},
 		{
 			name:    "invalid",
-			in:      lenEnumSubRegion,
+			in:      uint8(len(data.dSubRegionByID)),
 			exp:     0,
 			wantErr: true,
 		},
@@ -689,13 +689,13 @@ func Test_countriesByIntermediateRegionID(t *testing.T) {
 		},
 		{
 			name:    "last",
-			in:      lenEnumIntRegion - 1,
+			in:      uint8(len(data.dIntermediateRegionByID) - 1),
 			exp:     28,
 			wantErr: false,
 		},
 		{
 			name:    "invalid",
-			in:      lenEnumIntRegion,
+			in:      uint8(len(data.dIntermediateRegionByID)),
 			exp:     0,
 			wantErr: true,
 		},
@@ -836,7 +836,7 @@ func Test_CountriesByStatusID(t *testing.T) {
 		},
 		{
 			name:    "last",
-			in:      lenEnumStatus - 1,
+			in:      uint8(len(data.dStatusByID) - 1),
 			exp:     14,
 			wantErr: false,
 		},
@@ -848,7 +848,7 @@ func Test_CountriesByStatusID(t *testing.T) {
 		},
 		{
 			name:    "invalid",
-			in:      lenEnumStatus,
+			in:      uint8(len(data.dStatusByID)),
 			exp:     0,
 			wantErr: true,
 		},
