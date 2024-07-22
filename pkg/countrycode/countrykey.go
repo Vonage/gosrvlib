@@ -36,22 +36,40 @@ const (
 
 // Binary bit masks for when each CountryKey element starts and ends.
 const (
-	// -------------------------------------------- 32109876 54321098 76543210 98765432 10987654 32109876 54321098 76543210 // 64 bit.
-	bitMaskTLD       uint64 = 0x00000000000003FF // 00000000 00000000 00000000 00000000 00000000 00000000 00000011 11111111 // 10 bit // pos  0.
-	bitMaskIntRegion uint64 = 0x0000000000007C00 // 00000000 00000000 00000000 00000000 00000000 00000000 01111100 00000000 //  5 bit // pos 10.
-	bitMaskSubRegion uint64 = 0x00000000000F8000 // 00000000 00000000 00000000 00000000 00000000 00001111 10000000 00000000 //  5 bit // pos 15.
-	bitMaskRegion    uint64 = 0x0000000001F00000 // 00000000 00000000 00000000 00000000 00000001 11110000 00000000 00000000 //  5 bit // pos 20.
-	bitMaskNumeric   uint64 = 0x00000007FE000000 // 00000000 00000000 00000000 00000111 11111110 00000000 00000000 00000000 // 10 bit // pos 25.
-	bitMaskAlpha3    uint64 = 0x0003FFF800000000 // 00000000 00000011 11111111 11111000 00000000 00000000 00000000 00000000 // 15 bit // pos 35.
-	bitMaskAlpha2    uint64 = 0x0FFC000000000000 // 00001111 11111100 00000000 00000000 00000000 00000000 00000000 00000000 // 10 bit // pos 50.
-	bitMaskStatus    uint64 = 0x7000000000000000 // 01110000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 //  3 bit // pos 60.
+	// -------------------------32109876 54321098 76543210 98765432 10987654 32109876 54321098 76543210 // 64 bit.
+	bitMaskTLD       uint64 = 0b00000000_00000000_00000000_00000000_00000000_00000000_00000011_11111111 // 10 bit // pos  0.
+	bitMaskIntRegion uint64 = 0b00000000_00000000_00000000_00000000_00000000_00000000_01111100_00000000 //  5 bit // pos 10.
+	bitMaskSubRegion uint64 = 0b00000000_00000000_00000000_00000000_00000000_00001111_10000000_00000000 //  5 bit // pos 15.
+	bitMaskRegion    uint64 = 0b00000000_00000000_00000000_00000000_00000001_11110000_00000000_00000000 //  5 bit // pos 20.
+	bitMaskNumeric   uint64 = 0b00000000_00000000_00000000_00000111_11111110_00000000_00000000_00000000 // 10 bit // pos 25.
+	bitMaskAlpha3    uint64 = 0b00000000_00000011_11111111_11111000_00000000_00000000_00000000_00000000 // 15 bit // pos 35.
+	bitMaskAlpha2    uint64 = 0b00001111_11111100_00000000_00000000_00000000_00000000_00000000_00000000 // 10 bit // pos 50.
+	bitMaskStatus    uint64 = 0b01110000_00000000_00000000_00000000_00000000_00000000_00000000_00000000 //  3 bit // pos 60.
 )
 
 // Binary bit masks for when each character in the alpha-2, alpha-3 and TLD codes starts and ends.
 const (
-	bitMaskChar0 uint16 = 0x001F // 000000000011111 // 5 bit // pos  0.
-	bitMaskChar1 uint16 = 0x03E0 // 000001111100000 // 5 bit // pos  5.
-	bitMaskChar2 uint16 = 0x7C00 // 111110000000000 // 5 bit // pos 10.
+	bitMaskChar0 uint16 = 0b0_00000_00000_11111 // 5 bit // pos  0.
+	bitMaskChar1 uint16 = 0b0_00000_11111_00000 // 5 bit // pos  5.
+	bitMaskChar2 uint16 = 0b0_11111_00000_00000 // 5 bit // pos 10.
+)
+
+const (
+	mask03Bit = 0b00000111
+	mask05Bit = 0b00011111
+	mask10Bit = 0b00000011_11111111
+	mask15Bit = 0b01111111_11111111
+)
+
+const (
+	bitMaskValStatus    = mask03Bit
+	bitMaskValApha2     = mask10Bit
+	bitMaskValAlpha3    = mask15Bit
+	bitMaskValNumeric   = mask10Bit
+	bitMaskValRegion    = mask05Bit
+	bitMaskValSubRegion = mask05Bit
+	bitMaskValIntRegion = mask05Bit
+	bitMaskValTLD       = mask10Bit
 )
 
 // Binary bit positions for when each character in the alpha-2, alpha-3 and TLD codes starts (counting from the right - LSB).
@@ -102,14 +120,14 @@ func decodeCountryKey(key uint64) *countryKeyElem {
 // The returned Country key is an RNCK, see:
 // "Reversible Numeric Composite Key (RNCK), N Asuni - arXiv preprint arXiv:2306.04353, 2023".
 func (e *countryKeyElem) encodeCountryKey() uint64 {
-	return ((uint64(e.status&0x07) << bitPosStatus) |
-		(uint64(e.alpha2&0x03FF) << bitPosAlpha2) |
-		(uint64(e.alpha3&0x7FFF) << bitPosAlpha3) |
-		(uint64(e.numeric&0x03FF) << bitPosNumeric) |
-		(uint64(e.region&0x1F) << bitPosRegion) |
-		(uint64(e.subregion&0x1F) << bitPosSubRegion) |
-		(uint64(e.intregion&0x1F) << bitPosIntRegion) |
-		(uint64(e.tld&0x03FF) << bitPosTLD))
+	return ((uint64(e.status&bitMaskValStatus) << bitPosStatus) |
+		(uint64(e.alpha2&bitMaskValApha2) << bitPosAlpha2) |
+		(uint64(e.alpha3&bitMaskValAlpha3) << bitPosAlpha3) |
+		(uint64(e.numeric&bitMaskValNumeric) << bitPosNumeric) |
+		(uint64(e.region&bitMaskValRegion) << bitPosRegion) |
+		(uint64(e.subregion&bitMaskValSubRegion) << bitPosSubRegion) |
+		(uint64(e.intregion&bitMaskValIntRegion) << bitPosIntRegion) |
+		(uint64(e.tld&bitMaskValTLD) << bitPosTLD))
 }
 
 func charOffset(b byte, offset uint16) (uint16, error) {
