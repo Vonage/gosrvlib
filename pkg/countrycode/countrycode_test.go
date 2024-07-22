@@ -9,7 +9,10 @@ import (
 func Test_countryByAlpha2ID(t *testing.T) {
 	t.Parallel()
 
-	data := New()
+	data, err := New(nil)
+
+	require.NoError(t, err)
+	require.NotNil(t, data)
 
 	tests := []struct {
 		name    string
@@ -93,7 +96,10 @@ func Test_countryByAlpha2ID_errors(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			data := New()
+			data, err := New(nil)
+
+			require.NoError(t, err)
+			require.NotNil(t, data)
 
 			data.dCountryKeyByAlpha2ID[1] = tt.key
 
@@ -108,7 +114,10 @@ func Test_countryByAlpha2ID_errors(t *testing.T) {
 func Test_EnumStatus(t *testing.T) {
 	t.Parallel()
 
-	data := New()
+	data, err := New(nil)
+
+	require.NoError(t, err)
+	require.NotNil(t, data)
 	got := data.EnumStatus()
 
 	require.Len(t, got, len(data.dStatusByID))
@@ -117,7 +126,10 @@ func Test_EnumStatus(t *testing.T) {
 func Test_EnumRegion(t *testing.T) {
 	t.Parallel()
 
-	data := New()
+	data, err := New(nil)
+
+	require.NoError(t, err)
+	require.NotNil(t, data)
 	got := data.EnumRegion()
 
 	require.Len(t, got, len(data.dRegionByID))
@@ -126,7 +138,10 @@ func Test_EnumRegion(t *testing.T) {
 func Test_EnumSubRegion(t *testing.T) {
 	t.Parallel()
 
-	data := New()
+	data, err := New(nil)
+
+	require.NoError(t, err)
+	require.NotNil(t, data)
 	got := data.EnumSubRegion()
 
 	require.Len(t, got, len(data.dSubRegionByID))
@@ -135,7 +150,10 @@ func Test_EnumSubRegion(t *testing.T) {
 func Test_EnumIntermediateRegion(t *testing.T) {
 	t.Parallel()
 
-	data := New()
+	data, err := New(nil)
+
+	require.NoError(t, err)
+	require.NotNil(t, data)
 	got := data.EnumIntermediateRegion()
 
 	require.Len(t, got, len(data.dIntermediateRegionByID))
@@ -144,7 +162,10 @@ func Test_EnumIntermediateRegion(t *testing.T) {
 func Test_CountryByAlpha2Code(t *testing.T) {
 	t.Parallel()
 
-	data := New()
+	data, err := New(nil)
+
+	require.NoError(t, err)
+	require.NotNil(t, data)
 
 	tests := []struct {
 		name    string
@@ -202,7 +223,10 @@ func Test_CountryByAlpha2Code(t *testing.T) {
 func Test_CountryByAlpha3Code(t *testing.T) {
 	t.Parallel()
 
-	data := New()
+	data, err := New(nil)
+
+	require.NoError(t, err)
+	require.NotNil(t, data)
 
 	tests := []struct {
 		name    string
@@ -266,7 +290,10 @@ func Test_CountryByAlpha3Code(t *testing.T) {
 func Test_CountryByNumericCode(t *testing.T) {
 	t.Parallel()
 
-	data := New()
+	data, err := New(nil)
+
+	require.NoError(t, err)
+	require.NotNil(t, data)
 
 	tests := []struct {
 		name    string
@@ -330,7 +357,10 @@ func Test_CountryByNumericCode(t *testing.T) {
 func Test_countriesByAlpha2IDs(t *testing.T) {
 	t.Parallel()
 
-	data := New()
+	data, err := New(nil)
+
+	require.NoError(t, err)
+	require.NotNil(t, data)
 
 	tests := []struct {
 		name    string
@@ -379,7 +409,10 @@ func Test_countriesByAlpha2IDs(t *testing.T) {
 func Test_countriesByRegionID(t *testing.T) {
 	t.Parallel()
 
-	data := New()
+	data, err := New(nil)
+
+	require.NoError(t, err)
+	require.NotNil(t, data)
 
 	tests := []struct {
 		name    string
@@ -428,7 +461,10 @@ func Test_countriesByRegionID(t *testing.T) {
 func Test_CountriesByRegionCode(t *testing.T) {
 	t.Parallel()
 
-	data := New()
+	data, err := New(nil)
+
+	require.NoError(t, err)
+	require.NotNil(t, data)
 
 	tests := []struct {
 		name    string
@@ -477,7 +513,10 @@ func Test_CountriesByRegionCode(t *testing.T) {
 func Test_CountriesByRegionName(t *testing.T) {
 	t.Parallel()
 
-	data := New()
+	data, err := New(nil)
+
+	require.NoError(t, err)
+	require.NotNil(t, data)
 
 	tests := []struct {
 		name    string
@@ -526,7 +565,10 @@ func Test_CountriesByRegionName(t *testing.T) {
 func Test_countriesBySubRegionID(t *testing.T) {
 	t.Parallel()
 
-	data := New()
+	data, err := New(nil)
+
+	require.NoError(t, err)
+	require.NotNil(t, data)
 
 	tests := []struct {
 		name    string
@@ -575,7 +617,10 @@ func Test_countriesBySubRegionID(t *testing.T) {
 func Test_CountriesBySubRegionCode(t *testing.T) {
 	t.Parallel()
 
-	data := New()
+	data, err := New(nil)
+
+	require.NoError(t, err)
+	require.NotNil(t, data)
 
 	tests := []struct {
 		name    string
@@ -624,7 +669,10 @@ func Test_CountriesBySubRegionCode(t *testing.T) {
 func Test_CountriesBySubRegionName(t *testing.T) {
 	t.Parallel()
 
-	data := New()
+	data, err := New(nil)
+
+	require.NoError(t, err)
+	require.NotNil(t, data)
 
 	tests := []struct {
 		name    string
@@ -673,7 +721,10 @@ func Test_CountriesBySubRegionName(t *testing.T) {
 func Test_countriesByIntermediateRegionID(t *testing.T) {
 	t.Parallel()
 
-	data := New()
+	data, err := New(nil)
+
+	require.NoError(t, err)
+	require.NotNil(t, data)
 
 	tests := []struct {
 		name    string
@@ -722,7 +773,10 @@ func Test_countriesByIntermediateRegionID(t *testing.T) {
 func Test_CountriesByIntermediateRegionCode(t *testing.T) {
 	t.Parallel()
 
-	data := New()
+	data, err := New(nil)
+
+	require.NoError(t, err)
+	require.NotNil(t, data)
 
 	tests := []struct {
 		name    string
@@ -771,7 +825,10 @@ func Test_CountriesByIntermediateRegionCode(t *testing.T) {
 func Test_CountriesByIntermediateRegionName(t *testing.T) {
 	t.Parallel()
 
-	data := New()
+	data, err := New(nil)
+
+	require.NoError(t, err)
+	require.NotNil(t, data)
 
 	tests := []struct {
 		name    string
@@ -820,7 +877,10 @@ func Test_CountriesByIntermediateRegionName(t *testing.T) {
 func Test_CountriesByStatusID(t *testing.T) {
 	t.Parallel()
 
-	data := New()
+	data, err := New(nil)
+
+	require.NoError(t, err)
+	require.NotNil(t, data)
 
 	tests := []struct {
 		name    string
@@ -875,7 +935,10 @@ func Test_CountriesByStatusID(t *testing.T) {
 func Test_CountriesByStatusName(t *testing.T) {
 	t.Parallel()
 
-	data := New()
+	data, err := New(nil)
+
+	require.NoError(t, err)
+	require.NotNil(t, data)
 
 	tests := []struct {
 		name    string
@@ -930,7 +993,10 @@ func Test_CountriesByStatusName(t *testing.T) {
 func Test_CountriesByTLD(t *testing.T) {
 	t.Parallel()
 
-	data := New()
+	data, err := New(nil)
+
+	require.NoError(t, err)
+	require.NotNil(t, data)
 
 	tests := []struct {
 		name    string
@@ -994,10 +1060,13 @@ func Test_CountriesByTLD(t *testing.T) {
 	}
 }
 
-func TestCountryKey(t *testing.T) {
+func Test_countryKey(t *testing.T) {
 	t.Parallel()
 
-	data := New()
+	data, err := New(nil)
+
+	require.NoError(t, err)
+	require.NotNil(t, data)
 
 	tests := []struct {
 		name    string
@@ -1075,7 +1144,7 @@ func TestCountryKey(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			a2, ck, err := data.CountryKey(tt.in)
+			a2, ck, err := data.countryKey(tt.in)
 
 			require.Equal(t, tt.exp, ck)
 			require.Equal(t, tt.expA2, a2)

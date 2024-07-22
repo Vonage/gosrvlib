@@ -9,8 +9,9 @@ import (
 func Test_New(t *testing.T) {
 	t.Parallel()
 
-	data := New()
+	data, err := New(nil)
 
+	require.NoError(t, err)
 	require.NotNil(t, data)
 
 	require.Len(t, data.dStatusByID, len(data.dStatusByID))
@@ -35,10 +36,92 @@ func Test_New(t *testing.T) {
 	require.Len(t, data.dAlpha2IDsByTLD, 250)
 }
 
+func Test_New_custom_data(t *testing.T) {
+	t.Parallel()
+
+	cdata := []*CountryData{
+		{
+			Status:                 "Officially assigned",
+			Alpha2Code:             "ZM",
+			Alpha3Code:             "ZMB",
+			NumericCode:            "894",
+			NameEnglish:            "Zambia",
+			NameFrench:             "Zambie (la)",
+			Region:                 "Africa",
+			SubRegion:              "Sub-Saharan Africa",
+			IntermediateRegion:     "Eastern Africa",
+			RegionCode:             "002",
+			SubRegionCode:          "202",
+			IntermediateRegionCode: "014",
+			TLD:                    "zm",
+		},
+		{
+			Status:                 "Officially assigned",
+			Alpha2Code:             "ZW",
+			Alpha3Code:             "ZWE",
+			NumericCode:            "716",
+			NameEnglish:            "Zimbabwe",
+			NameFrench:             "Zimbabwe (le)",
+			Region:                 "Africa",
+			SubRegion:              "Sub-Saharan Africa",
+			IntermediateRegion:     "Eastern Africa",
+			RegionCode:             "002",
+			SubRegionCode:          "202",
+			IntermediateRegionCode: "014",
+			TLD:                    "zw",
+		},
+	}
+
+	data, err := New(cdata)
+
+	require.NoError(t, err)
+	require.NotNil(t, data)
+
+	require.Len(t, data.dStatusByID, len(data.dStatusByID))
+	require.Len(t, data.dStatusIDByName, len(data.dStatusByID))
+	require.Len(t, data.dRegionByID, len(data.dRegionByID))
+	require.Len(t, data.dRegionIDByCode, len(data.dRegionByID))
+	require.Len(t, data.dRegionIDByName, len(data.dRegionByID))
+	require.Len(t, data.dSubRegionByID, len(data.dSubRegionByID))
+	require.Len(t, data.dSubRegionIDByCode, len(data.dSubRegionByID))
+	require.Len(t, data.dSubRegionIDByName, len(data.dSubRegionByID))
+	require.Len(t, data.dIntermediateRegionByID, len(data.dIntermediateRegionByID))
+	require.Len(t, data.dIntermediateRegionIDByCode, len(data.dIntermediateRegionByID))
+	require.Len(t, data.dIntermediateRegionIDByName, len(data.dIntermediateRegionByID))
+	require.Len(t, data.dCountryNamesByAlpha2ID, 2)
+	require.Len(t, data.dCountryKeyByAlpha2ID, 2)
+	require.Len(t, data.dAlpha2IDByAlpha3ID, 2)
+	require.Len(t, data.dAlpha2IDByNumericID, 2)
+	require.Len(t, data.dAlpha2IDsByRegionID, 1)
+	require.Len(t, data.dAlpha2IDsBySubRegionID, 1)
+	require.Len(t, data.dAlpha2IDsByIntermediateRegionID, 1)
+	require.Len(t, data.dAlpha2IDsByStatusID, 1)
+	require.Len(t, data.dAlpha2IDsByTLD, 2)
+}
+
+func Test_New_custom_data_error(t *testing.T) {
+	t.Parallel()
+
+	cdata := []*CountryData{
+		{
+			Status:     "INVALID",
+			Alpha2Code: "--",
+		},
+	}
+
+	data, err := New(cdata)
+
+	require.Error(t, err)
+	require.Nil(t, data)
+}
+
 func Test_statusByID(t *testing.T) {
 	t.Parallel()
 
-	data := New()
+	data, err := New(nil)
+
+	require.NoError(t, err)
+	require.NotNil(t, data)
 
 	tests := []struct {
 		name    string
@@ -93,7 +176,10 @@ func Test_statusByID(t *testing.T) {
 func Test_statusIDByName(t *testing.T) {
 	t.Parallel()
 
-	data := New()
+	data, err := New(nil)
+
+	require.NoError(t, err)
+	require.NotNil(t, data)
 
 	tests := []struct {
 		name    string
@@ -142,7 +228,10 @@ func Test_statusIDByName(t *testing.T) {
 func Test_regionByID(t *testing.T) {
 	t.Parallel()
 
-	data := New()
+	data, err := New(nil)
+
+	require.NoError(t, err)
+	require.NotNil(t, data)
 
 	tests := []struct {
 		name    string
@@ -197,7 +286,10 @@ func Test_regionByID(t *testing.T) {
 func Test_regionIDByCode(t *testing.T) {
 	t.Parallel()
 
-	data := New()
+	data, err := New(nil)
+
+	require.NoError(t, err)
+	require.NotNil(t, data)
 
 	tests := []struct {
 		name    string
@@ -246,7 +338,10 @@ func Test_regionIDByCode(t *testing.T) {
 func Test_regionIDByName(t *testing.T) {
 	t.Parallel()
 
-	data := New()
+	data, err := New(nil)
+
+	require.NoError(t, err)
+	require.NotNil(t, data)
 
 	tests := []struct {
 		name    string
@@ -295,7 +390,10 @@ func Test_regionIDByName(t *testing.T) {
 func Test_subRegionByID(t *testing.T) {
 	t.Parallel()
 
-	data := New()
+	data, err := New(nil)
+
+	require.NoError(t, err)
+	require.NotNil(t, data)
 
 	tests := []struct {
 		name    string
@@ -350,7 +448,10 @@ func Test_subRegionByID(t *testing.T) {
 func Test_subRegionIDByCode(t *testing.T) {
 	t.Parallel()
 
-	data := New()
+	data, err := New(nil)
+
+	require.NoError(t, err)
+	require.NotNil(t, data)
 
 	tests := []struct {
 		name    string
@@ -399,7 +500,10 @@ func Test_subRegionIDByCode(t *testing.T) {
 func Test_subRegionIDByName(t *testing.T) {
 	t.Parallel()
 
-	data := New()
+	data, err := New(nil)
+
+	require.NoError(t, err)
+	require.NotNil(t, data)
 
 	tests := []struct {
 		name    string
@@ -448,7 +552,10 @@ func Test_subRegionIDByName(t *testing.T) {
 func Test_intermediateRegionByID(t *testing.T) {
 	t.Parallel()
 
-	data := New()
+	data, err := New(nil)
+
+	require.NoError(t, err)
+	require.NotNil(t, data)
 
 	tests := []struct {
 		name    string
@@ -503,7 +610,10 @@ func Test_intermediateRegionByID(t *testing.T) {
 func Test_intermediateRegionIDByCode(t *testing.T) {
 	t.Parallel()
 
-	data := New()
+	data, err := New(nil)
+
+	require.NoError(t, err)
+	require.NotNil(t, data)
 
 	tests := []struct {
 		name    string
@@ -552,7 +662,10 @@ func Test_intermediateRegionIDByCode(t *testing.T) {
 func Test_intermediateRegionIDByName(t *testing.T) {
 	t.Parallel()
 
-	data := New()
+	data, err := New(nil)
+
+	require.NoError(t, err)
+	require.NotNil(t, data)
 
 	tests := []struct {
 		name    string
@@ -601,7 +714,10 @@ func Test_intermediateRegionIDByName(t *testing.T) {
 func Test_countryNamesByAlpha2ID(t *testing.T) {
 	t.Parallel()
 
-	data := New()
+	data, err := New(nil)
+
+	require.NoError(t, err)
+	require.NotNil(t, data)
 
 	tests := []struct {
 		name    string
@@ -662,7 +778,10 @@ func Test_countryNamesByAlpha2ID(t *testing.T) {
 func Test_countryKeyByAlpha2ID(t *testing.T) {
 	t.Parallel()
 
-	data := New()
+	data, err := New(nil)
+
+	require.NoError(t, err)
+	require.NotNil(t, data)
 
 	tests := []struct {
 		name    string
@@ -729,7 +848,10 @@ func Test_countryKeyByAlpha2ID(t *testing.T) {
 func Test_alpha2IDByAlpha3ID(t *testing.T) {
 	t.Parallel()
 
-	data := New()
+	data, err := New(nil)
+
+	require.NoError(t, err)
+	require.NotNil(t, data)
 
 	tests := []struct {
 		name    string
@@ -784,7 +906,10 @@ func Test_alpha2IDByAlpha3ID(t *testing.T) {
 func Test_alpha2IDByNumericID(t *testing.T) {
 	t.Parallel()
 
-	data := New()
+	data, err := New(nil)
+
+	require.NoError(t, err)
+	require.NotNil(t, data)
 
 	tests := []struct {
 		name    string
@@ -839,7 +964,10 @@ func Test_alpha2IDByNumericID(t *testing.T) {
 func Test_alpha2IDsByRegionID(t *testing.T) {
 	t.Parallel()
 
-	data := New()
+	data, err := New(nil)
+
+	require.NoError(t, err)
+	require.NotNil(t, data)
 
 	tests := []struct {
 		name    string
@@ -888,7 +1016,10 @@ func Test_alpha2IDsByRegionID(t *testing.T) {
 func Test_alpha2IDsBySubRegionID(t *testing.T) {
 	t.Parallel()
 
-	data := New()
+	data, err := New(nil)
+
+	require.NoError(t, err)
+	require.NotNil(t, data)
 
 	tests := []struct {
 		name    string
@@ -937,7 +1068,10 @@ func Test_alpha2IDsBySubRegionID(t *testing.T) {
 func Test_alpha2IDsByIntermediateRegionID(t *testing.T) {
 	t.Parallel()
 
-	data := New()
+	data, err := New(nil)
+
+	require.NoError(t, err)
+	require.NotNil(t, data)
 
 	tests := []struct {
 		name    string
@@ -986,7 +1120,10 @@ func Test_alpha2IDsByIntermediateRegionID(t *testing.T) {
 func Test_alpha2IDsByStatusID(t *testing.T) {
 	t.Parallel()
 
-	data := New()
+	data, err := New(nil)
+
+	require.NoError(t, err)
+	require.NotNil(t, data)
 
 	tests := []struct {
 		name    string
@@ -1041,7 +1178,10 @@ func Test_alpha2IDsByStatusID(t *testing.T) {
 func Test_alpha2IDsByTLD(t *testing.T) {
 	t.Parallel()
 
-	data := New()
+	data, err := New(nil)
+
+	require.NoError(t, err)
+	require.NotNil(t, data)
 
 	tests := []struct {
 		name    string

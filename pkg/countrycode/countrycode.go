@@ -1,7 +1,8 @@
 /*
 Package countrycode provides information about countries and their ISO-3166 Codes.
-The data originates from multiple sources, including ISO-3166, CIA, United Nations, and Wikipedia.
+The default data originates from multiple sources, including ISO-3166, CIA, United Nations, and Wikipedia.
 The data is stored in a compact binary format for fast access and small memory footprint.
+It is also possible to load custom country data.
 */
 package countrycode
 
@@ -320,10 +321,10 @@ func (d *Data) CountriesByTLD(tld string) ([]*CountryData, error) {
 	return d.countriesByAlpha2IDs(a2s)
 }
 
-// CountryKey returns the internal binary representation for the given country data.
+// countryKey returns the internal binary representation for the given country data.
 // This function can be used to rebuild the internal binary data from the exported data.
 // It returns the internal Aplha2 ID and the CountryKey.
-func (d *Data) CountryKey(data *CountryData) (uint16, uint64, error) {
+func (d *Data) countryKey(data *CountryData) (uint16, uint64, error) {
 	status, err := d.statusIDByName(data.Status)
 	if err != nil {
 		return 0, 0, err
