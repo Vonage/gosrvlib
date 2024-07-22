@@ -98,6 +98,18 @@ func decodeCountryKey(key uint64) *countryKeyElem {
 	}
 }
 
+// encodeCountryKey encodes the country data into a uint64.
+func (e *countryKeyElem) encodeCountryKey() uint64 {
+	return ((uint64(e.status&0x07) << bitPosStatus) |
+		(uint64(e.alpha2&0x03FF) << bitPosAlpha2) |
+		(uint64(e.alpha3&0x7FFF) << bitPosAlpha3) |
+		(uint64(e.numeric&0x03FF) << bitPosNumeric) |
+		(uint64(e.region&0x1F) << bitPosRegion) |
+		(uint64(e.subregion&0x1F) << bitPosSubRegion) |
+		(uint64(e.intregion&0x1F) << bitPosIntRegion) |
+		(uint64(e.tld&0x03FF) << bitPosTLD))
+}
+
 func charOffset(b byte, offset uint16) (uint16, error) {
 	c := (uint16(b) - offset)
 	if c < 1 || c > 26 { // A-Z or a-z

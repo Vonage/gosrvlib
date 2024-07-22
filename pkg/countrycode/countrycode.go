@@ -319,3 +319,61 @@ func (d *Data) CountriesByTLD(tld string) ([]*CountryData, error) {
 
 	return d.countriesByAlpha2IDs(a2s)
 }
+
+// CountryKey returns the internal binary representation for the given country data.
+// This function can be used to rebuild the internal binary data from the exported data.
+// It returns the CountryKey and the internal Aplha2 ID.
+func (d *Data) CountryKey(data *CountryData) (uint64, uint16, error) {
+	status, err := d.statusIDByName(data.Status)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	alpha2, err := encodeAlpha2(data.Alpha2Code)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	alpha3, err := encodeAlpha3(data.Alpha3Code)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	numeric, err := encodeNumeric(data.NumericCode)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	region, err := d.regionIDByName(data.Region)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	subregion, err := d.subRegionIDByName(data.SubRegion)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	intregion, err := d.intermediateRegionIDByName(data.IntermediateRegion)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	tld, err := encodeTLD(data.TLD)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	ck := &countryKeyElem{
+		status:    status,
+		alpha2:    alpha2,
+		alpha3:    alpha3,
+		numeric:   numeric,
+		region:    region,
+		subregion: subregion,
+		intregion: intregion,
+		tld:       tld,
+	}
+
+	return ck.encodeCountryKey(), ck.alpha2, nil
+}
