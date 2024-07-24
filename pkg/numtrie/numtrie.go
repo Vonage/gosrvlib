@@ -36,8 +36,9 @@ const (
 
 // Node is a numerical-indexed trie node that stores a value of any type.
 type Node[T any] struct {
-	children [indexSize]*Node[T]
-	value    *T
+	value       *T
+	numChildren int
+	children    [indexSize]*Node[T]
 }
 
 // New creates a new Node.
@@ -58,6 +59,7 @@ func (t *Node[T]) Add(num string, val *T) bool {
 
 		if node.children[i] == nil {
 			node.children[i] = New[T]()
+			node.numChildren++
 		}
 
 		node = node.children[i]
@@ -108,8 +110,7 @@ func (t *Node[T]) Get(num string) (*T, int8) {
 		return node.value, MatchStatusNo
 	}
 
-	zero := New[T]()
-	isLeaf := (node.children == zero.children)
+	isLeaf := (node.numChildren == 0)
 
 	if digit == match {
 		if isLeaf {
