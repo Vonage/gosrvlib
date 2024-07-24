@@ -8,8 +8,6 @@ import (
 	"github.com/Vonage/gosrvlib/pkg/phonekeypad"
 )
 
-const indexSize = 10 // digits from 0 to 9
-
 // Status codes to be returned when searching for a number in the trie.
 const (
 	// MatchStatusNo indicates that no match was found. The first number digit
@@ -33,6 +31,8 @@ const (
 	// present in the trie.
 	MatchStatusPartialPrefix int8 = 4
 )
+
+const indexSize = 10 // digits from 0 to 9
 
 // Node is a numerical-indexed trie node that stores a value of any type.
 type Node[T any] struct {
@@ -76,18 +76,21 @@ func (t *Node[T]) Add(num string, val *T) bool {
 // It supports partial matches.
 // The return value should always be checked for the nil value.
 // The second return value provides information about the match status:
-//   - MatchStatusNo indicates that no match was found. The first number digit
+//   - MatchStatusNo (-1) indicates that no match was found. The first number digit
 //     doesn't match any value at the trie root.
-//   - MatchStatusOK indicates that a full exact match was found. The full number
-//     matches a trie leaf.
-//   - MatchStatusPrefix indicates that only a prefix of the number matches a
+//   - MatchStatusOK (0) indicates that a full exact match was found. The full
+//     number matches a trie leaf.
+//   - MatchStatusPrefix (1) indicates that only a prefix of the number matches a
 //     trie leaf. The remaining digits are not present in the trie.
-//   - MatchStatusPartial indicates that the full number matches a trie node that
-//     is not a leaf.
+//   - MatchStatusPartial (2) indicates that the full number matches a trie node
+//     that is not a leaf.
+//   - MatchStatusPartialPrefix (4) indicates that only a prefix of the number
+//     matches a trie node that is not a leaf. The remaining digits are not
+//     present in the trie.
 func (t *Node[T]) Get(num string) (*T, int8) {
-	node := t
-
 	var match, digit int
+
+	node := t
 
 	for _, v := range num {
 		i, ok := phonekeypad.KeypadDigit(v)
