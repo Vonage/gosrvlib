@@ -1,35 +1,41 @@
 /*
 Package numtrie provides a numerical-indexed trie data structure. The trie
 allows to store and retrieve values of any type associated with a numerical key.
+It supports partial matches and alphabetical phone numbers.
 */
 package numtrie
 
 import (
 	"github.com/Vonage/gosrvlib/pkg/phonekeypad"
+	"github.com/Vonage/gosrvlib/pkg/typeutil"
 )
 
 // Status codes to be returned when searching for a number in the trie.
 const (
-	// MatchStatusNo indicates that no match was found. The first number digit
+	// StatusMatchEmpty indicates that the input string is empty and no match
+	// was found.
+	StatusMatchEmpty int8 = -127 // 0b10000001
+
+	// StatusMatchNo indicates that no match was found. The first number digit
 	// doesn't match any value at the trie root.
-	MatchStatusNo int8 = -1
+	StatusMatchNo int8 = -125 // 0b10000011
 
-	// MatchStatusOK indicates that a full exact match was found. The full
+	// StatusMatchFull indicates that a full exact match was found. The full
 	// number matches a trie leaf.
-	MatchStatusOK int8 = 0
+	StatusMatchFull int8 = 0 // 0b00000000
 
-	// MatchStatusPrefix indicates that only a prefix of the number matches a
-	// trie leaf. The remaining digits are not present in the trie.
-	MatchStatusPrefix int8 = 1
-
-	// MatchStatusPartial indicates that the full number matches a trie node
+	// StatusMatchPartial indicates that the full number matches a trie node
 	// that is not a leaf.
-	MatchStatusPartial int8 = 2
+	StatusMatchPartial int8 = 1 // 0b00000001
 
-	// MatchStatusPartialPrefix indicates that only a prefix of the number
+	// StatusMatchPrefix indicates that only a prefix of the number matches a
+	// trie leaf. The remaining digits are not present in the trie.
+	StatusMatchPrefix int8 = 2 // 0b00000010
+
+	// StatusMatchPartialPrefix indicates that only a prefix of the number
 	// matches a trie node that is not a leaf. The remaining digits are not
 	// present in the trie.
-	MatchStatusPartialPrefix int8 = 4
+	StatusMatchPartialPrefix int8 = 3 // 0b00000011
 )
 
 const indexSize = 10 // digits from 0 to 9
@@ -72,21 +78,22 @@ func (t *Node[T]) Add(num string, val *T) bool {
 	return isnew
 }
 
-// Get retrieves a value from the trie with the given numerical key.
-// It supports partial matches.
-// The return value should always be checked for the nil value.
+// Get retrieves a value from the trie with the given numerical key. It supports
+// partial matches. The return value should always be checked for the nil value.
 // The second return value provides information about the match status:
-//   - MatchStatusNo (-1) indicates that no match was found. The first number digit
-//     doesn't match any value at the trie root.
-//   - MatchStatusOK (0) indicates that a full exact match was found. The full
-//     number matches a trie leaf.
-//   - MatchStatusPrefix (1) indicates that only a prefix of the number matches a
-//     trie leaf. The remaining digits are not present in the trie.
-//   - MatchStatusPartial (2) indicates that the full number matches a trie node
-//     that is not a leaf.
-//   - MatchStatusPartialPrefix (4) indicates that only a prefix of the number
-//     matches a trie node that is not a leaf. The remaining digits are not
-//     present in the trie.
+//   - StatusMatchEmpty (-127 = 0b10000001) indicates that the input string is
+//     empty and no match was found.
+//   - StatusMatchNo (-125 = 0b10000011) indicates that no match was found. The
+//     first number digit doesn't match any value at the trie root.
+//   - StatusMatchFull (0 = 0b00000000) indicates that a full exact match was
+//     found. The full number matches a trie leaf.
+//   - StatusMatchPartial (1 = 0b00000001) indicates that the full number matches
+//     a trie node that is not a leaf.
+//   - StatusMatchPrefix (2 = 0b00000010) indicates that only a prefix of the
+//     number matches a trie leaf. The remaining digits are not present in the trie.
+//   - StatusMatchPartialPrefix (3 = 0b00000011) indicates that only a prefix of
+//     the number matches a trie node that is not a leaf. The remaining digits are
+//     not present in the trie.
 func (t *Node[T]) Get(num string) (*T, int8) {
 	var match, digit int
 
@@ -109,23 +116,9 @@ func (t *Node[T]) Get(num string) (*T, int8) {
 		match++
 	}
 
-	if match == 0 {
-		return node.value, MatchStatusNo
-	}
+	status := (int8(typeutil.BoolToInt(match == 0)<<7) |
+		int8(typeutil.BoolToInt(digit > match)<<1) |
+		int8(typeutil.BoolToInt(node.numChildren > 0)))
 
-	isLeaf := (node.numChildren == 0)
-
-	if digit == match {
-		if isLeaf {
-			return node.value, MatchStatusOK
-		}
-
-		return node.value, MatchStatusPartial
-	}
-
-	if isLeaf {
-		return node.value, MatchStatusPrefix
-	}
-
-	return node.value, MatchStatusPartialPrefix
+	return node.value, status
 }

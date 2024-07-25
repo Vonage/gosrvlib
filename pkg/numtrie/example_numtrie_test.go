@@ -16,48 +16,58 @@ func ExampleNode_Get() {
 	valB := "foxtrot"
 	node.Add("702153", &valB)
 
-	// MatchStatusNo (-1) indicates that no match was found. The first number digit
-	// doesn't match any value at the trie root.
-	got, status := node.Get("111")
+	// StatusMatchEmpty (-127 = 0b10000001) indicates that the input string is
+	// empty and no match was found.
+	got, status := node.Get("")
 	if got != nil {
 		fmt.Println(*got, status)
 	} else {
 		fmt.Println(got, status)
 	}
 
-	// MatchStatusOK (0) indicates that a full exact match was found. The full
-	// number matches a trie leaf.
+	// StatusMatchNo (-125 = 0b10000011) indicates that no match was found. The
+	// first number digit doesn't match any value at the trie root.
+	got, status = node.Get("111")
+	if got != nil {
+		fmt.Println(*got, status)
+	} else {
+		fmt.Println(got, status)
+	}
+
+	// StatusMatchFull (0 = 0b00000000) indicates that a full exact match was
+	// found. The full number matches a trie leaf.
 	got, status = node.Get("702153")
 	if got != nil {
 		fmt.Println(*got, status)
 	}
 
-	// MatchStatusPrefix (1) indicates that only a prefix of the number matches a
-	// trie leaf. The remaining digits are not present in the trie.
-	got, status = node.Get("702153-99")
-	if got != nil {
-		fmt.Println(*got, status)
-	}
-
-	// MatchStatusPartial (2) indicates that the full number matches a trie node
-	// that is not a leaf.
+	// StatusMatchPartial (1 = 0b00000001) indicates that the full number matches
+	// a trie node that is not a leaf.
 	got, status = node.Get("702")
 	if got != nil {
 		fmt.Println(*got, status)
 	}
 
-	// MatchStatusPartialPrefix (4) indicates that only a prefix of the number
-	// matches a trie node that is not a leaf. The remaining digits are not
-	// present in the trie.
+	// StatusMatchPrefix (2 = 0b00000010) indicates that only a prefix of the
+	// number matches a trie leaf. The remaining digits are not present in the trie.
+	got, status = node.Get("702153-99")
+	if got != nil {
+		fmt.Println(*got, status)
+	}
+
+	// StatusMatchPartialPrefix (3 = 0b00000011) indicates that only a prefix of
+	// the number matches a trie node that is not a leaf. The remaining digits are
+	// not present in the trie.
 	got, status = node.Get("702-99")
 	if got != nil {
 		fmt.Println(*got, status)
 	}
 
 	// Output:
-	// <nil> -1
+	// <nil> -127
+	// <nil> -125
 	// foxtrot 0
-	// foxtrot 1
-	// gamma 2
-	// gamma 4
+	// gamma 1
+	// foxtrot 2
+	// gamma 3
 }
