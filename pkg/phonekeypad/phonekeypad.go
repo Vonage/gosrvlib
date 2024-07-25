@@ -1,6 +1,20 @@
 /*
 Package phonekeypad provides functions to convert number strings to sequences of
-numbers corresponding to a standard phone keypad.
+numbers corresponding to a standard phone keypad:
+
+	+-----+-----+-----+
+	|  1  |  2  |  3  |
+	|     | ABC | DEF |
+	+-----+-----+-----+
+	|  4  |  5  |  6  |
+	| GHI | JKL | MNO |
+	+-----+-----+-----+
+	|  7  |  8  |  9  |
+	| PQRS| TUV | WXYZ|
+	+-----+-----+-----+
+	|     |  0  |     |
+	|     |     |     |
+	+-----+-----+-----+
 */
 package phonekeypad
 
@@ -14,20 +28,14 @@ import (
 // Otherwise, it returns the corresponding number and true.
 //
 // The letter mapping is as follows:
-//
-//	+-----+-----+-----+
-//	|  1  |  2  |  3  |
-//	|     | ABC | DEF |
-//	+-----+-----+-----+
-//	|  4  |  5  |  6  |
-//	| GHI | JKL | MNO |
-//	+-----+-----+-----+
-//	|  7  |  8  |  9  |
-//	| PQRS| TUV | WXYZ|
-//	+-----+-----+-----+
-//	|     |  0  |     |
-//	|     |     |     |
-//	+-----+-----+-----+
+//   - A, B, C -> 2
+//   - D, E, F -> 3
+//   - G, H, I -> 4
+//   - J, K, L -> 5
+//   - M, N, O -> 6
+//   - P, Q, R, S -> 7
+//   - T, U, V -> 8
+//   - W ,X, Y, Z -> 9
 func KeypadDigit(r rune) (int, bool) {
 	if r >= '0' && r <= '9' {
 		return int(r - '0'), true
@@ -66,6 +74,7 @@ func keypadAlphaToDigit(r rune) (int, bool) {
 
 // KeypadNumber converts the input string to a sequence of numbers corresponding to a standard phone keypad.
 // It skips any characters that are not numbers or letters between A-Z or a-z.
+// See: KeypadDigit().
 func KeypadNumber(num string) []int {
 	seq := make([]int, 0, len(num))
 
@@ -82,6 +91,7 @@ func KeypadNumber(num string) []int {
 // KeypadNumberString converts the input string to a sequence of numbers corresponding to a standard phone keypad.
 // It skips any characters that are not numbers or letters between A-Z or a-z.
 // It returns the sequence as a string.
+// See: KeypadDigit().
 func KeypadNumberString(num string) string {
 	seq := KeypadNumber(num)
 
