@@ -135,8 +135,8 @@ cloud.google.com/go/lifesciences v0.9.10 h1:Ma80DC2BvQGesN4i7weQHSZWredk9J2biqHj
 cloud.google.com/go/lifesciences v0.9.10/go.mod h1:zm5Y46HXN/ZoVdQ8HhXJvXG+m4De1HoJye62r/DFXoU=
 cloud.google.com/go/logging v1.10.0 h1:f+ZXMqyrSJ5vZ5pE/zr0xC8y/M9BLNzQeLBwfeZ+wY4=
 cloud.google.com/go/logging v1.10.0/go.mod h1:EHOwcxlltJrYGqMGfghSet736KR3hX1MAj614mrMk9I=
-cloud.google.com/go/longrunning v0.5.10 h1:eB/BniENNRKhjz/xgiillrdcH3G74TGSl3BXinGlI7E=
-cloud.google.com/go/longrunning v0.5.10/go.mod h1:tljz5guTr5oc/qhlUjBlk7UAIFMOGuPNxkNDZXlLics=
+cloud.google.com/go/longrunning v0.5.11 h1:Havn1kGjz3whCfoD8dxMLP73Ph5w+ODyZB9RUsDxtGk=
+cloud.google.com/go/longrunning v0.5.11/go.mod h1:rDn7//lmlfWV1Dx6IB4RatCPenTwwmqXuiP0/RgoEO4=
 cloud.google.com/go/managedidentities v1.6.10 h1:Nh90GFpOWpCu4nAtbGnaGTVP4IK/Kkag9XBR+P1Y24U=
 cloud.google.com/go/managedidentities v1.6.10/go.mod h1:Dg+K/AgKJtOyDjrrMGh4wFrEmtlUUcoEtDdC/WsZxw4=
 cloud.google.com/go/maps v1.11.4 h1:1POJPRZmg8cWU5CuoMBWSpAd/CJHw4KQJbajFcDsSA4=
