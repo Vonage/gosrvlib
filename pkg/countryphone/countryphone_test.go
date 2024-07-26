@@ -9,13 +9,7 @@ import (
 func TestNew(t *testing.T) {
 	t.Parallel()
 
-	// default data
-	data := New(nil)
-
-	require.NotNil(t, data)
-
 	// custom data
-
 	indata := InData{
 		"US": &InCountryData{
 			CC: "1",
@@ -30,7 +24,15 @@ func TestNew(t *testing.T) {
 		},
 	}
 
-	data = New(indata)
+	data := New(indata)
+
+	require.NotNil(t, data)
+}
+
+func TestNew_default(t *testing.T) {
+	t.Parallel()
+
+	data := New(nil)
 
 	require.NotNil(t, data)
 }
@@ -227,7 +229,7 @@ func TestData_NumberInfo(t *testing.T) {
 			}
 
 			require.NoError(t, err)
-			require.Equal(t, tt.want, got)
+			require.EqualExportedValues(t, tt.want, got)
 		})
 	}
 }

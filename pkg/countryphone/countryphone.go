@@ -179,10 +179,8 @@ func (d *Data) insertPrefix(prefix string, info *NumInfo) {
 		(v != nil) && (len(v.Geo) > 0) {
 		// the node already exists > merge the data
 		if len(info.Geo) > 0 {
-			v.Geo = append(v.Geo, info.Geo...)
+			info.Geo = append(v.Geo, info.Geo...)
 		}
-
-		info.Geo = v.Geo
 	}
 
 	d.trie.Add(prefix, info)
