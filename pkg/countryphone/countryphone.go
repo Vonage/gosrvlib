@@ -211,7 +211,7 @@ func (d *Data) insertGroups(a2, cc string, data []InPrefixGroup) {
 		}
 
 		for _, p := range g.Prefixes {
-			d.insertPrefix(p, info)
+			d.insertPrefix(cc+p, info)
 		}
 	}
 }
@@ -235,10 +235,4 @@ func (d *Data) loadData(data InData) {
 		d.insertPrefix(v.CC, info)
 		d.insertGroups(k, v.CC, v.Groups)
 	}
-}
-
-// defaultData returns a default map of phone numbers to country ISO-3166 Alpha-2 Codes.
-// Ref.: https://en.wikipedia.org/wiki/List_of_country_calling_codes
-func defaultData() InData {
-	return InData{}
 }
