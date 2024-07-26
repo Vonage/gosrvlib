@@ -18,7 +18,7 @@ func TestNew(t *testing.T) {
 					Name:       "Alaska",
 					Type:       1,
 					PrefixType: 1,
-					Prefixes:   []string{"907"},
+					Prefixes:   []string{"1907"},
 				},
 			},
 		},
@@ -40,6 +40,107 @@ func TestNew_default(t *testing.T) {
 func TestData_NumberInfo(t *testing.T) {
 	t.Parallel()
 
+	// load defaut data
+	data := New(nil)
+
+	require.NotNil(t, data)
+
+	tests := []struct {
+		name    string
+		prefix  string
+		want    *NumInfo
+		wantErr bool
+	}{
+		{
+			name:    "empty",
+			prefix:  "",
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name:   "non-geographic",
+			prefix: "87012345678",
+			want: &NumInfo{
+				Type: 5,
+				Geo: []*GeoInfo{
+					{
+						Alpha2: "__",
+						Area:   "Inmarsat",
+						Type:   4,
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name:   "vatican (rome)",
+			prefix: "37912345678",
+			want: &NumInfo{
+				Type: 0,
+				Geo: []*GeoInfo{
+					{
+						Alpha2: "VA",
+						Area:   "",
+						Type:   0,
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name:   "vatican (unused code)",
+			prefix: "39066981234",
+			want: &NumInfo{
+				Type: 1,
+				Geo: []*GeoInfo{
+					{
+						Alpha2: "VA",
+						Area:   "Vatican City",
+						Type:   0,
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name:   "california",
+			prefix: "1357123456",
+			want: &NumInfo{
+				Type: 1,
+				Geo: []*GeoInfo{
+					{
+						Alpha2: "US",
+						Area:   "California",
+						Type:   1,
+					},
+				},
+			},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got, err := data.NumberInfo(tt.prefix)
+
+			if tt.wantErr {
+				require.Error(t, err)
+				require.Empty(t, got)
+
+				return
+			}
+
+			require.NoError(t, err)
+			require.EqualExportedValues(t, tt.want, got)
+		})
+	}
+}
+
+func TestData_NumberInfo_custom(t *testing.T) {
+	t.Parallel()
+
 	indata := InData{
 		"US": &InCountryData{
 			CC: "1",
@@ -48,13 +149,13 @@ func TestData_NumberInfo(t *testing.T) {
 					Name:       "Alaska",
 					Type:       1,
 					PrefixType: 1,
-					Prefixes:   []string{"907"},
+					Prefixes:   []string{"1907"},
 				},
 				{
 					Name:       "Arizona",
 					Type:       1,
 					PrefixType: 1,
-					Prefixes:   []string{"480", "520", "602", "623", "928"},
+					Prefixes:   []string{"1480", "5120", "1602", "1623", "1928"},
 				},
 			},
 		},
@@ -65,13 +166,13 @@ func TestData_NumberInfo(t *testing.T) {
 					Name:       "Manitoba",
 					Type:       2,
 					PrefixType: 1,
-					Prefixes:   []string{"204", "431", "584"},
+					Prefixes:   []string{"1204", "1431", "1584"},
 				},
 				{
 					Name:       "Nunavut",
 					Type:       2,
 					PrefixType: 1,
-					Prefixes:   []string{"867"},
+					Prefixes:   []string{"1867"},
 				},
 			},
 		},

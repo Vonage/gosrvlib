@@ -1,7 +1,10 @@
 /*
-Package countryphone provides geographical information of phone numbers.
-Country phone codes are defined by the International Telecommunication Union
-(ITU) in ITU-T standards E.123 and E.164.
+Package countryphone provides geographical information of phone numbers. Country
+phone codes are defined by the International Telecommunication Union (ITU) in
+ITU-T standards E.123 and E.164.
+
+The default phone prefixes data can be overridden with a custom dataset. The
+data is stored in a trie for fast prefix matching.
 */
 package countryphone
 
@@ -37,7 +40,7 @@ type InPrefixGroup struct {
 	//   - 7 = "other"
 	PrefixType int `json:"prefixType"`
 
-	// Prefixes is a list of phone number prefixes (without the Country Code).
+	// Prefixes is a list of phone number prefixes (including the Country Code).
 	Prefixes []string `json:"prefixes"`
 }
 
@@ -209,7 +212,7 @@ func (d *Data) insertGroups(a2, cc string, data []InPrefixGroup) {
 		}
 
 		for _, p := range g.Prefixes {
-			d.insertPrefix(cc+p, info)
+			d.insertPrefix(p, info)
 		}
 	}
 }
