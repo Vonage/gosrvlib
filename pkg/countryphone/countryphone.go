@@ -11,6 +11,49 @@ import (
 	"github.com/Vonage/gosrvlib/pkg/numtrie"
 )
 
+// InPrefixGroup stores the type and geographical information of a group of phone
+// number prefixes.
+type InPrefixGroup struct {
+	// Name is the name of the group or geographical area.
+	Name string `json:"name"`
+
+	// Type is the type of group or geographical area:
+	//   - 0 = ""
+	//   - 1 = "state"
+	//   - 2 = "province or territory"
+	//   - 3 = "nation or territory"
+	//   - 4 = "non-geographic"
+	//   - 5 = "other"
+	Type int `json:"type"`
+
+	// PrefixType is the type of phone number prefix:
+	//   - 0 = ""
+	//   - 1 = "landline"
+	//   - 2 = "mobile"
+	//   - 3 = "pager"
+	//   - 4 = "satellite"
+	//   - 5 = "special service"
+	//   - 6 = "virtual"
+	//   - 7 = "other"
+	PrefixType int `json:"prefixType"`
+
+	// Prefixes is a list of phone number prefixes (without the Country Code).
+	Prefixes []string `json:"prefixes"`
+}
+
+// InCountryData stores all the phone number prefixes information for a country.
+type InCountryData struct {
+	// CC is the Country Calling code (e.g. "1" for "US" and "CA").
+	CC string `json:"cc"`
+
+	// Groups is a list of phone prefixes information grouped by geographical
+	// area or type.
+	Groups []InPrefixGroup `json:"groups"`
+}
+
+// InData is a type alias for a map of country Alpha-2 codes to InCountryData.
+type InData = map[string]*InCountryData
+
 // GeoInfo stores geographical information of a phone number.
 type GeoInfo struct {
 	// Alpha2 is the ISO-3166 Alpha-2 Country Code.
@@ -59,7 +102,7 @@ type Data struct {
 
 // New initialize the search trie with the given data.
 // If data is nil, the embedded default dataset is used.
-func New(data PrefixData) *Data {
+func New(data InData) *Data {
 	d := &Data{}
 
 	d.loadEnums()
@@ -129,17 +172,73 @@ func (d *Data) loadEnums() {
 	}
 }
 
+func (d *Data) insertPrefix(prefix string, info *NumInfo) {
+	v, status := d.trie.Get(prefix)
+
+	if (status == numtrie.StatusMatchFull || status == numtrie.StatusMatchPartial) &&
+		(v != nil) && (len(v.Geo) > 0) {
+		// the node already exists > merge the data
+		if len(info.Geo) > 0 {
+			v.Geo = append(v.Geo, info.Geo...)
+		}
+
+		info.Geo = v.Geo
+	}
+
+	d.trie.Add(prefix, info)
+}
+
+func (d *Data) insertGroups(a2, cc string, data []InPrefixGroup) {
+	if len(data) == 0 {
+		return
+	}
+
+	for _, g := range data {
+		info := &NumInfo{
+			Type: g.PrefixType,
+			Geo: []*GeoInfo{
+				{
+					Alpha2: a2,
+					Area:   g.Name,
+					Type:   g.Type,
+				},
+			},
+		}
+
+		if len(g.Prefixes) == 0 {
+			d.insertPrefix(cc, info)
+			continue
+		}
+
+		for _, p := range g.Prefixes {
+			d.insertPrefix(p, info)
+		}
+	}
+}
+
 // loadData loads the phone number prefixes and their data into the trie.
-func (d *Data) loadData(data PrefixData) {
+func (d *Data) loadData(data InData) {
 	d.trie = numtrie.New[NumInfo]()
 
 	for k, v := range data {
-		d.trie.Add(k, v)
+		info := &NumInfo{
+			Type: 0,
+			Geo: []*GeoInfo{
+				{
+					Alpha2: k,
+					Area:   "",
+					Type:   0,
+				},
+			},
+		}
+
+		d.insertPrefix(v.CC, info)
+		d.insertGroups(k, v.CC, v.Groups)
 	}
 }
 
 // defaultData returns a default map of phone numbers to country ISO-3166 Alpha-2 Codes.
 // Ref.: https://en.wikipedia.org/wiki/List_of_country_calling_codes
-func defaultData() PrefixData {
-	return PrefixData{}
+func defaultData() InData {
+	return InData{}
 }

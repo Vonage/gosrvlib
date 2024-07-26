@@ -16,20 +16,21 @@ func TestNew(t *testing.T) {
 
 	// custom data
 
-	pdata := PrefixData{
-		"1279": &NumInfo{
-			Type: 1,
-			Geo: []*GeoInfo{
+	indata := InData{
+		"US": &InCountryData{
+			CC: "1",
+			Groups: []InPrefixGroup{
 				{
-					Alpha2: "US",
-					Area:   "California",
-					Type:   1,
+					Name:       "Alaska",
+					Type:       1,
+					PrefixType: 1,
+					Prefixes:   []string{"1907"},
 				},
 			},
 		},
 	}
 
-	data = New(pdata)
+	data = New(indata)
 
 	require.NotNil(t, data)
 }
@@ -37,34 +38,58 @@ func TestNew(t *testing.T) {
 func TestData_NumberInfo(t *testing.T) {
 	t.Parallel()
 
-	numInfo1 := &NumInfo{
-		Type: 1,
-		Geo: []*GeoInfo{
-			{
-				Alpha2: "US",
-				Area:   "California",
-				Type:   1,
+	indata := InData{
+		"US": &InCountryData{
+			CC: "1",
+			Groups: []InPrefixGroup{
+				{
+					Name:       "Alaska",
+					Type:       1,
+					PrefixType: 1,
+					Prefixes:   []string{"1907"},
+				},
+				{
+					Name:       "Arizona",
+					Type:       1,
+					PrefixType: 1,
+					Prefixes:   []string{"1480", "1520", "1602", "1623", "1928"},
+				},
+			},
+		},
+		"CA": &InCountryData{
+			CC: "1",
+			Groups: []InPrefixGroup{
+				{
+					Name:       "Manitoba",
+					Type:       2,
+					PrefixType: 1,
+					Prefixes:   []string{"1204", "1431", "1584"},
+				},
+				{
+					Name:       "Nunavut",
+					Type:       2,
+					PrefixType: 1,
+					Prefixes:   []string{"1867"},
+				},
+			},
+		},
+		"JP": &InCountryData{
+			CC: "81",
+		},
+		"__": &InCountryData{
+			CC: "7",
+			Groups: []InPrefixGroup{
+				{
+					Name:       "TEST",
+					Type:       5,
+					PrefixType: 7,
+					Prefixes:   []string{},
+				},
 			},
 		},
 	}
 
-	numInfo2 := &NumInfo{
-		Type: 1,
-		Geo: []*GeoInfo{
-			{
-				Alpha2: "CA",
-				Area:   "Quebec",
-				Type:   2,
-			},
-		},
-	}
-
-	pdata := PrefixData{
-		"1279": numInfo1,
-		"1367": numInfo2,
-	}
-
-	data := New(pdata)
+	data := New(indata)
 
 	require.NotNil(t, data)
 
@@ -81,15 +106,109 @@ func TestData_NumberInfo(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name:    "first",
-			prefix:  "1279000",
-			want:    numInfo1,
+			name:    "no match",
+			prefix:  "999999",
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name:   "US & CA",
+			prefix: "100000",
+			want: &NumInfo{
+				Type: 0,
+				Geo: []*GeoInfo{
+					{
+						Alpha2: "US",
+						Area:   "",
+						Type:   0,
+					},
+					{
+						Alpha2: "CA",
+						Area:   "",
+						Type:   0,
+					},
+				},
+			},
 			wantErr: false,
 		},
 		{
-			name:    "last",
-			prefix:  "1367000",
-			want:    numInfo2,
+			name:   "US - Alaska",
+			prefix: "1907000",
+			want: &NumInfo{
+				Type: 1,
+				Geo: []*GeoInfo{
+					{
+						Alpha2: "US",
+						Area:   "Alaska",
+						Type:   1,
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name:   "US - Arizona",
+			prefix: "1623000",
+			want: &NumInfo{
+				Type: 1,
+				Geo: []*GeoInfo{
+					{
+						Alpha2: "US",
+						Area:   "Arizona",
+						Type:   1,
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name:   "CA - Manitoba",
+			prefix: "1431000",
+			want: &NumInfo{
+				Type: 1,
+				Geo: []*GeoInfo{
+					{
+						Alpha2: "CA",
+						Area:   "Manitoba",
+						Type:   2,
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name:   "JP",
+			prefix: "81234567890",
+			want: &NumInfo{
+				Type: 0,
+				Geo: []*GeoInfo{
+					{
+						Alpha2: "JP",
+						Area:   "",
+						Type:   0,
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name:   "Artificial without prefix",
+			prefix: "7123",
+			want: &NumInfo{
+				Type: 7,
+				Geo: []*GeoInfo{
+					{
+						Alpha2: "__",
+						Area:   "",
+						Type:   0,
+					},
+					{
+						Alpha2: "__",
+						Area:   "TEST",
+						Type:   5,
+					},
+				},
+			},
 			wantErr: false,
 		},
 	}
@@ -116,7 +235,7 @@ func TestData_NumberInfo(t *testing.T) {
 func TestData_NumberType(t *testing.T) {
 	t.Parallel()
 
-	data := New(PrefixData{})
+	data := New(InData{})
 
 	require.NotNil(t, data)
 
@@ -174,7 +293,7 @@ func TestData_NumberType(t *testing.T) {
 func TestData_AreaType(t *testing.T) {
 	t.Parallel()
 
-	data := New(PrefixData{})
+	data := New(InData{})
 
 	require.NotNil(t, data)
 
