@@ -30,7 +30,7 @@ require (
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.9.0
 	github.com/tecnickcom/farmhash64 v1.9.13
-	github.com/tecnickcom/statsd v1.0.12
+	github.com/tecnickcom/statsd/v2 v2.1.0
 	github.com/undefinedlabs/go-mpatch v1.0.7
 	go.uber.org/multierr v1.11.0
 	go.uber.org/zap v1.27.0
