@@ -22,7 +22,7 @@ require (
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/jstemmer/go-junit-report/v2 v2.1.0
 	github.com/julienschmidt/httprouter v1.3.0
-	github.com/prometheus/client_golang v1.20.0
+	github.com/prometheus/client_golang v1.20.2
 	github.com/rakyll/gotest v0.0.6
 	github.com/redis/go-redis/v9 v9.6.1
 	github.com/segmentio/kafka-go v0.4.47
