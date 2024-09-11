@@ -4,7 +4,7 @@ package redis
 type Option func(*cfg)
 
 // WithMessageEncodeFunc allow to replace DefaultMessageEncodeFunc.
-// This function used by SendData() to encode and serialize the input data to a string compatible with SQS.
+// This function used by SendData() to encode and serialize the input data to a string.
 func WithMessageEncodeFunc(f TEncodeFunc) Option {
 	return func(c *cfg) {
 		c.messageEncodeFunc = f
