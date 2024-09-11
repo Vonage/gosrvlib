@@ -31,6 +31,6 @@ func WithChannels(channels ...string) Option {
 // This function is mainly used for testing.
 func WithValkeyClient(vkclient VKClient) Option {
 	return func(c *cfg) {
-		c.vkclient = &vkclient
+		c.vkclient = vkclient
 	}
 }

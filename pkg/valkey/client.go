@@ -52,18 +52,18 @@ func New(ctx context.Context, srvopt SrvOptions, opts ...Option) (*Client, error
 		return nil, fmt.Errorf("cannot create a new valkey client: %w", err)
 	}
 
-	if cfg.vkclient == nil {
-		vkc, err := libvalkey.NewClient(cfg.srvOpts)
+	vkc := cfg.vkclient
+
+	if vkc == nil {
+		vkc, err = libvalkey.NewClient(cfg.srvOpts)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create Valkey client: %w", err)
 		}
-
-		cfg.vkclient = &vkc
 	}
 
 	return &Client{
-		vkclient:          (*cfg.vkclient),
-		vkpubsub:          (*cfg.vkclient).B().Subscribe().Channel(cfg.channels...).Build().Pin(),
+		vkclient:          vkc,
+		vkpubsub:          vkc.B().Subscribe().Channel(cfg.channels...).Build().Pin(),
 		messageEncodeFunc: cfg.messageEncodeFunc,
 		messageDecodeFunc: cfg.messageDecodeFunc,
 	}, nil

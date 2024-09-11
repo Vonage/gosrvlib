@@ -57,5 +57,5 @@ func Test_WithValkeyClient(t *testing.T) {
 
 	conf := &cfg{}
 	WithValkeyClient(client)(conf)
-	require.Equal(t, client, *conf.vkclient)
+	require.Equal(t, client, conf.vkclient)
 }

@@ -481,7 +481,20 @@ func TestSetData(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:    "error",
+			name: "error",
+			key:  "key2",
+			val:  testMsg,
+			exp:  time.Second,
+			mock: func() {
+				vkc.EXPECT().Do(
+					ctx,
+					mock.Match("SET", "key2", testEncMsg, "EX", "1"),
+				).Return(mock.ErrorResult(errors.New("error")))
+			},
+			wantErr: true,
+		},
+		{
+			name:    "data error",
 			key:     "key2",
 			val:     nil,
 			exp:     time.Second,
@@ -533,6 +546,11 @@ func TestGetData(t *testing.T) {
 		Beta  int
 	}
 
+	testMsg := TestData{Alpha: "abc123", Beta: -567}
+	testEncMsg, err := MessageEncode(testMsg)
+
+	require.NoError(t, err)
+
 	tests := []struct {
 		name    string
 		key     string
@@ -543,23 +561,35 @@ func TestGetData(t *testing.T) {
 		{
 			name: "success",
 			key:  "key1",
-			val:  TestData{Alpha: "abc123", Beta: -567},
+			val:  testMsg,
 			mock: func() {
 				vkc.EXPECT().Do(
 					ctx,
 					mock.Match("GET", "key1"),
-				).Return(mock.Result(mock.ValkeyString("KH8DAQEIVGVzdERhdGEB/4AAAQIBBUFscGhhAQwAAQRCZXRhAQQAAAAP/4ABBmFiYzEyMwH+BG0A")))
+				).Return(mock.Result(mock.ValkeyString(testEncMsg)))
 			},
 			wantErr: false,
 		},
 		{
 			name: "error",
 			key:  "key2",
-			val:  nil,
+			val:  TestData{},
 			mock: func() {
 				vkc.EXPECT().Do(
 					ctx,
 					mock.Match("GET", "key2"),
+				).Return(mock.ErrorResult(errors.New("error")))
+			},
+			wantErr: true,
+		},
+		{
+			name: "data error",
+			key:  "key3",
+			val:  TestData{},
+			mock: func() {
+				vkc.EXPECT().Do(
+					ctx,
+					mock.Match("GET", "key3"),
 				).Return(mock.Result(mock.ValkeyString("INVALID-CORRUPT-DATA")))
 			},
 			wantErr: true,
@@ -640,6 +670,18 @@ func TestSendData(t *testing.T) {
 		{
 			name:    "error",
 			channel: "ch2",
+			message: testMsg,
+			mock: func() {
+				vkc.EXPECT().Do(
+					ctx,
+					mock.Match("PUBLISH", "ch2", testEncMsg),
+				).Return(mock.ErrorResult(errors.New("error")))
+			},
+			wantErr: true,
+		},
+		{
+			name:    "data error",
+			channel: "ch2",
 			message: nil,
 			mock:    func() {},
 			wantErr: true,
@@ -690,6 +732,11 @@ func TestReceiveData(t *testing.T) {
 		Beta  int
 	}
 
+	testMsg := TestData{Alpha: "abc123", Beta: -567}
+	testEncMsg, err := MessageEncode(testMsg)
+
+	require.NoError(t, err)
+
 	tests := []struct {
 		name    string
 		channel string
@@ -700,14 +747,14 @@ func TestReceiveData(t *testing.T) {
 		{
 			name:    "success",
 			channel: "ch1",
-			message: TestData{Alpha: "abc123", Beta: -567},
+			message: testMsg,
 			mock: func() {
 				vkc.EXPECT().Receive(
 					ctx,
 					mock.Match("SUBSCRIBE", "ch1", "ch2"),
 					gomock.Any(),
 				).Do(func(_, _ any, fn func(message VKMessage)) {
-					fn(VKMessage{Channel: "ch1", Message: "KH8DAQEIVGVzdERhdGEB/4AAAQIBBUFscGhhAQwAAQRCZXRhAQQAAAAP/4ABBmFiYzEyMwH+BG0A"})
+					fn(VKMessage{Channel: "ch1", Message: testEncMsg})
 				})
 			},
 			wantErr: false,
@@ -715,15 +762,30 @@ func TestReceiveData(t *testing.T) {
 		{
 			name:    "error",
 			channel: "ch2",
-			message: nil,
+			message: testMsg,
 			mock: func() {
 				vkc.EXPECT().Receive(
 					ctx,
 					mock.Match("SUBSCRIBE", "ch1", "ch2"),
 					gomock.Any(),
 				).Do(func(_, _ any, fn func(message VKMessage)) {
-					fn(VKMessage{Channel: "ch2", Message: "INVALID-CORRUPT-DATA"})
+					fn(VKMessage{Channel: "ch2", Message: testEncMsg})
 				}).Return(errors.New("error"))
+			},
+			wantErr: true,
+		},
+		{
+			name:    "data error",
+			channel: "ch2",
+			message: TestData{},
+			mock: func() {
+				vkc.EXPECT().Receive(
+					ctx,
+					mock.Match("SUBSCRIBE", "ch1", "ch2"),
+					gomock.Any(),
+				).Do(func(_, _ any, fn func(message VKMessage)) {
+					fn(VKMessage{Channel: "ch3", Message: "INVALID-CORRUPT-DATA"})
+				})
 			},
 			wantErr: true,
 		},
@@ -740,7 +802,6 @@ func TestReceiveData(t *testing.T) {
 			channel, err := cli.ReceiveData(ctx, &data)
 			if tt.wantErr {
 				require.Error(t, err)
-				require.Empty(t, channel)
 				require.Empty(t, data)
 
 				return

@@ -17,7 +17,7 @@ type cfg struct {
 	messageDecodeFunc TDecodeFunc
 	srvOpts           SrvOptions
 	channels          []string
-	vkclient          *VKClient
+	vkclient          VKClient
 }
 
 func loadConfig(_ context.Context, srvOpts SrvOptions, opts ...Option) (*cfg, error) {
