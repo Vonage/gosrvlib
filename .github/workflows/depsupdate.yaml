@@ -2,8 +2,8 @@ name: Dependencies Update
 
 on:
   workflow_dispatch:
-  schedule:
-      - cron: "17 5 * * 1"
+  #schedule:
+  #    - cron: "17 5 * * 1"
 
 permissions: read-all
 
