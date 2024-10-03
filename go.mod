@@ -28,8 +28,8 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.9.0
-	github.com/tecnickcom/farmhash64 v1.9.18
-	github.com/tecnickcom/statsd v1.0.20
+	github.com/tecnickcom/farmhash64 v1.9.20
+	github.com/tecnickcom/statsd v1.0.22
 	github.com/undefinedlabs/go-mpatch v1.0.7
 	github.com/valkey-io/valkey-go v1.0.47
 	github.com/valkey-io/valkey-go/mock v1.0.47
