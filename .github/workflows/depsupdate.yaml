@@ -3,7 +3,7 @@ name: Dependencies Update
 on:
   workflow_dispatch:
   #schedule:
-  #    - cron: "17 5 * * 1"
+  #  - cron: "17 5 * * 1"
 
 permissions: read-all
 
@@ -19,7 +19,7 @@ jobs:
     steps:
       - name: checkout repository
         uses: actions/checkout@v4
-      - name: switch branch
+      - name: update branch
         run: |
           git checkout -B ${{ env.BRANCH_NAME }}
           git reset origin/main --hard
