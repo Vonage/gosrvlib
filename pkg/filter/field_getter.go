@@ -110,6 +110,7 @@ func (r *fieldGetter) lookupFieldByTag(t reflect.Type, tagValue string) (reflect
 	for _, field := range reflect.VisibleFields(t) {
 		actualValue := field.Tag.Get(r.fieldTag)
 		actualValue = strings.Split(actualValue, ",")[0]
+
 		if actualValue == tagValue {
 			return field, true
 		}
