@@ -13,7 +13,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/secretsmanager v1.34.2
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.36.2
 	github.com/aws/smithy-go v1.22.0
-	github.com/confluentinc/confluent-kafka-go/v2 v2.5.4
+	github.com/confluentinc/confluent-kafka-go/v2 v2.6.0
 	github.com/dlmiddlecote/sqlstats v1.0.2
 	github.com/go-playground/validator/v10 v10.22.1
 	github.com/golang-jwt/jwt/v5 v5.2.1
