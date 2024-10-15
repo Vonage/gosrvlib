@@ -9,7 +9,7 @@ require (
 	github.com/aperturerobotics/go-brotli-decoder v0.1.1
 	github.com/aws/aws-sdk-go-v2 v1.32.2
 	github.com/aws/aws-sdk-go-v2/config v1.27.43
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.65.2
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.65.3
 	github.com/aws/aws-sdk-go-v2/service/secretsmanager v1.34.2
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.36.2
 	github.com/aws/smithy-go v1.22.0
