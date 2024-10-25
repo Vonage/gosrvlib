@@ -31,7 +31,7 @@ require (
 	github.com/tecnickcom/farmhash64 v1.9.20
 	github.com/tecnickcom/statsd v1.0.22
 	github.com/undefinedlabs/go-mpatch v1.0.7
-	github.com/valkey-io/valkey-go v1.0.47
+	github.com/valkey-io/valkey-go v1.0.48
 	github.com/valkey-io/valkey-go/mock v1.0.47
 	go.uber.org/mock v0.4.0
 	go.uber.org/multierr v1.11.0
