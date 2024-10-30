@@ -6,6 +6,9 @@
   },
   "packageRules": [
     {
+      "dependencyDashboardApproval": true
+    },
+    {
       "matchPackageNames": [
         "/statsd/"
       ],
