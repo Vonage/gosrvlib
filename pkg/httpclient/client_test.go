@@ -41,11 +41,7 @@ func TestNew(t *testing.T) {
 //nolint:gocognit,tparallel,paralleltest
 func TestClient_Do(t *testing.T) {
 	bodyStr := `TEST BODY OK`
-	body := make([]byte, 0)
-
-	for range 100 {
-		body = append(body, []byte(bodyStr+`\n`)...)
-	}
+	body := bytes.Repeat([]byte(bodyStr+`\n`), 10000)
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		_, _ = w.Write(body)
