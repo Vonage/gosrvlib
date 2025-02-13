@@ -2,7 +2,6 @@ package httpclient
 
 import (
 	"bytes"
-	"context"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -94,7 +93,7 @@ func TestClient_Do(t *testing.T) {
 			t.Parallel()
 
 			client := New(tt.opts...)
-			ctx := context.Background()
+			ctx := t.Context()
 
 			// Create a sink instance, and register it with zap for the "memory" protocol.
 			sink := &MemorySink{new(bytes.Buffer)}
