@@ -48,6 +48,7 @@ jobs:
         with:
           path-to-profile: target/report/coverage.out
       - name: hash go files
+        if: always()
         id: go_hash
         run: echo "value=${{ hashFiles('**/*.go','!vendor/**','!examples/**') }}" >>"$GITHUB_OUTPUT"
       - name: cache coverage
