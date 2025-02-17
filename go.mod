@@ -15,7 +15,7 @@ require (
 	github.com/aws/smithy-go v1.22.2
 	github.com/confluentinc/confluent-kafka-go/v2 v2.8.0
 	github.com/dlmiddlecote/sqlstats v1.0.2
-	github.com/go-playground/validator/v10 v10.24.0
+	github.com/go-playground/validator/v10 v10.25.0
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/google/go-cmp v0.6.0
 	github.com/jmoiron/sqlx v1.4.0
