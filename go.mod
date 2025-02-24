@@ -17,7 +17,7 @@ require (
 	github.com/dlmiddlecote/sqlstats v1.0.2
 	github.com/go-playground/validator/v10 v10.25.0
 	github.com/golang-jwt/jwt/v5 v5.2.1
-	github.com/google/go-cmp v0.6.0
+	github.com/google/go-cmp v0.7.0
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/jstemmer/go-junit-report/v2 v2.1.0
 	github.com/julienschmidt/httprouter v1.3.0
