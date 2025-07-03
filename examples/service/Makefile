@@ -639,7 +639,6 @@ rpm:
 schemathesistest:
 	schemathesis run \
 	--checks=all \
-	--exclude-checks=negative_data_rejection \
 	--request-timeout=2000 \
 	--max-examples=100 \
 	--url='${API_TEST_URL}' \

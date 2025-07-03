@@ -21,7 +21,6 @@ linters:
     - testpackage
     - varnamelen
     - wsl
-    - noinlineerr
   settings:
     depguard:
       rules:
