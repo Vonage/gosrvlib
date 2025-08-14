@@ -29,7 +29,7 @@ require (
 	github.com/spf13/viper/remote v1.20.1
 	github.com/stretchr/testify v1.10.0
 	github.com/tecnickcom/farmhash64 v1.9.48
-	github.com/tecnickcom/statsd v1.0.46
+	github.com/tecnickcom/statsd v1.0.47
 	github.com/undefinedlabs/go-mpatch v1.0.7
 	github.com/valkey-io/valkey-go v1.0.64
 	github.com/valkey-io/valkey-go/mock v1.0.64
@@ -42,7 +42,7 @@ require (
 )
 
 require (
-	cloud.google.com/go v0.121.5 // indirect
+	cloud.google.com/go v0.121.6 // indirect
 	cloud.google.com/go/auth v0.16.4 // indirect
 	cloud.google.com/go/auth/oauth2adapt v0.2.8 // indirect
 	cloud.google.com/go/compute/metadata v0.8.0 // indirect
@@ -98,7 +98,6 @@ require (
 	github.com/klauspost/compress v1.18.0 // indirect
 	github.com/kylelemons/godebug v1.1.0 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
-	github.com/magiconair/properties v1.8.9 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
