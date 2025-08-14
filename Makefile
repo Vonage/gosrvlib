@@ -197,6 +197,7 @@ linter:
 # Download dependencies
 .PHONY: mod
 mod:
+	$(GO) clean -modcache
 	$(GO) mod download all
 
 # Create a new project based on the example template
