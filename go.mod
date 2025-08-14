@@ -22,15 +22,14 @@ require (
 	github.com/jstemmer/go-junit-report/v2 v2.1.0
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/prometheus/client_golang v1.23.0
-	github.com/rakyll/gotest v0.0.6
 	github.com/redis/go-redis/v9 v9.12.1
 	github.com/segmentio/kafka-go v0.4.48
 	github.com/spf13/pflag v1.0.7
 	github.com/spf13/viper v1.20.1
 	github.com/spf13/viper/remote v1.20.1
 	github.com/stretchr/testify v1.10.0
-	github.com/tecnickcom/farmhash64 v1.9.47
-	github.com/tecnickcom/statsd v1.0.44
+	github.com/tecnickcom/farmhash64 v1.9.48
+	github.com/tecnickcom/statsd v1.0.46
 	github.com/undefinedlabs/go-mpatch v1.0.7
 	github.com/valkey-io/valkey-go v1.0.64
 	github.com/valkey-io/valkey-go/mock v1.0.64

@@ -146,7 +146,7 @@ DOCKERBUILDARG=--build-arg HOST_USER="$(shell id -u ${USER})" --build-arg HOST_G
 GO=GOPATH=$(GOPATH) GOPRIVATE=$(CVSPATH) $(shell which go)
 GOVERSION=${shell go version | grep -Po '(go[0-9]+.[0-9]+)'}
 GOFMT=$(shell which gofmt)
-GOTEST=GOPATH=$(GOPATH) $(shell which gotest)
+GOTEST=$(GO) test
 GODOC=GOPATH=$(GOPATH) $(shell which godoc)
 GOLANGCILINT=$(BINUTIL)/golangci-lint
 GOLANGCILINTVERSION=v2.4.0
@@ -409,7 +409,6 @@ deps: ensuretarget
 	$(GO) install github.com/hairyhenderson/gomplate/v4/cmd/gomplate@latest
 	$(GO) install github.com/jstemmer/go-junit-report/v2@latest
 	$(GO) install github.com/mikefarah/yq/v4@latest
-	$(GO) install github.com/rakyll/gotest
 	$(GO) install github.com/santhosh-tekuri/jsonschema/cmd/jv@latest
 	$(GO) install go.uber.org/mock/mockgen@latest
 
