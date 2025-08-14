@@ -2,7 +2,7 @@ module github.com/Vonage/gosrvlib
 
 go 1.24
 
-toolchain go1.24.6
+toolchain go1.25.0
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
