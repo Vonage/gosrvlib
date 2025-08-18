@@ -10,7 +10,6 @@ tool go.uber.org/mock/mockgen
 
 require (
 	github.com/Vonage/gosrvlib v1.102.11
-	github.com/jstemmer/go-junit-report/v2 v2.1.0
 	github.com/prometheus/client_golang v1.23.0
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.20.1
