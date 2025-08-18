@@ -406,11 +406,6 @@ endif
 .PHONY: deps
 deps: ensuretarget
 	curl --silent --show-error --fail --location "https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh" | sh -s -- -b $(BINUTIL) $(GOLANGCILINTVERSION)
-	$(GO) install github.com/hairyhenderson/gomplate/v4/cmd/gomplate@latest
-	$(GO) install github.com/jstemmer/go-junit-report/v2@latest
-	$(GO) install github.com/mikefarah/yq/v4@latest
-	$(GO) install github.com/santhosh-tekuri/jsonschema/cmd/jv@latest
-	$(GO) install go.uber.org/mock/mockgen@latest
 
 # Build a docker container to run this service
 .PHONY: docker
@@ -590,7 +585,7 @@ linter:
 
 # Download dependencies
 .PHONY: mod
-mod:
+mod: gotools
 	$(GO) mod download all
 
 # Test the OpenAPI specification against the real deployed service
@@ -658,6 +653,15 @@ test: ensuretarget
 	-v $(GOPKGS) $(TESTEXTRACMD)
 	@echo -e "\n\n>>> END: Unit Tests <<<\n\n"
 
+# Get the go tools
+.PHONY: gotools
+gotools:
+	$(GO) get -tool github.com/jstemmer/go-junit-report/v2@latest
+	$(GO) get -tool go.uber.org/mock/mockgen@latest
+	$(GO) install github.com/hairyhenderson/gomplate/v4/cmd/gomplate@latest
+	$(GO) install github.com/mikefarah/yq/v4@latest
+	$(GO) install github.com/santhosh-tekuri/jsonschema/cmd/jv@latest
+
 # Remove all installed files (excluding configuration files)
 .PHONY: uninstall
 uninstall:
@@ -684,7 +688,7 @@ updatelint:
 
 # Update dependencies
 .PHONY: updatemod
-updatemod:
+updatemod: mod
 	# $(GO) get $(shell $(GO) list -f '{{if not (or .Main .Indirect)}}{{.Path}}{{end}}' -m all)
 	$(GO) get -t -u ./... && go mod tidy -compat=$(shell grep -oP 'go \K[0-9]+\.[0-9]+' go.mod)
 
