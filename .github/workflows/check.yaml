@@ -43,11 +43,11 @@ jobs:
           restore-keys: ${{ runner.os }}-go-
       - name: unit tests
         run: make mod deps test GOPATH=$(go env GOPATH)
-      #- name: coverage report
-      #  uses: coverallsapp/github-action@v2
-      #  with:
-      #    file: target/report/coverage.out
-      #    format: golang
+      - name: coverage report
+        uses: coverallsapp/github-action@v2
+        with:
+          file: target/report/coverage.out
+          format: golang
       - name: hash go files
         id: go_hash
         run: echo "value=${{ hashFiles('**/*.go','!vendor/**','!examples/**') }}" >>"$GITHUB_OUTPUT"
