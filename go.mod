@@ -15,7 +15,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/secretsmanager v1.38.0
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.41.0
 	github.com/aws/smithy-go v1.22.5
-	github.com/confluentinc/confluent-kafka-go/v2 v2.11.0
+	github.com/confluentinc/confluent-kafka-go/v2 v2.11.1
 	github.com/dlmiddlecote/sqlstats v1.0.2
 	github.com/go-playground/validator/v10 v10.27.0
 	github.com/golang-jwt/jwt/v5 v5.3.0
@@ -140,9 +140,9 @@ require (
 	golang.org/x/time v0.12.0 // indirect
 	golang.org/x/tools v0.36.0 // indirect
 	google.golang.org/api v0.247.0 // indirect
-	google.golang.org/genproto v0.0.0-20250811230008-5f3141c8851a // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20250811230008-5f3141c8851a // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20250811230008-5f3141c8851a // indirect
+	google.golang.org/genproto v0.0.0-20250818200422-3122310a409c // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20250818200422-3122310a409c // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20250818200422-3122310a409c // indirect
 	google.golang.org/grpc v1.74.2 // indirect
 	google.golang.org/protobuf v1.36.7 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
