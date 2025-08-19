@@ -34,7 +34,7 @@ require (
 	github.com/undefinedlabs/go-mpatch v1.0.7
 	github.com/valkey-io/valkey-go v1.0.64
 	github.com/valkey-io/valkey-go/mock v1.0.64
-	go.uber.org/mock v0.5.2
+	go.uber.org/mock v0.6.0
 	go.uber.org/multierr v1.11.0
 	go.uber.org/zap v1.27.0
 	golang.org/x/crypto v0.41.0
