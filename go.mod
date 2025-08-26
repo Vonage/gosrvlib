@@ -13,7 +13,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.31.2
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.87.1
 	github.com/aws/aws-sdk-go-v2/service/secretsmanager v1.38.2
-	github.com/aws/aws-sdk-go-v2/service/sqs v1.41.2
+	github.com/aws/aws-sdk-go-v2/service/sqs v1.42.0
 	github.com/aws/smithy-go v1.22.5
 	github.com/confluentinc/confluent-kafka-go/v2 v2.11.1
 	github.com/dlmiddlecote/sqlstats v1.0.2
