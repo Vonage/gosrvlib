@@ -2,7 +2,7 @@ module github.com/Vonage/gosrvlib
 
 go 1.25
 
-toolchain go1.25.0
+toolchain go1.25.1
 
 tool go.uber.org/mock/mockgen
 
