@@ -22,7 +22,7 @@ require (
 	github.com/google/go-cmp v0.7.0
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/julienschmidt/httprouter v1.3.0
-	github.com/prometheus/client_golang v1.23.0
+	github.com/prometheus/client_golang v1.23.1
 	github.com/redis/go-redis/v9 v9.13.0
 	github.com/segmentio/kafka-go v0.4.49
 	github.com/spf13/pflag v1.0.10
