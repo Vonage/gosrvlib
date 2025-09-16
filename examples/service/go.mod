@@ -9,7 +9,7 @@ replace github.com/Vonage/gosrvlib => ../..
 tool go.uber.org/mock/mockgen
 
 require (
-	github.com/Vonage/gosrvlib v1.106.1
+	github.com/Vonage/gosrvlib v1.107.1
 	github.com/prometheus/client_golang v1.23.2
 	github.com/spf13/cobra v1.10.1
 	github.com/spf13/viper v1.21.0
