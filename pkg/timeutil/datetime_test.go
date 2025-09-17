@@ -19,6 +19,16 @@ func TestDateTime_MarshalJSON(t *testing.T) {
 		want string
 	}{
 		{
+			name: "TRFC3339 zero value",
+			dt:   new(DateTime[TRFC3339]),
+			want: "0001-01-01T00:00:00Z", // time.RFC3339 zero value
+		},
+		{
+			name: "TJira zero value",
+			dt:   new(DateTime[TJira]),
+			want: "0001-01-01T00:00:00.000+0000", // time.Jira zero value
+		},
+		{
 			name: "TLayout",
 			dt:   DateTime[TLayout](reftime),
 			want: "01/02 03:04:05PM '06 -0700", // time.Layout
@@ -149,6 +159,11 @@ func TestDateTime_UnmarshalJSON(t *testing.T) {
 		wantErr bool
 	}{
 		{
+			name:    "nil",
+			tobj:    new(DateTime[TRFC3339]),
+			wantErr: true,
+		},
+		{
 			name:    "empty",
 			tobj:    new(DateTime[TRFC3339]),
 			data:    []byte(``),
@@ -171,6 +186,18 @@ func TestDateTime_UnmarshalJSON(t *testing.T) {
 			tobj:    new(DateTime[TRFC3339]),
 			data:    []byte(`{"a":"b"}`),
 			wantErr: true,
+		},
+		{
+			name: "TRFC3339 zero value",
+			tobj: new(DateTime[TRFC3339]),
+			data: []byte(`"0001-01-01T00:00:00Z"`),
+			want: time.Time{},
+		},
+		{
+			name: "TJira zero value",
+			tobj: new(DateTime[TJira]),
+			data: []byte(`"0001-01-01T00:00:00.000+0000"`),
+			want: time.Time{},
 		},
 		{
 			name: "TLayout",

@@ -39,7 +39,7 @@ func (d *DateTime[T]) UnmarshalJSON(data []byte) error {
 		return err //nolint:wrapcheck
 	}
 
-	parsed, err := time.Parse((*new(T)).Format(), str)
+	parsed, err := time.ParseInLocation((*new(T)).Format(), str, time.UTC)
 	if err != nil {
 		return fmt.Errorf("unable to parse the time %s : %w", str, err)
 	}
