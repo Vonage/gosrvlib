@@ -12,13 +12,16 @@ import (
 func TestComment_MarshalJSON(t *testing.T) {
 	t.Parallel()
 
-	dt, err := time.Parse(timeutil.TimeJiraFormat, "2024-06-26T10:20:31.144+0000")
-	require.NoError(t, err)
+	dtj := timeutil.DateTime[timeutil.TJira](time.Date(2006, 1, 2, 15, 4, 5, 0, time.FixedZone("", -7*60*60)))
 
 	tests := []struct {
 		name string
 		data Comment
 	}{
+		{
+			name: "with minimal fields",
+			data: Comment{},
+		},
 		{
 			name: "with all fields",
 			data: Comment{
@@ -46,8 +49,8 @@ func TestComment_MarshalJSON(t *testing.T) {
 					Active:      true,
 					TimeZone:    "Australia/Sydney",
 				},
-				Created: timeutil.DateTime[timeutil.TJira](dt),
-				Updated: timeutil.DateTime[timeutil.TJira](dt),
+				Created: &dtj,
+				Updated: &dtj,
 				Visibility: &Visibility{
 					Type:  "role",
 					Value: "Administrators",
