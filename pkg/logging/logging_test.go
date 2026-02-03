@@ -255,7 +255,7 @@ func TestLogDifferences(t *testing.T) {
 
 	type LogData struct {
 		Level     string `json:"level"`
-		Timestamp int64  `json:"timestamp"`
+		Timestamp string `json:"timestamp"`
 		Msg       string `json:"msg"`
 		Hostname  string `json:"hostname"`
 		Program   string `json:"program"`
