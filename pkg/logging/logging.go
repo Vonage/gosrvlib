@@ -95,7 +95,7 @@ func NewLogger(opts ...Option) (*zap.Logger, error) {
 		disableCaller = true
 		encoding = "json"
 		levelEncoder = zapcore.LowercaseLevelEncoder
-		timeEncoder = zapcore.EpochNanosTimeEncoder
+		timeEncoder = zapcore.RFC3339TimeEncoder
 	default:
 		return nil, errors.New("invalid log format")
 	}
