@@ -2,15 +2,12 @@
 package devlake
 
 import (
-	"context"
 	"errors"
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 
-	"github.com/Vonage/gosrvlib/pkg/httpretrier"
 	"github.com/Vonage/gosrvlib/pkg/httputil"
 	"github.com/Vonage/gosrvlib/pkg/testutil"
 	"github.com/stretchr/testify/require"
@@ -224,16 +221,6 @@ func Test_httpPostRequest(t *testing.T) {
 	}
 }
 
-//go:noinline
-func newRequestWithContextPatch(_ context.Context, _, _ string, _ io.Reader) (*http.Request, error) {
-	return nil, errors.New("ERROR: newRequestWithContextPatch")
-}
-
-//go:noinline
-func newHTTPRetrierPatch(httpretrier.HTTPClient, ...httpretrier.Option) (*httpretrier.HTTPRetrier, error) {
-	return nil, errors.New("ERROR: newHTTPRetrierPatch")
-}
-
 func getValidDeploymentReq() *DeploymentRequest {
 	nowdate := time.Now()
 
@@ -267,7 +254,7 @@ func getValidDeploymentReq() *DeploymentRequest {
 	}
 }
 
-//nolint:gocognit,paralleltest
+//nolint:paralleltest
 func Test_sendRequest(t *testing.T) {
 	tests := []struct {
 		name              string

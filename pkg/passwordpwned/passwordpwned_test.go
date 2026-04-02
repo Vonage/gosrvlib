@@ -2,31 +2,18 @@
 package passwordpwned
 
 import (
-	"context"
 	"encoding/base64"
 	"errors"
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/Vonage/gosrvlib/pkg/httpretrier"
 	"github.com/Vonage/gosrvlib/pkg/httputil"
 	"github.com/Vonage/gosrvlib/pkg/testutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )
-
-//go:noinline
-func newRequestWithContextPatch(_ context.Context, _, _ string, _ io.Reader) (*http.Request, error) {
-	return nil, errors.New("error")
-}
-
-//go:noinline
-func newHTTPRetrierPatch(httpretrier.HTTPClient, ...httpretrier.Option) (*httpretrier.HTTPRetrier, error) {
-	return nil, errors.New("error")
-}
 
 //nolint:gocognit,tparallel
 func TestClient_IsPwnedPassword(t *testing.T) {
