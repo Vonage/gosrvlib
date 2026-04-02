@@ -11,6 +11,7 @@ import (
 )
 
 // NewRouter is deprecated.
+//
 // Deprecated: Set instead the router error handlers with the following options:
 //
 //	httpserver.WithNotFoundHandlerFunc(jsendx.DefaultNotFoundHandlerFunc(appInfo))

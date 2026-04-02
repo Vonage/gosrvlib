@@ -52,7 +52,7 @@ func New(opts ...Option) *Client {
 func (c *Client) Do(r *http.Request) (*http.Response, error) {
 	reqTime := time.Now().UTC()
 
-	//nolint:govet // calling cancel() causes long body reads to return context canceled errors.
+	//nolint:govet,gosec // not calling cancel() on purpose. Doing so causes long body reads to return context canceled errors.
 	ctx, _ := context.WithTimeout(r.Context(), c.client.Timeout)
 
 	l := logging.FromContext(ctx).With(zap.String(c.logPrefix+"component", c.component))
@@ -105,6 +105,7 @@ func (c *Client) Do(r *http.Request) (*http.Response, error) {
 
 	var resp *http.Response
 
+	//nolint:gosec // false positive for G704: SSRF via taint analysis
 	resp, err = c.client.Do(r)
 
 	if debug && resp != nil {

@@ -34,7 +34,7 @@ func TestContextWithHTTPRouterParams(t *testing.T) {
 	t.Parallel()
 
 	params := map[string]string{"test_arg_1": "test_val_1", "test_arg_2": "test_val_2"}
-	r := httptest.NewRequest(http.MethodGet, "http://test.url.invalid", nil)
+	r := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "http://test.url.invalid", nil)
 	r = r.WithContext(ContextWithHTTPRouterParams(t.Context(), params))
 	require.Equal(t, "test_val_1", httputil.PathParam(r, "test_arg_1"))
 	require.Equal(t, "test_val_2", httputil.PathParam(r, "test_arg_2"))

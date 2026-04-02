@@ -166,6 +166,7 @@ func TestClient_IsPwnedPassword(t *testing.T) {
 			pwned:   false,
 			wantErr: false,
 		},
+		//nolint:gosec // test data, not an actual password
 		{
 			name:     "ok password",
 			password: "not.pwned.password",

@@ -33,7 +33,7 @@ func TestRequestInjectHandler(t *testing.T) {
 	ctx, logs := testutil.ContextWithLogObserver(zapcore.DebugLevel)
 	handler := RequestInjectHandler(logging.FromContext(ctx), traceid.DefaultHeader, redact.HTTPData, nextHandler)
 
-	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/", nil)
 	handler.ServeHTTP(nil, req)
 
 	logEntries := logs.All()
