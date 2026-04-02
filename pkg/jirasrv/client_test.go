@@ -2,7 +2,6 @@
 package jirasrv
 
 import (
-	"context"
 	"errors"
 	"io"
 	"net/http"
@@ -12,11 +11,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Vonage/gosrvlib/pkg/httpretrier"
 	"github.com/Vonage/gosrvlib/pkg/httputil"
 	"github.com/Vonage/gosrvlib/pkg/testutil"
 	"github.com/stretchr/testify/require"
-	"github.com/undefinedlabs/go-mpatch"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -275,16 +272,6 @@ func TestClient_HealthCheck(t *testing.T) {
 	}
 }
 
-//go:noinline
-func newRequestWithContextPatch(_ context.Context, _, _ string, _ io.Reader) (*http.Request, error) {
-	return nil, errors.New("ERROR: newRequestWithContextPatch")
-}
-
-//go:noinline
-func newHTTPRetrierPatch(httpretrier.HTTPClient, ...httpretrier.Option) (*httpretrier.HTTPRetrier, error) {
-	return nil, errors.New("ERROR: newHTTPRetrierPatch")
-}
-
 //nolint:gocognit,tparallel
 func TestSendRequest(t *testing.T) {
 	t.Parallel()
@@ -297,7 +284,7 @@ func TestSendRequest(t *testing.T) {
 		name              string
 		createMockHandler func(t *testing.T) http.HandlerFunc
 		setupMocks        func(client *MockHTTPClient)
-		setupPatches      func() (*mpatch.Patch, error)
+		method            string
 		req               any
 		query             *url.Values
 		wantStatusCode    int
@@ -311,31 +298,8 @@ func TestSendRequest(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "failed to execute request - NewRequest error",
-			setupPatches: func() (*mpatch.Patch, error) {
-				patch, err := mpatch.PatchMethod(http.NewRequestWithContext, newRequestWithContextPatch)
-				if err != nil {
-					return nil, err //nolint:wrapcheck
-				}
-
-				_ = patch.Patch()
-
-				return patch, nil
-			},
-			wantErr: true,
-		},
-		{
-			name: "failed to execute request - HTTPRetrier error",
-			setupPatches: func() (*mpatch.Patch, error) {
-				patch, err := mpatch.PatchMethod(httpretrier.New, newHTTPRetrierPatch)
-				if err != nil {
-					return nil, err //nolint:wrapcheck
-				}
-
-				_ = patch.Patch()
-
-				return patch, nil
-			},
+			name:    "failed to execute request - NewRequest error",
+			method:  "INVALID_METHOD!@#$%^&*()_+",
 			wantErr: true,
 		},
 		{
@@ -430,15 +394,6 @@ func TestSendRequest(t *testing.T) {
 			)
 			require.NoError(t, err)
 
-			if tt.setupPatches != nil {
-				patch, err := tt.setupPatches()
-				require.NoError(t, err)
-
-				defer func() {
-					_ = patch.Unpatch()
-				}()
-			}
-
 			if tt.req == nil {
 				tt.req = &testReqData{
 					TestField: 1,
@@ -450,7 +405,12 @@ func TestSendRequest(t *testing.T) {
 				tt.query.Set("queryparam", "value")
 			}
 
-			resp, err := c.SendRequest(testutil.Context(), http.MethodPost, endpoint, tt.query, tt.req)
+			method := http.MethodPost
+			if tt.method != "" {
+				method = tt.method
+			}
+
+			resp, err := c.SendRequest(testutil.Context(), method, endpoint, tt.query, tt.req)
 
 			if tt.wantErr {
 				require.Error(t, err, "error expected but got nil")

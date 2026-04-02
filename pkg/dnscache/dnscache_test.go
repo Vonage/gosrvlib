@@ -278,7 +278,7 @@ func Test_DialContext_ip_error(t *testing.T) {
 
 	resolver := &mockResolver{
 		lookupHost: func(_ context.Context, _ string) ([]string, error) {
-			return []string{"1"}, nil
+			return []string{"!@#$%^&*()_"}, nil
 		},
 	}
 
