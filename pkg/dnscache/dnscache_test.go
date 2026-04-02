@@ -141,8 +141,6 @@ func Test_LookupHost_concurrent_fast(t *testing.T) {
 
 	for range nlookup {
 		wg.Go(func() {
-			defer wg.Done()
-
 			addrs, err := c.LookupHost(t.Context(), "example.org")
 			ret <- retval{err, addrs}
 		})
@@ -196,8 +194,6 @@ func Test_LookupHost_error(t *testing.T) {
 
 	for range nlookup {
 		wg.Go(func() {
-			defer wg.Done()
-
 			addrs, err := c.LookupHost(t.Context(), "example.net")
 			ret <- retval{err, addrs}
 		})
@@ -238,8 +234,6 @@ func Test_LookupHost_error_concurrent_fast(t *testing.T) {
 
 	for range nlookup {
 		wg.Go(func() {
-			defer wg.Done()
-
 			addrs, err := c.LookupHost(t.Context(), "example.net")
 			ret <- retval{err, addrs}
 		})

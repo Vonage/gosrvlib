@@ -320,8 +320,6 @@ func Test_Lookup_concurrent_fast(t *testing.T) {
 
 	for range nlookup {
 		wg.Go(func() {
-			defer wg.Done()
-
 			val, err := c.Lookup(t.Context(), "example.org")
 
 			v, ok := val.([]string)
