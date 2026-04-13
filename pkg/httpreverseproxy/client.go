@@ -42,6 +42,7 @@ func New(addr string, opts ...Option) (*Client, error) {
 		c.proxy = &httputil.ReverseProxy{}
 	}
 
+	//nolint:staticcheck
 	if c.proxy.Director == nil {
 		addr = strings.TrimRight(addr, "/")
 
