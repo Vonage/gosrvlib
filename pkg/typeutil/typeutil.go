@@ -39,6 +39,8 @@ func Zero[T any](_ T) T {
 }
 
 // Pointer returns the address of v.
+//
+//nolint:modernize
 func Pointer[T any](v T) *T {
 	return &v
 }

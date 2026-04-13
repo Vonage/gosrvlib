@@ -205,6 +205,7 @@ func TestPointer(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
+			//nolint:modernize
 			got := Pointer(tt.value)
 			require.Equal(t, tt.value, *got)
 		})

@@ -40,7 +40,7 @@ func ExampleZero() {
 func ExamplePointer() {
 	v := 5
 
-	p := typeutil.Pointer(v)
+	p := new(v)
 	fmt.Println(p)
 }
 
