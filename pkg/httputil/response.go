@@ -68,6 +68,7 @@ func SendText(ctx context.Context, w http.ResponseWriter, statusCode int, data s
 
 	writeHeaders(w, statusCode, MimeTextPlain)
 
+	//nolint:gosec // false positive for "G705: XSS via taint analysis"
 	_, err := w.Write([]byte(data))
 	if err != nil {
 		logging.FromContext(ctx).Error("httputil.SendText()", zap.Error(err))

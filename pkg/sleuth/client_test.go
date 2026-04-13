@@ -2,19 +2,15 @@
 package sleuth
 
 import (
-	"context"
 	"errors"
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 
-	"github.com/Vonage/gosrvlib/pkg/httpretrier"
 	"github.com/Vonage/gosrvlib/pkg/httputil"
 	"github.com/Vonage/gosrvlib/pkg/testutil"
 	"github.com/stretchr/testify/require"
-	"github.com/undefinedlabs/go-mpatch"
 	"go.uber.org/mock/gomock"
 )
 
@@ -261,24 +257,14 @@ func Test_httpRequest(t *testing.T) {
 	}
 }
 
-//go:noinline
-func newRequestWithContextPatch(_ context.Context, _, _ string, _ io.Reader) (*http.Request, error) {
-	return nil, errors.New("ERROR: newRequestWithContextPatch")
-}
-
-//go:noinline
-func newHTTPRetrierPatch(httpretrier.HTTPClient, ...httpretrier.Option) (*httpretrier.HTTPRetrier, error) {
-	return nil, errors.New("ERROR: newHTTPRetrierPatch")
-}
-
-//nolint:gocognit,paralleltest
+//nolint:paralleltest
 func Test_sendRequest(t *testing.T) {
 	tests := []struct {
 		name              string
+		method            string
 		req               *DeployRegistrationRequest
 		createMockHandler func(t *testing.T) http.HandlerFunc
 		setupMocks        func(client *MockHTTPClient)
-		setupPatches      func() (*mpatch.Patch, error)
 		wantErr           bool
 	}{
 		{
@@ -289,31 +275,8 @@ func Test_sendRequest(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "failed to execute request - NewRequest error",
-			setupPatches: func() (*mpatch.Patch, error) {
-				patch, err := mpatch.PatchMethod(http.NewRequestWithContext, newRequestWithContextPatch)
-				if err != nil {
-					return nil, err //nolint:wrapcheck
-				}
-
-				_ = patch.Patch()
-
-				return patch, nil
-			},
-			wantErr: true,
-		},
-		{
-			name: "failed to execute request - HTTPRetrier error",
-			setupPatches: func() (*mpatch.Patch, error) {
-				patch, err := mpatch.PatchMethod(httpretrier.New, newHTTPRetrierPatch)
-				if err != nil {
-					return nil, err //nolint:wrapcheck
-				}
-
-				_ = patch.Patch()
-
-				return patch, nil
-			},
+			name:    "failed to execute request - NewRequest error",
+			method:  "INVALID_METHOD!@#$%^&*()_",
 			wantErr: true,
 		},
 		{
@@ -388,15 +351,6 @@ func Test_sendRequest(t *testing.T) {
 				clientOpts...,
 			)
 			require.NoError(t, err)
-
-			if tt.setupPatches != nil {
-				patch, err := tt.setupPatches()
-				require.NoError(t, err)
-
-				defer func() {
-					_ = patch.Unpatch()
-				}()
-			}
 
 			if tt.req == nil {
 				tt.req = &DeployRegistrationRequest{

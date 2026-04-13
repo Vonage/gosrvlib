@@ -58,8 +58,7 @@ func (v *Validator) ValidateStructCtx(ctx context.Context, obj any) error {
 	if errors.As(vErr, &valErr) {
 		for _, fe := range valErr {
 			// separate tags grouped by OR
-			tags := strings.Split(fe.Tag(), "|")
-			for _, tag := range tags {
+			for tag := range strings.SplitSeq(fe.Tag(), "|") {
 				if strings.HasPrefix(tag, "falseif") {
 					// the "falseif" tag only works in combination with other tags
 					continue

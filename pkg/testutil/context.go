@@ -25,7 +25,7 @@ func ContextWithLogObserver(level zapcore.LevelEnabler) (context.Context, *obser
 
 // ContextWithHTTPRouterParams creates a context copy containing map of URL path segments.
 func ContextWithHTTPRouterParams(ctx context.Context, params map[string]string) context.Context {
-	var m httprouter.Params
+	m := make(httprouter.Params, 0, len(params))
 
 	for k, v := range params {
 		m = append(m, httprouter.Param{Key: k, Value: v})

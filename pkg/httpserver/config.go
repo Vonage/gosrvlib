@@ -7,6 +7,7 @@ import (
 	"math"
 	"net/http"
 	"runtime/debug"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -94,13 +95,7 @@ func defaultConfig() *config {
 }
 
 func (c *config) isIndexRouteEnabled() bool {
-	for _, r := range c.defaultEnabledRoutes {
-		if r == IndexRoute {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(c.defaultEnabledRoutes, IndexRoute)
 }
 
 // validateAddr checks if a http server bind address is valid.
