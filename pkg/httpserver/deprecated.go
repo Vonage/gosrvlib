@@ -5,6 +5,7 @@ import (
 )
 
 // Router is deprecated.
+//
 // Deprecated: use *httprouter.Router instead.
 //
 //nolint:iface
@@ -16,10 +17,12 @@ type Router interface {
 }
 
 // InstrumentHandler is deprecated.
+//
 // Deprecated: Use instead WithMiddlewareFn.
 type InstrumentHandler func(string, http.HandlerFunc) http.Handler
 
 // WithInstrumentHandler is deprecated.
+//
 // Deprecated: Use WithMiddlewareFn instead.
 func WithInstrumentHandler(handler InstrumentHandler) Option {
 	return WithMiddlewareFn(

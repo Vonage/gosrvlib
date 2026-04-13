@@ -4,6 +4,7 @@ package validator
 //
 //nolint:funlen
 func ErrorTemplates() map[string]string {
+	//nolint:gosec // false positive of "G101: Potential hardcoded credentials"
 	return map[string]string{
 		"alpha":                         `{{.Namespace}} can only contain alphabetic characters`,
 		"alphanum":                      `{{.Namespace}} can only contain alphanumeric characters`,

@@ -108,6 +108,7 @@ func New(ctx context.Context, binder Binder, opts ...Option) (*HTTPServer, error
 // This ignore the context passed to the New() method.
 func (h *HTTPServer) StartServerCtx(ctx context.Context) {
 	// wait for shutdown signal or context cancelation
+	//nolint:gosec // we're not using the request scoped context here on purpose
 	go func() {
 		select {
 		case <-h.cfg.shutdownSignalChan:

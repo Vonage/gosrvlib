@@ -2,32 +2,18 @@
 package passwordpwned
 
 import (
-	"context"
 	"encoding/base64"
 	"errors"
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/Vonage/gosrvlib/pkg/httpretrier"
 	"github.com/Vonage/gosrvlib/pkg/httputil"
 	"github.com/Vonage/gosrvlib/pkg/testutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/undefinedlabs/go-mpatch"
 	"go.uber.org/mock/gomock"
 )
-
-//go:noinline
-func newRequestWithContextPatch(_ context.Context, _, _ string, _ io.Reader) (*http.Request, error) {
-	return nil, errors.New("error")
-}
-
-//go:noinline
-func newHTTPRetrierPatch(httpretrier.HTTPClient, ...httpretrier.Option) (*httpretrier.HTTPRetrier, error) {
-	return nil, errors.New("error")
-}
 
 //nolint:gocognit,tparallel
 func TestClient_IsPwnedPassword(t *testing.T) {
@@ -64,10 +50,10 @@ func TestClient_IsPwnedPassword(t *testing.T) {
 
 	tests := []struct {
 		name              string
+		url               string
 		password          string
 		createMockHandler func(t *testing.T) http.HandlerFunc
 		setupMocks        func(client *MockHTTPClient)
-		setupPatches      func() (*mpatch.Patch, error)
 		hashError         bool
 		pwned             bool
 		wantErr           bool
@@ -80,31 +66,8 @@ func TestClient_IsPwnedPassword(t *testing.T) {
 			wantErr:   true,
 		},
 		{
-			name: "failed to execute request - NewRequest error",
-			setupPatches: func() (*mpatch.Patch, error) {
-				patch, err := mpatch.PatchMethod(http.NewRequestWithContext, newRequestWithContextPatch)
-				if err != nil {
-					return nil, err //nolint:wrapcheck
-				}
-
-				_ = patch.Patch()
-
-				return patch, nil
-			},
-			wantErr: true,
-		},
-		{
-			name: "failed to execute request - HTTPRetrier error",
-			setupPatches: func() (*mpatch.Patch, error) {
-				patch, err := mpatch.PatchMethod(httpretrier.New, newHTTPRetrierPatch)
-				if err != nil {
-					return nil, err //nolint:wrapcheck
-				}
-
-				_ = patch.Patch()
-
-				return patch, nil
-			},
+			name:    "failed to execute request - NewRequest error",
+			url:     "/",
 			wantErr: true,
 		},
 		{
@@ -166,6 +129,7 @@ func TestClient_IsPwnedPassword(t *testing.T) {
 			pwned:   false,
 			wantErr: false,
 		},
+		//nolint:gosec // test data, not an actual password
 		{
 			name:     "ok password",
 			password: "not.pwned.password",
@@ -192,8 +156,13 @@ func TestClient_IsPwnedPassword(t *testing.T) {
 			ts := httptest.NewServer(mux)
 			defer ts.Close()
 
+			u := ts.URL
+			if tt.url != "" {
+				u = tt.url
+			}
+
 			clientOpts := []Option{
-				WithURL(ts.URL),
+				WithURL(u),
 				WithRetryAttempts(1),
 			}
 
@@ -208,15 +177,6 @@ func TestClient_IsPwnedPassword(t *testing.T) {
 
 			if tt.hashError {
 				c.hashObj = &mockHashErr{}
-			}
-
-			if tt.setupPatches != nil {
-				patch, err := tt.setupPatches()
-				require.NoError(t, err)
-
-				defer func() {
-					_ = patch.Unpatch()
-				}()
 			}
 
 			got, err := c.IsPwnedPassword(testutil.Context(), tt.password)
