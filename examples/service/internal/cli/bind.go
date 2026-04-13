@@ -28,6 +28,7 @@ func bind(cfg *appConfig, appInfo *jsendx.AppInfo, mtr instr.Metrics, wg *sync.W
 		statusHandler := jsendx.DefaultStatusHandler(appInfo)
 
 		// common HTTP client options used for all outbound requests
+		//nolint:prealloc
 		httpClientOpts := []httpclient.Option{
 			httpclient.WithRoundTripper(m.InstrumentRoundTripper),
 			httpclient.WithTraceIDHeaderName(traceid.DefaultHeader),
